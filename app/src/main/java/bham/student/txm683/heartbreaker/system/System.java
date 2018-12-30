@@ -1,4 +1,7 @@
-package bham.student.txm683.heartbreaker.messaging;
+package bham.student.txm683.heartbreaker.system;
+
+import bham.student.txm683.heartbreaker.messaging.Mailbox;
+import bham.student.txm683.heartbreaker.messaging.MessageBus;
 
 public abstract class System implements Runnable{
     private final String TAG;

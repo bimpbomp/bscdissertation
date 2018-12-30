@@ -1,30 +1,50 @@
 package bham.student.txm683.heartbreaker;
 
-import android.util.Log;
+import android.graphics.Canvas;
+import android.view.SurfaceHolder;
+import bham.student.txm683.heartbreaker.rendering.LevelView;
 
-import static bham.student.txm683.heartbreaker.utils.Utils.sleep;
-
-public class Level implements Runnable {
+public class Level extends Thread {
     private final String TAG = "hb::Level";
-    private LevelState levelState;
-    private boolean gameIsRunning;
 
-    public Level(){
-        this.levelState = new LevelState();
-        this.gameIsRunning = true;
+    private SurfaceHolder surfaceHolder;
+    private LevelView levelView;
+    private boolean running;
+    public static Canvas canvas;
+
+    public Level(SurfaceHolder surfaceHolder, LevelView levelView){
+        super();
+        this.surfaceHolder = surfaceHolder;
+        this.levelView = levelView;
     }
 
+    public void setRunning(boolean isRunning){
+        this.running = isRunning;
+    }
+
+    @Override
     public void run(){
-        Log.d(TAG, "run starting");
+        while(running){
+            canvas = null;
 
+            try {
+                canvas = this.surfaceHolder.lockCanvas();
 
-        while (gameIsRunning){
-
-            this.gameIsRunning = false;
+                synchronized (surfaceHolder){
+                    this.levelView.update();
+                    this.levelView.draw(canvas);
+                }
+            } catch (Exception e){
+                //do nothing
+            } finally {
+                if (canvas != null) {
+                    try {
+                        surfaceHolder.unlockCanvasAndPost(canvas);
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
-
-        sleep(1000);
-
-        Log.d(TAG, "run ending");
     }
 }
