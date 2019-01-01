@@ -1,59 +1,46 @@
 package bham.student.txm683.heartbreaker.entities;
 
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class Entity {
 
-    private int x,y;
-    private int xV, yV;
-    private int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-    private int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+    private final String TAG;
+
+    private String name;
+    private Vector position;
+    private Vector velocity;
     private int width, height;
 
-    public Entity(){
-        this.x = 100;
-        this.y = 100;
+    public Entity(String name, Vector spawnCoordinates){
+        this.name = name;
+        this.TAG = "hb::Entity:" + name;
 
-        this.xV = 10;
-        this.yV = 5;
+        this.position = spawnCoordinates;
+
+        this.velocity = new Vector(100, 50);
 
         this.width = 50;
-        this.height = 60;
+        this.height = 50;
     }
 
     public void draw(Canvas canvas){
         Paint myPaint = new Paint();
-        myPaint.setColor(Color.rgb(255, 255, 255));
+        myPaint.setColor(Color.rgb(0, 0, 0));
         myPaint.setStrokeWidth(10);
-        canvas.drawRect(x, y, x+width, y+width, myPaint);
+        canvas.drawRect(position.getX(), position.getY(), position.getX()+width, position.getY()+height, myPaint);
+
+        //Log.d(TAG, position.toString());
+
     }
 
-    public void update(){
-        if (x<0 && y<0){
-            x = screenWidth/2;
-            y = screenHeight/2;
-        } else {
-            x += xV;
-            y += yV;
+    public void move(float delta){
+        position = Vector.vAdd(position, Vector.sMult(velocity, delta));
+    }
 
-            if ((x > screenWidth - width)){
-                x = screenWidth-width;
-                xV*=-1;
-            } else if (x < 0){
-                x = 0;
-                xV *= -1;
-            }
-
-            if ((y > screenHeight - height)){
-                y = screenHeight-height;
-                yV*=-1;
-            } else if (y < 0){
-                y=0;
-                yV *= -1;
-            }
-        }
+    public String getName(){
+        return this.name;
     }
 }
