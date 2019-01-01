@@ -5,21 +5,25 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.LevelThread;
+import bham.student.txm683.heartbreaker.utils.InputManager;
+import bham.student.txm683.heartbreaker.utils.Vector;
 
-public class LevelRenderer extends SurfaceView implements SurfaceHolder.Callback {
+public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "hb::LevelRenderer";
 
     private LevelThread levelThread;
     private LevelState levelState;
+    private InputManager inputManager;
 
     private Paint textPaint;
 
-    public LevelRenderer(Context context){
+    public LevelView(Context context){
         super(context);
 
         getHolder().addCallback(this);
@@ -57,6 +61,11 @@ public class LevelRenderer extends SurfaceView implements SurfaceHolder.Callback
         Log.d(TAG, "surfaceDestroyed");
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return inputManager.onTouchEvent(event);
+    }
+
     public void draw(int renderfps, int gametickfps){
         Canvas canvas = getHolder().lockCanvas();
 
@@ -65,12 +74,20 @@ public class LevelRenderer extends SurfaceView implements SurfaceHolder.Callback
 
             canvas.drawRGB(255,255,255);
             levelState.getEntity().draw(canvas);
+
+            Vector coordinatesPressed = inputManager.getLastPress();
+
+            if (coordinatesPressed != null){
+                canvas.drawCircle(coordinatesPressed.getX(), coordinatesPressed.getY(), 100, textPaint);
+            }
+
             canvas.drawText("RenderFPS: " + renderfps + ". GameTickFPS: " + gametickfps, 50, 50, textPaint);
         }
 
         getHolder().unlockCanvasAndPost(canvas);
     }
 
+    //creates a black paint object for use with any text on screen.
     private void initPaintForText(){
         this.textPaint = new Paint(Color.BLACK);
         this.textPaint.setTextSize(48f);
@@ -78,5 +95,9 @@ public class LevelRenderer extends SurfaceView implements SurfaceHolder.Callback
 
     public void setLevelState(LevelState levelState){
         this.levelState = levelState;
+    }
+
+    public void setInputManager(InputManager inputManager){
+        this.inputManager = inputManager;
     }
 }

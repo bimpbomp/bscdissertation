@@ -58,6 +58,9 @@ public class Vector {
         return new Vector(vector.x*scalar, vector.y*scalar);
     }
 
+    public boolean equals(Vector vector){
+        return (x == vector.x) && (y == vector.y);
+    }
 
     public String toString(){
         return "[" + x + "," + y + "]";

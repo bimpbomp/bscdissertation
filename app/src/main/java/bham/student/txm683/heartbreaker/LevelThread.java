@@ -1,14 +1,16 @@
 package bham.student.txm683.heartbreaker;
 
 import bham.student.txm683.heartbreaker.physics.PhysicsController;
-import bham.student.txm683.heartbreaker.rendering.LevelRenderer;
+import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
+import bham.student.txm683.heartbreaker.utils.InputManager;
 
 public class LevelThread extends Thread {
     private final String TAG = "hb::LevelThread";
 
-    private LevelRenderer levelRenderer;
+    private LevelView levelView;
     private LevelState levelState;
+    private InputManager inputManager;
     private PhysicsController physicsController;
 
     private boolean running;
@@ -16,13 +18,16 @@ public class LevelThread extends Thread {
     private FPSMonitor gameFPSMonitor;
     private FPSMonitor renderFPSMonitor;
 
-    public LevelThread(LevelRenderer levelRenderer){
+    public LevelThread(LevelView levelView){
         super();
 
-        this.levelRenderer = levelRenderer;
+        this.levelView = levelView;
 
         this.levelState = new LevelState();
-        this.levelRenderer.setLevelState(levelState);
+        this.levelView.setLevelState(levelState);
+
+        this.inputManager = new InputManager();
+        this.levelView.setInputManager(inputManager);
 
         physicsController = new PhysicsController(levelState);
 
@@ -33,14 +38,12 @@ public class LevelThread extends Thread {
     @Override
     public void run(){
 
-        int ticksPerSecond = 50;
-        int skipTicks = 1000 / ticksPerSecond;
+        int gameTicksPerSecond = 25;
+        int gameTickTimeStepInMillis = 1000 / gameTicksPerSecond;
         int maxSkipTick = 10;
 
-        long lastGameTick = -1;
         long currentGameTick;
-        long nextGameTick = System.currentTimeMillis();
-        float delta = 0;
+        long nextScheduledGameTick = System.currentTimeMillis();
 
         int loops;
 
@@ -49,24 +52,16 @@ public class LevelThread extends Thread {
             loops = 0;
 
             currentGameTick = System.currentTimeMillis();
-            while (currentGameTick > nextGameTick && loops < maxSkipTick){
+            while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick){
 
-                if (lastGameTick < 0){
-                    delta = 0f;
-                } else {
-                    delta = (currentGameTick-lastGameTick)/1000f;
-                }
-
-                physicsController.update(delta);
+                physicsController.update(gameTickTimeStepInMillis/1000f);
                 gameFPSMonitor.updateFPS();
 
-                lastGameTick = currentGameTick;
-
-                nextGameTick += skipTicks;
+                nextScheduledGameTick += gameTickTimeStepInMillis;
                 loops++;
             }
 
-            levelRenderer.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay());
+            levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay());
 
         }
     }

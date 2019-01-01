@@ -14,16 +14,20 @@ public class Entity {
     private Vector velocity;
     private int width, height;
 
+    private Paint color;
+
     public Entity(String name, Vector spawnCoordinates){
         this.name = name;
         this.TAG = "hb::Entity:" + name;
 
         this.position = spawnCoordinates;
 
-        this.velocity = new Vector(100, 50);
+        this.velocity = new Vector(10, 5);
 
         this.width = 50;
         this.height = 50;
+
+        color = new Paint(Color.BLACK);
     }
 
     public void draw(Canvas canvas){
@@ -43,4 +47,5 @@ public class Entity {
     public String getName(){
         return this.name;
     }
+
 }
