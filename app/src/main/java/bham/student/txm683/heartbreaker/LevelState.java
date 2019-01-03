@@ -1,19 +1,19 @@
 package bham.student.txm683.heartbreaker;
 
 import android.content.res.Resources;
-import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class LevelState {
     private static final String TAG = "hb::LevelState";
 
-    private Entity entity;
+    private Player player;
 
     private int screenWidth;
     private int screenHeight;
 
     public LevelState(){
-        this.entity = new Entity("entity", new Vector(100,100));
+        this.player = new Player("entity", new Vector(100,100));
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
     }
@@ -23,8 +23,8 @@ public class LevelState {
         this.screenHeight = screenHeight;
     }
 
-    public Entity getEntity(){
-        return this.entity;
+    public Player getPlayer(){
+        return this.player;
     }
 
     public int getScreenWidth() {

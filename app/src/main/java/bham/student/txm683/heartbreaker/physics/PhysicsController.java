@@ -11,6 +11,6 @@ public class PhysicsController {
     }
 
     public void update(float delta){
-        levelState.getEntity().move(delta);
+        levelState.getPlayer().move(delta);
     }
 }

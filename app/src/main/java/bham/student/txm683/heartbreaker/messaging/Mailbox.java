@@ -4,9 +4,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Mailbox {
     private ConcurrentLinkedQueue<Message> mailbox;
+    private MessageBus messageBus;
 
-    public Mailbox(){
+    public Mailbox(MessageBus messageBus){
         this.mailbox = new ConcurrentLinkedQueue<>();
+        this.messageBus = messageBus;
     }
 
     public Message pop(){
@@ -27,5 +29,9 @@ public class Mailbox {
 
     public int size(){
         return this.mailbox.size();
+    }
+
+    public boolean postMessage(Message message){
+        return messageBus.postMessage(message);
     }
 }

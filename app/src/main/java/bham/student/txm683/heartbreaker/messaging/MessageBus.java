@@ -1,7 +1,5 @@
 package bham.student.txm683.heartbreaker.messaging;
 
-import android.util.Log;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageBus {
@@ -25,7 +23,7 @@ public class MessageBus {
 
     public Mailbox registerMailbox(String systemName){
         if (!this.systemMailboxes.containsKey(systemName)){
-            Mailbox mailbox = new Mailbox();
+            Mailbox mailbox = new Mailbox(this);
             this.systemMailboxes.put(systemName, mailbox);
             return mailbox;
         }

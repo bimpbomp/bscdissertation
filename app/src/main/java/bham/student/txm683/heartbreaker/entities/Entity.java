@@ -7,11 +7,13 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class Entity {
 
-    private final String TAG;
+    String TAG;
 
     private String name;
     private Vector position;
     private Vector velocity;
+    private float movementMaxSpeed;
+    private Vector movementUnitVector;
     private int width, height;
 
     private Paint color;
@@ -24,28 +26,52 @@ public class Entity {
 
         this.velocity = new Vector(10, 5);
 
+        this.movementUnitVector = new Vector();
+        this.movementMaxSpeed = 500f;
+
         this.width = 50;
         this.height = 50;
 
-        color = new Paint(Color.BLACK);
+        color = new Paint();
+        color.setColor(Color.BLACK);
+        color.setStrokeWidth(10);
     }
 
-    public void draw(Canvas canvas){
-        Paint myPaint = new Paint();
-        myPaint.setColor(Color.rgb(0, 0, 0));
-        myPaint.setStrokeWidth(10);
-        canvas.drawRect(position.getX(), position.getY(), position.getX()+width, position.getY()+height, myPaint);
+    public void draw(Canvas canvas, float timeSinceLastGameTick){
+        Vector interPolatedPosition = interpolatedPosition(timeSinceLastGameTick);
+        //Vector interPolatedPosition = position;
+        canvas.drawRect(interPolatedPosition.getX(), interPolatedPosition.getY(), interPolatedPosition.getX()+width, interPolatedPosition.getY()+height, color);
 
         //Log.d(TAG, position.toString());
 
     }
 
-    public void move(float delta){
-        position = Vector.vAdd(position, Vector.sMult(velocity, delta));
+    public void move(float timeSinceLastGameTick){
+        position = getNextPosition(timeSinceLastGameTick);
+    }
+
+    public Vector interpolatedPosition(float timeSinceLastGameTick){
+        return getNextPosition(timeSinceLastGameTick);
+    }
+
+    public Vector getCurrentPosition(){
+        return this.position;
+    }
+
+    public Vector getNextPosition(float timeSinceLastGameTick){
+        return Vector.vAdd(position, Vector.sMult(movementUnitVector, timeSinceLastGameTick*movementMaxSpeed));
     }
 
     public String getName(){
         return this.name;
+    }
+
+    public void setMovementUnitVector(Vector movementUnitVector){
+        this.movementUnitVector = movementUnitVector;
+    }
+
+    public void setMovementMaxSpeed(float movementMaxSpeed){
+        this.movementMaxSpeed = movementMaxSpeed;
     }
 
 }

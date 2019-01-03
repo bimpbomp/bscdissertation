@@ -1,9 +1,10 @@
 package bham.student.txm683.heartbreaker;
 
+import bham.student.txm683.heartbreaker.input.InputManager;
+import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.PhysicsController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
-import bham.student.txm683.heartbreaker.utils.InputManager;
 
 public class LevelThread extends Thread {
     private final String TAG = "hb::LevelThread";
@@ -13,6 +14,8 @@ public class LevelThread extends Thread {
     private InputManager inputManager;
     private PhysicsController physicsController;
 
+    private MessageBus messageBus;
+
     private boolean running;
 
     private FPSMonitor gameFPSMonitor;
@@ -21,15 +24,9 @@ public class LevelThread extends Thread {
     public LevelThread(LevelView levelView){
         super();
 
+        this.messageBus = new MessageBus();
+
         this.levelView = levelView;
-
-        this.levelState = new LevelState();
-        this.levelView.setLevelState(levelState);
-
-        this.inputManager = new InputManager();
-        this.levelView.setInputManager(inputManager);
-
-        physicsController = new PhysicsController(levelState);
 
         gameFPSMonitor = new FPSMonitor();
         renderFPSMonitor = new FPSMonitor();
@@ -37,6 +34,9 @@ public class LevelThread extends Thread {
 
     @Override
     public void run(){
+
+        //initialise systems
+        physicsController = new PhysicsController(levelState);
 
         int gameTicksPerSecond = 25;
         int gameTickTimeStepInMillis = 1000 / gameTicksPerSecond;
@@ -54,19 +54,34 @@ public class LevelThread extends Thread {
             currentGameTick = System.currentTimeMillis();
             while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick){
 
+                levelState.getPlayer().setMovementUnitVector(inputManager.getThumbstick().getMovementVector().getUnitVector());
+
                 physicsController.update(gameTickTimeStepInMillis/1000f);
+
                 gameFPSMonitor.updateFPS();
 
                 nextScheduledGameTick += gameTickTimeStepInMillis;
                 loops++;
             }
 
-            levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay());
+            float timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick)/1000f;
+
+            //Log.d(TAG, "LGT: " + currentGameTick + ", timeSinceLGT: " + timeSinceLastGameTick + ", nextGT: " + nextScheduledGameTick);
+
+            levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), timeSinceLastGameTick);
 
         }
     }
 
     public void setRunning(boolean isRunning){
         this.running = isRunning;
+    }
+
+    public void setInputManager(InputManager inputManager) {
+        this.inputManager = inputManager;
+    }
+
+    public void setLevelState(LevelState levelState) {
+        this.levelState = levelState;
     }
 }

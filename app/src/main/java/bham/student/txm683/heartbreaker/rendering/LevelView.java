@@ -10,18 +10,22 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.LevelThread;
-import bham.student.txm683.heartbreaker.utils.InputManager;
+import bham.student.txm683.heartbreaker.input.InputManager;
+import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
-    private static final String TAG = "hb::LevelRenderer";
+    private static final String TAG = "hb::LevelView";
 
     private LevelThread levelThread;
     private LevelState levelState;
     private InputManager inputManager;
 
     private Paint textPaint;
+
+    private int viewWidth;
+    private int viewHeight;
 
     public LevelView(Context context){
         super(context);
@@ -35,18 +39,37 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        Log.d(TAG, "onSizeChanged");
+        this.viewWidth = w;
+        this.viewHeight = h;
+        super.onSizeChanged(w, h, oldw, oldh);
+    }
+
+    @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        Log.d(TAG, "surfaceCreated");
+
+        float thumbstickMaxRadius = 150f;
+
+        this.inputManager = new InputManager(new Thumbstick(new Vector(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), 50, thumbstickMaxRadius));
+        this.levelThread.setInputManager(inputManager);
+
+        this.levelState = new LevelState();
+        this.levelThread.setLevelState(levelState);
+
         levelThread.setRunning(true);
         levelThread.start();
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+        Log.d(TAG, "surfaceChanged");
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.d(TAG, "surfaceDestroyed");
         boolean retry = true;
 
         while(retry){
@@ -66,20 +89,16 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         return inputManager.onTouchEvent(event);
     }
 
-    public void draw(int renderfps, int gametickfps){
+    public void draw(int renderfps, int gametickfps, float timeSinceLastGameTick){
         Canvas canvas = getHolder().lockCanvas();
 
         if (canvas != null){
             super.draw(canvas);
 
             canvas.drawRGB(255,255,255);
-            levelState.getEntity().draw(canvas);
+            levelState.getPlayer().draw(canvas, timeSinceLastGameTick);
 
-            Vector coordinatesPressed = inputManager.getLastPress();
-
-            if (coordinatesPressed != null){
-                canvas.drawCircle(coordinatesPressed.getX(), coordinatesPressed.getY(), 100, textPaint);
-            }
+            inputManager.getThumbstick().draw(canvas);
 
             canvas.drawText("RenderFPS: " + renderfps + ". GameTickFPS: " + gametickfps, 50, 50, textPaint);
         }
@@ -91,13 +110,5 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     private void initPaintForText(){
         this.textPaint = new Paint(Color.BLACK);
         this.textPaint.setTextSize(48f);
-    }
-
-    public void setLevelState(LevelState levelState){
-        this.levelState = levelState;
-    }
-
-    public void setInputManager(InputManager inputManager){
-        this.inputManager = inputManager;
     }
 }
