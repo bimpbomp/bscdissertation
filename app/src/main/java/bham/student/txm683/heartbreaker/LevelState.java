@@ -18,6 +18,10 @@ public class LevelState {
         screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 
+    public LevelState(String saveString){
+
+    }
+
     public void setScreenDimensions(int screenWidth, int screenHeight){
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
@@ -33,5 +37,13 @@ public class LevelState {
 
     public int getScreenHeight() {
         return screenHeight;
+    }
+
+    //TODO implement save state feature
+    public String getSaveString(){
+
+        String saveString = "";
+
+        return saveString;
     }
 }

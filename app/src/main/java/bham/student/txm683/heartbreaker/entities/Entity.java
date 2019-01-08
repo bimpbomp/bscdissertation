@@ -37,6 +37,10 @@ public class Entity {
         color.setStrokeWidth(10);
     }
 
+    public Entity(String saveString){
+
+    }
+
     public void draw(Canvas canvas, float timeSinceLastGameTick){
         Vector interPolatedPosition = interpolatedPosition(timeSinceLastGameTick);
         //Vector interPolatedPosition = position;
@@ -59,6 +63,9 @@ public class Entity {
     }
 
     public Vector getNextPosition(float timeSinceLastGameTick){
+        if (Float.compare(timeSinceLastGameTick, 0f) == 0){
+            return position;
+        }
         return Vector.vAdd(position, Vector.sMult(movementUnitVector, timeSinceLastGameTick*movementMaxSpeed));
     }
 
@@ -74,4 +81,7 @@ public class Entity {
         this.movementMaxSpeed = movementMaxSpeed;
     }
 
+    public String getSaveString(){
+        return "";
+    }
 }

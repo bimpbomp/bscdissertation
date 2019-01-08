@@ -111,4 +111,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.textPaint = new Paint(Color.BLACK);
         this.textPaint.setTextSize(48f);
     }
+
+    public void setPaused(boolean isPaused){
+        this.levelThread.setPaused(isPaused);
+    }
+
+    public void setRunning(boolean running){
+        this.levelThread.setRunning(running);
+    }
 }

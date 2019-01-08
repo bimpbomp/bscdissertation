@@ -5,6 +5,7 @@ import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.PhysicsController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class LevelThread extends Thread {
     private final String TAG = "hb::LevelThread";
@@ -17,6 +18,7 @@ public class LevelThread extends Thread {
     private MessageBus messageBus;
 
     private boolean running;
+    private boolean isPaused;
 
     private FPSMonitor gameFPSMonitor;
     private FPSMonitor renderFPSMonitor;
@@ -52,23 +54,31 @@ public class LevelThread extends Thread {
             loops = 0;
 
             currentGameTick = System.currentTimeMillis();
-            while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick){
 
-                levelState.getPlayer().setMovementUnitVector(inputManager.getThumbstick().getMovementVector().getUnitVector());
+            //used for interpolation. set to 0 so if the game is paused, the positions will not be changed from in levelstate.
+            float timeSinceLastGameTick = 0f;
 
-                physicsController.update(gameTickTimeStepInMillis/1000f);
+            if (!isPaused) {
+                while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick) {
 
-                gameFPSMonitor.updateFPS();
+                    levelState.getPlayer().setMovementUnitVector(inputManager.getThumbstick().getMovementVector().getUnitVector());
 
-                nextScheduledGameTick += gameTickTimeStepInMillis;
-                loops++;
+                    physicsController.update(gameTickTimeStepInMillis / 1000f);
+
+                    gameFPSMonitor.updateFPS();
+
+                    nextScheduledGameTick += gameTickTimeStepInMillis;
+                    loops++;
+                }
             }
 
-            float timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick)/1000f;
+            if (!isPaused) {
+                timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick)/1000f;
 
-            //Log.d(TAG, "LGT: " + currentGameTick + ", timeSinceLGT: " + timeSinceLastGameTick + ", nextGT: " + nextScheduledGameTick);
+                //Log.d(TAG, "LGT: " + currentGameTick + ", timeSinceLGT: " + timeSinceLastGameTick + ", nextGT: " + nextScheduledGameTick);
 
-            levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), timeSinceLastGameTick);
+                levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), timeSinceLastGameTick);
+            }
 
         }
     }
@@ -83,5 +93,16 @@ public class LevelThread extends Thread {
 
     public void setLevelState(LevelState levelState) {
         this.levelState = levelState;
+    }
+
+    public void setPaused(boolean isPaused){
+        this.isPaused = isPaused;
+    }
+
+    //TODO implement state save feature
+    public String getJSONString(){
+        ObjectMapper mapper = new ObjectMapper();
+
+        return "";
     }
 }
