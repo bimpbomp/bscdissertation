@@ -10,8 +10,12 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.LevelThread;
+import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
+import bham.student.txm683.heartbreaker.physics.Grid;
+import bham.student.txm683.heartbreaker.utils.UniqueID;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
@@ -26,6 +30,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private int viewWidth;
     private int viewHeight;
+
+    private Grid grid;
 
     public LevelView(Context context){
         super(context);
@@ -55,7 +61,24 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.inputManager = new InputManager(new Thumbstick(new Vector(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), 50, thumbstickMaxRadius));
         this.levelThread.setInputManager(inputManager);
 
+        UniqueID uniqueID = new UniqueID();
+
         this.levelState = new LevelState();
+        this.levelState.setScreenDimensions(viewWidth, viewHeight);
+        this.levelState.getMap().loadMap(viewWidth, viewHeight);
+
+        this.levelState.setPlayer(new Player("player", new Vector(100,100)));
+        this.levelState.getPlayer().setID(uniqueID.id());
+
+        for (int i = 0; i < 5; i++){
+            for (int j = 0; j < 5; j++) {
+                Entity entity = new Entity("NPE-" + (i+1) + (j+1), new Vector(300+200*i,300+200*j), Color.BLUE);
+                entity.setColor(Color.BLUE);
+                entity.setID(uniqueID.id());
+                this.levelState.addNonPlayerEntity(entity);
+            }
+        }
+
         this.levelThread.setLevelState(levelState);
 
         levelThread.setRunning(true);
@@ -96,7 +119,24 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             super.draw(canvas);
 
             canvas.drawRGB(255,255,255);
+
+            if (grid != null) {
+
+                for (int i = 0; i < viewWidth; i += grid.getCellSize()) {
+                    //Log.d(TAG, i + ", " + 0 + ", " + i + ", " + viewHeight);
+                    canvas.drawLine(i, 0, i, viewHeight, textPaint);
+                }
+
+                for (int i = grid.getCellSize(); i < viewHeight; i += grid.getCellSize()) {
+                    canvas.drawLine(0, i, viewWidth, i, textPaint);
+                }
+            }
+
             levelState.getPlayer().draw(canvas, timeSinceLastGameTick);
+
+            for (Entity entity : levelState.getNonPlayerEntities()){
+                entity.draw(canvas, 0);
+            }
 
             inputManager.getThumbstick().draw(canvas);
 
@@ -109,6 +149,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     //creates a black paint object for use with any text on screen.
     private void initPaintForText(){
         this.textPaint = new Paint(Color.BLACK);
+        this.textPaint.setStrokeWidth(2f);
         this.textPaint.setTextSize(48f);
     }
 
@@ -118,5 +159,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setRunning(boolean running){
         this.levelThread.setRunning(running);
+    }
+
+    public void setGrid(Grid grid){
+        this.grid = grid;
     }
 }

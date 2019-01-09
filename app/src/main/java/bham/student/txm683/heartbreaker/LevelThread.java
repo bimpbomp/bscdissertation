@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker;
 
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
+import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.PhysicsController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
@@ -14,6 +15,7 @@ public class LevelThread extends Thread {
     private LevelState levelState;
     private InputManager inputManager;
     private PhysicsController physicsController;
+    private CollisionManager collisionManager;
 
     private MessageBus messageBus;
 
@@ -39,6 +41,7 @@ public class LevelThread extends Thread {
 
         //initialise systems
         physicsController = new PhysicsController(levelState);
+        collisionManager = new CollisionManager(levelState);
 
         int gameTicksPerSecond = 25;
         int gameTickTimeStepInMillis = 1000 / gameTicksPerSecond;
@@ -64,6 +67,10 @@ public class LevelThread extends Thread {
                     levelState.getPlayer().setMovementUnitVector(inputManager.getThumbstick().getMovementVector().getUnitVector());
 
                     physicsController.update(gameTickTimeStepInMillis / 1000f);
+
+                    collisionManager.checkCollisions();
+
+                    levelView.setGrid(collisionManager.getBroadPhaseGrid());
 
                     gameFPSMonitor.updateFPS();
 
