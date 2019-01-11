@@ -24,12 +24,17 @@ public class IsoscelesTriangle extends EntityShape {
     }
 
     private void calculateVertices(){
-        topVertex = new Point(geometricCenter.getX(), geometricCenter.getY() - twoThirdsHeight);
 
-        float baseY = geometricCenter.getY() + twoThirdsHeight;
+        if (rotationAngle == 0) {
+            topVertex = new Point(geometricCenter.getX(), geometricCenter.getY() - twoThirdsHeight);
 
-        rightBaseVertex = new Point(geometricCenter.getX() + (width /2), baseY);
-        leftBaseVertex = new Point(geometricCenter.getX() - (width /2), baseY);
+            float baseY = geometricCenter.getY() + twoThirdsHeight;
+
+            rightBaseVertex = new Point(geometricCenter.getX() + (width / 2), baseY);
+            leftBaseVertex = new Point(geometricCenter.getX() - (width / 2), baseY);
+        } else {
+            //TODO: implement rotation. Note: the above baseY calculation won't work when the object has rotated
+        }
     }
 
     @Override
@@ -60,12 +65,6 @@ public class IsoscelesTriangle extends EntityShape {
     @Override
     public Point[] getVertices() {
         return new Point[] {topVertex, rightBaseVertex, leftBaseVertex};
-    }
-
-    //TODO: implement rotation
-    @Override
-    public void rotateByAngle(float angleToRotateBy) {
-
     }
 
     @Override

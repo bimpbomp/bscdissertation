@@ -9,7 +9,7 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 public abstract class EntityShape {
 
     Point geometricCenter;
-    float rotationAngle;
+    int rotationAngle;
     float height;
     float width;
 
@@ -23,7 +23,7 @@ public abstract class EntityShape {
     public EntityShape(Point geometricCenter, float width, float height, int colorValue){
         this.geometricCenter = geometricCenter;
 
-        this.rotationAngle = 0f;
+        this.rotationAngle = 0;
         this.height = height;
         this.width = width;
 
@@ -43,8 +43,6 @@ public abstract class EntityShape {
 
     public abstract void draw(Canvas canvas, Vector interpolationVector);
 
-    public abstract void rotateByAngle(float angleToRotateBy);
-
     public abstract void setHeight(float newHeight);
 
     public abstract void setWidth(float newWidth);
@@ -54,6 +52,19 @@ public abstract class EntityShape {
     @Override
     @NonNull
     public abstract String toString();
+
+    public void rotateByAngle(int angle){
+        this.rotationAngle = (this.rotationAngle + angle) % 360;
+
+        if (this.rotationAngle < 0)
+        {
+            this.rotationAngle += 360;
+        }
+    }
+
+    public void setRotationAngle(int angle){
+        this.rotationAngle = angle;
+    }
 
     public Point getCenter(){
         return geometricCenter;
