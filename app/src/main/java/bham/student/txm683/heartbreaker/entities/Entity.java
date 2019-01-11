@@ -3,133 +3,118 @@ package bham.student.txm683.heartbreaker.entities;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Pair;
-import bham.student.txm683.heartbreaker.utils.UniqueID;
+import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
+import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class Entity {
-
     String TAG;
 
     private String name;
-    private int id;
+    private EntityShape shape;
+    private Paint textPaint;
 
-    private Vector position;
-    private Vector velocity;
-    private float movementMaxSpeed;
     private Vector movementUnitVector;
-
-    private int boundingWidth, boundingHeight;
-
-    private Paint currentColor;
-    private Paint textColor;
-    private int defaultColor;
+    private float movementMaxSpeed;
 
     private boolean collided;
 
-    /**
-     * Creates a new Entity.
-     * id is set to {@link bham.student.txm683.heartbreaker.utils.UniqueID#UNASSIGNED UniqueID.UNASSIGNED} until
-     * overwritten by a call to {@link #setID(int) setID}.
-     * @param name Used to easily identify entity
-     * @param spawnCoordinates coordinates to place new Entity specified as the top left corner
-     */
-    public Entity(String name, Vector spawnCoordinates, int entityColor){
+    public Entity(String name, Point spawnCoordinates, ShapeIdentifier shapeIdentifier, int width, int height, float movementMaxSpeed, int colorValue){
         this.name = name;
-        this.id = UniqueID.UNASSIGNED;
-        this.TAG = "hb::Entity:" + name;
+        this.movementMaxSpeed = movementMaxSpeed;
 
-        this.position = spawnCoordinates;
+        switch (shapeIdentifier){
 
-        this.velocity = new Vector();
+            case ISO_TRIANGLE:
+                this.shape = new IsoscelesTriangle(spawnCoordinates, width, height, colorValue);
+                break;
+            case EQU_TRIANGLE:
+                break;
+            case SQUARE:
+                break;
+            case RECT:
+                break;
+        }
 
-        this.movementUnitVector = new Vector();
-        this.movementMaxSpeed = 150f;
+        initTextPaint();
+    }
 
-        this.boundingWidth = 50;
-        this.boundingHeight = 50;
+    public Entity(String name, float movementMaxSpeed, EntityShape shape){
+        this.name = name;
+        this.movementMaxSpeed = movementMaxSpeed;
+        this.shape = shape;
 
-        textColor = new Paint();
-        textColor.setColor(Color.BLACK);
-        textColor.setStrokeWidth(10f);
-        textColor.setTextSize(20f);
+        initTextPaint();
+    }
 
-        this.defaultColor = entityColor;
+    private void initTextPaint(){
 
-        this.currentColor = new Paint();
-        this.currentColor.setColor(entityColor);
-        this.currentColor.setStrokeWidth(10);
+        /*int colorToInvert = shape.getDefaultColor();
+        //credit: https://stackoverflow.com/a/27487587/3478664
+        float[] hsv = new float[3];
+        Color.RGBToHSV(Color.red(colorToInvert), Color.green(colorToInvert),
+                Color.blue(colorToInvert), hsv);
+        hsv[0] = (hsv[0] + 180) % 360;
+        //end of credit*/
 
-        this.collided = false;
+        textPaint = new Paint();
+        //textPaint.setColor(Color.HSVToColor(hsv));
+        textPaint.setColor(Color.GRAY);
+        textPaint.setStrokeWidth(15f);
+        textPaint.setTextSize(28f);
     }
 
     /**
-     * Creates an entity instance from a String for state restoration
-     * @param saveString String containing Entity state information in JSON format
-     */
-    //TODO enable state restoration from savefile
-    private Entity(String saveString){
-
-    }
-
-    //TODO fix stuttering from interpolated position being calculated from last tick's movement vector
-
-    /**
-     * Draws the entity to the given canvas
-     * @param canvas Canvas to draw to.
-     * @param timeSinceLastGameTick time since last game tick in seconds for interpolation of position
-     */
-    public void draw(Canvas canvas, float timeSinceLastGameTick){
-        //Vector interpolatedPosition = getInterpolatedPosition(timeSinceLastGameTick);
-        Vector interpolatedPosition = getCurrentPosition();
+    * Draws the entity to the given canvas
+    * @param canvas Canvas to draw to.
+    * @param secondsSinceLastGameTick time since last game tick in seconds for interpolation of position
+    */
+    public void draw(Canvas canvas, float secondsSinceLastGameTick){
 
         if (collided){
-            currentColor.setColor(Color.LTGRAY);
+            shape.setColor(Color.RED);
             collided = false;
         } else {
-            currentColor.setColor(defaultColor);
+            shape.resetToDefaultColor();
         }
 
-        canvas.drawRect(interpolatedPosition.getX(), interpolatedPosition.getY(), interpolatedPosition.getX()+ boundingWidth, interpolatedPosition.getY()+ boundingHeight, currentColor);
+        Vector interpolationVector = getMovementVector(secondsSinceLastGameTick);
 
-        canvas.drawText(name, interpolatedPosition.getX(), interpolatedPosition.getY(), textColor);
-        //Log.d(TAG, position.toString());
+        shape.draw(canvas, interpolationVector);
 
+        Point interpolatedCenter = shape.getInterpolatedCenter(interpolationVector);
+        canvas.drawText(name, interpolatedCenter.getX(), interpolatedCenter.getY(), textPaint);
     }
 
     /**
-     * Updates the position vector based on time passed and current movement unit vector.
-     * @param timeSinceLastGameTick time since last game tick, in seconds
-     */
-    public void move(float timeSinceLastGameTick){
-        position = getNextPosition(timeSinceLastGameTick);
+    * Updates the position based on time passed and current movement unit vector.
+    * @param secondsSinceLastGameTick time since last game tick, in seconds
+    */
+    public void move(float secondsSinceLastGameTick){
+        shape.setCenter(getNextPosition(secondsSinceLastGameTick));
     }
 
     /**
-     * Returns the interpolated position for rendering between game ticks
-     * This method does NOT update the position with the new value, only returns it.
-     * @param timeSinceLastGameTick time since the last game tick in seconds
-     * @return Interpolated position of entity
-     */
-    public Vector getInterpolatedPosition(float timeSinceLastGameTick){
-        return getNextPosition(timeSinceLastGameTick);
-    }
-
-    /**
-     * Returns the new position vector for this entity based on time passed since last update.
-     * This method does NOT update the position with the new value, only returns it.
-     * @param timeSinceLastGameTick time passed since last game tick in seconds
-     * @return New position vector = oldPositionVector + (maxSpeed*time)*movementVector
-     */
-    private Vector getNextPosition(float timeSinceLastGameTick){
-        if (Float.compare(timeSinceLastGameTick, 0f) == 0){
-            return position;
+    * Returns the new position for this entity based on time passed since last update.
+    * This method does NOT update the position with the new value, only returns it.
+    * @param secondsSinceLastGameTick time passed since last game tick in seconds
+    * @return New position = oldPosition + (maxSpeed*time)*movementUnitVector
+    */
+    private Point getNextPosition(float secondsSinceLastGameTick){
+        if (Float.compare(secondsSinceLastGameTick, 0f) == 0){
+            return shape.getCenter();
         }
-        return Vector.vAdd(position, Vector.sMult(movementUnitVector, timeSinceLastGameTick*movementMaxSpeed));
+        return shape.getCenter().addVector(getMovementVector(secondsSinceLastGameTick));
     }
 
-    public Vector getCurrentPosition(){
-        return this.position;
+    private Vector getMovementVector(float secondsSinceLastGameTick){
+        return Vector.sMult(movementUnitVector, secondsSinceLastGameTick*movementMaxSpeed);
+    }
+
+    public Point getCurrentPosition(){
+        return this.shape.getCenter();
     }
 
     public String getName(){
@@ -144,42 +129,13 @@ public class Entity {
         this.movementMaxSpeed = movementMaxSpeed;
     }
 
-    public int getID(){
-        return this.id;
-    }
-
     /**
-     * Sets the id property of entity to the given value
-     * @param id The new id, must be unique. Assure this by passing a {@link UniqueID#id() UniqueID.id} call.
-     */
-    public void setID(int id){
-        this.id = id;
-    }
-
-    /**
-     * Generates a String in JSON for saving state
-     * @return String in JSON format
-     */
+    * Generates a String in JSON for saving state
+    * @return String in JSON format
+    */
     public String getSaveString(){
         //TODO implement state saving to file
         return "";
-    }
-
-    public Pair<Integer, Integer> getBoundingDimensions(){
-        return new Pair<>(boundingWidth, boundingHeight);
-    }
-
-    public void setColor(int color){
-        this.currentColor.setColor(color);
-    }
-
-    public void setBoundingDimensions(int bW, int bH){
-        this.boundingWidth = bW;
-        this.boundingHeight = bH;
-    }
-
-    public void resetToDefaultColor(){
-        currentColor.setColor(defaultColor);
     }
 
     public boolean isCollided() {
@@ -190,7 +146,7 @@ public class Entity {
         this.collided = collided;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public EntityShape getShape(){
+        return this.shape;
     }
 }

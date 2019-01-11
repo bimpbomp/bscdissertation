@@ -12,9 +12,11 @@ import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.LevelThread;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.Player;
+import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.physics.Grid;
+import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -67,14 +69,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.levelState.setScreenDimensions(viewWidth, viewHeight);
         this.levelState.getMap().loadMap(viewWidth, viewHeight);
 
-        this.levelState.setPlayer(new Player("player", new Vector(100,100)));
-        this.levelState.getPlayer().setID(uniqueID.id());
+        this.levelState.setPlayer(new Player("player", new Point(100,100)));
 
         for (int i = 0; i < 5; i++){
             for (int j = 0; j < 5; j++) {
-                Entity entity = new Entity("NPE-" + (i+1) + (j+1), new Vector(300+200*i,300+200*j), Color.BLUE);
-                entity.setColor(Color.BLUE);
-                entity.setID(uniqueID.id());
+                IsoscelesTriangle shape = new IsoscelesTriangle(new Point(300+200*i,300+200*j), 50, 50, Color.BLUE);
+                Entity entity = new Entity("NPE-" + uniqueID.id(), 150f, shape);
                 this.levelState.addNonPlayerEntity(entity);
             }
         }
@@ -132,7 +132,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
 
-            levelState.getPlayer().draw(canvas, timeSinceLastGameTick);
+            levelState.getPlayer().draw(canvas, 0);
 
             for (Entity entity : levelState.getNonPlayerEntities()){
                 entity.draw(canvas, 0);
@@ -148,7 +148,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     //creates a black paint object for use with any text on screen.
     private void initPaintForText(){
-        this.textPaint = new Paint(Color.BLACK);
+        this.textPaint = new Paint();
+        this.textPaint.setColor(Color.BLACK);
         this.textPaint.setStrokeWidth(2f);
         this.textPaint.setTextSize(48f);
     }

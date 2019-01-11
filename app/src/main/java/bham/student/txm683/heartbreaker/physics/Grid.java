@@ -2,7 +2,7 @@ package bham.student.txm683.heartbreaker.physics;
 
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.entities.Entity;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.utils.Point;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,13 +14,13 @@ public class Grid {
 
     private TreeMap<Integer, TreeMap<Integer, ArrayList<Entity>>> grid;
 
-    private Vector gridMinimum;
+    private Point gridMinimum;
 
     private Pair<Integer, Integer> gridDimensionsInCells;
 
     private int cellSize;
 
-    public Grid(Vector gridMinimum, Vector gridMaximum, int cellSize) {
+    public Grid(Point gridMinimum, Point gridMaximum, int cellSize) {
         this.gridMinimum = gridMinimum;
 
         this.cellSize = cellSize;
@@ -38,18 +38,13 @@ public class Grid {
         //Initial method: add entity to the cell that each of it's AABB vertices exist in.
         //Doesn't consider AABBs that span more than two cells.
 
-        Pair<Integer, Integer> boundingDimensions = entity.getBoundingDimensions();
-        Vector position = entity.getCurrentPosition();
 
-        //vertices = {tl, tr, bl, br}
-        Vector[] vertices = new Vector[4];
-        vertices[0] = position;
-        vertices[1] = position.vAdd(new Vector(boundingDimensions.first,0));
-        vertices[2] = position.vAdd(new Vector(0, boundingDimensions.second));
-        vertices[3] = position.vAdd(new Vector(boundingDimensions.first, boundingDimensions.second));
+        Point position = entity.getCurrentPosition();
+
+        Point[] vertices = entity.getShape().getVertices();
 
         Set<Pair<Integer, Integer>> addedGridReferences = new HashSet<>();
-        for (Vector point : vertices){
+        for (Point point : vertices){
             Pair<Integer, Integer> pointGridReference = mapPointToGridPosition(point);
 
             addedGridReferences.add(pointGridReference);
@@ -62,7 +57,7 @@ public class Grid {
         }
     }
 
-    public Pair<Integer, Integer> mapPointToGridPosition(Vector point){
+    private Pair<Integer, Integer> mapPointToGridPosition(Point point){
         // Math.floor( (position - gridMinimum) / gridCellSize )
 
         int column = (int) Math.floor((point.getX() - gridMinimum.getX()) / cellSize);

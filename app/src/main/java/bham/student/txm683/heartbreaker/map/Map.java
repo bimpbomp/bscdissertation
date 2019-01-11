@@ -1,6 +1,6 @@
 package bham.student.txm683.heartbreaker.map;
 
-import bham.student.txm683.heartbreaker.utils.Vector;
+import android.util.Pair;
 
 public class Map {
 
@@ -31,7 +31,7 @@ public class Map {
         this.height = height;
     }
 
-    public Vector getDimensionVector(){
-        return new Vector(width, height);
+    public Pair<Integer, Integer> getDimensions(){
+        return new Pair<>(width, height);
     }
 }

@@ -1,47 +1,41 @@
 package bham.student.txm683.heartbreaker.utils;
 
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 public class Vector {
-    private float x,y;
+
+    private final Point tail;
+    private final Point head;
+
+    private final float x;
+    private final float y;
 
     public Vector(){
-        this.x = 0;
-        this.y = 0;
+        tail = new Point();
+        head = new Point();
+
+        x = 0f;
+        y = 0f;
     }
 
-    public Vector(float x, float y){
-        this.x = x;
-        this.y = y;
+    public Vector(float headX, float headY){
+        tail = new Point();
+        head = new Point(headX, headY);
+
+        x = headX;
+        y = headY;
     }
 
-    public float getX(){
-        return x;
+    public Vector(Point head){
+        this(head.getX(), head.getY());
     }
 
-    public float getY(){
-        return y;
-    }
+    public Vector(Point tail, Point head){
+        this.tail = tail;
+        this.head = head;
 
-    public void setX(float x) {
-        this.x = x;
-    }
-
-    public void setY(float y) {
-        this.y = y;
-    }
-
-    public Vector getUnitVector(){
-        float length = this.getLength();
-        Vector unitVector;
-
-        if (length != 0f){
-            unitVector = new Vector(x/length, y/length);
-        } else {
-            unitVector = new Vector();
-        }
-
-        return unitVector;
+        x = head.getX() - tail.getX();
+        y = head.getY() - tail.getY();
     }
 
     public float getLength(){
@@ -55,15 +49,18 @@ public class Vector {
         }
     }
 
-    public boolean equals(Vector vector) {
-        float delta = 0.0001f;
+    public Vector getUnitVector(){
 
-        return (Math.abs(vector.x-x)<delta) && (Math.abs(vector.y-y)<delta);
-    }
+        float length = this.getLength();
+        Vector unitVector;
 
-    @NonNull
-    public String toString(){
-        return "[" + x + "," + y + "]";
+        if (length != 0f){
+            unitVector = new Vector(x/length, y/length);
+        } else {
+            unitVector = new Vector();
+        }
+
+        return unitVector;
     }
 
     public Vector vAdd(Vector vector){
@@ -80,6 +77,37 @@ public class Vector {
 
     public Vector directionTo(Vector vector){
         return vAdd(sMult(this, -1), vector);
+    }
+
+    public float dot(Vector vector){
+        return x*vector.x + y*vector.y;
+    }
+
+    public boolean isFromOrigin(){
+        return head.equals(new Point());
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == this){
+            return true;
+        }
+
+        if (!(obj instanceof Vector)){
+            return false;
+        }
+
+        Vector v = (Vector) obj;
+
+        return (v.tail.equals(tail)) && (v.head.equals(head));
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
     }
 
     public static Vector vAdd(Vector vector1, Vector vector2){

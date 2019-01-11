@@ -1,9 +1,8 @@
 package bham.student.txm683.heartbreaker.physics;
 
-import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.utils.Point;
 
 import java.util.ArrayList;
 
@@ -25,7 +24,13 @@ public class CollisionManager {
     }
 
     public void checkCollisions(){
-        broadPhaseGrid = new Grid(new Vector(0,0), levelState.getMap().getDimensionVector(), 70);
+        ArrayList<ArrayList<Entity>> bins = applySpatialPartitioning();
+        applySeparatingAxisTheorem(bins);
+    }
+
+    private ArrayList<ArrayList<Entity>> applySpatialPartitioning(){
+        Point gridMaximum = new Point(levelState.getMap().getDimensions().first, levelState.getMap().getDimensions().second);
+        broadPhaseGrid = new Grid(new Point(), gridMaximum, 70);
 
         broadPhaseGrid.addEntityToGrid(levelState.getPlayer());
         //Log.d(TAG, levelState.getPlayer().getName() + " added to grid");
@@ -35,22 +40,36 @@ public class CollisionManager {
             //Log.d(TAG, entity.getName() + " added to grid");
         }
 
+        //each element will be a bin from a grid reference with more than one entity in
+        ArrayList<ArrayList<Entity>> bins = new ArrayList<>();
+
         for (Integer column : broadPhaseGrid.getColumnKeySet()){
             for (Integer row : broadPhaseGrid.getRowKeySet(column)){
                 ArrayList<Entity> bin = broadPhaseGrid.getBin(column, row);
 
                 if (bin.size() > 1){
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Collided: ");
+                    //used to log objects in same grid cell
+                    //StringBuilder sb = new StringBuilder();
+                    //sb.append("Collided: ");
 
                     for (Entity entity : bin){
-                        sb.append(entity.getName());
-                        sb.append(", ");
+                        //sb.append(entity.getName());
+                        //sb.append(", ");
                         entity.setCollided(true);
                     }
-                    Log.d(TAG, sb.toString());
+                    //Log.d(TAG, sb.toString());
+                    bins.add(bin);
                 }
             }
+        }
+        return bins;
+    }
+
+    private void applySeparatingAxisTheorem(ArrayList<ArrayList<Entity>> bins){
+
+        for (ArrayList<Entity> bin : bins){
+
+
         }
     }
 

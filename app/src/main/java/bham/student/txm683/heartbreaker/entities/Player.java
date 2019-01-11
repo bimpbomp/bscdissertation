@@ -1,12 +1,13 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Color;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
+import bham.student.txm683.heartbreaker.utils.Point;
 
 public class Player extends Entity {
 
-    public Player(String name, Vector spawnCoordinates){
-        super(name, spawnCoordinates, Color.BLACK);
+    public Player(String name, Point spawnCoordinates){
+        super(name, 150f, new IsoscelesTriangle(spawnCoordinates, 50, 50, Color.BLACK));
         this.TAG = "hb::Player:"+ name;
     }
 }
