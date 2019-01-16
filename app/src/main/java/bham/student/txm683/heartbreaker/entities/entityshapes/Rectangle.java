@@ -5,6 +5,8 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class Rectangle extends EntityShape {
 
+    private float angleBetweenUpandPrimaryVectors;
+
     public Rectangle(Point geometricCenter, float width, float height, int colorValue){
         super(geometricCenter, width, height, colorValue);
         init();
@@ -21,14 +23,15 @@ public class Rectangle extends EntityShape {
         vertexVectors[2] = new Vector(geometricCenter, new Point(geometricCenter.getX()+halfWidth, geometricCenter.getY() - halfHeight));
         vertexVectors[3] = new Vector(geometricCenter, new Point(geometricCenter.getX()-halfWidth, geometricCenter.getY() - halfHeight));
 
-        setRelativeUpUnitVector();
+        this.relativeUpUnitVector = new Vector(geometricCenter, new Point(geometricCenter.getX(), geometricCenter.getY()+1));
+
+        this.angleBetweenUpandPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.relativeUpUnitVector);
     }
 
     @Override
     public void setRelativeUpUnitVector() {
-        float cosandsin45 = 0.7071f;
 
-        this.relativeUpUnitVector = rotateVertexVector(vertexVectors[0], cosandsin45, cosandsin45);
+        this.relativeUpUnitVector = rotateVertexVector(vertexVectors[0], (float) Math.cos(angleBetweenUpandPrimaryVectors), (float) Math.sin(angleBetweenUpandPrimaryVectors));
     }
 
     @Override

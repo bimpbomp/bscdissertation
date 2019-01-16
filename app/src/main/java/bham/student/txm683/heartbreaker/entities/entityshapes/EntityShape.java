@@ -141,7 +141,7 @@ public abstract class EntityShape {
         }
     }
 
-    private float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
+    float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
         float dot = primaryVector.dot(movementVector);
         float det = primaryVector.det(movementVector);
 
