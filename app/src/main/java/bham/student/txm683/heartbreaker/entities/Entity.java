@@ -16,7 +16,7 @@ public class Entity {
     private EntityShape shape;
     private Paint textPaint;
 
-    private Vector movementUnitVector;
+    private Vector inputtedMovementVector;
     private float movementMaxSpeed;
 
     private boolean collided;
@@ -50,17 +50,7 @@ public class Entity {
     }
 
     private void initTextPaint(){
-
-        /*int colorToInvert = shape.getDefaultColor();
-        //credit: https://stackoverflow.com/a/27487587/3478664
-        float[] hsv = new float[3];
-        Color.RGBToHSV(Color.red(colorToInvert), Color.green(colorToInvert),
-                Color.blue(colorToInvert), hsv);
-        hsv[0] = (hsv[0] + 180) % 360;
-        //end of credit*/
-
         textPaint = new Paint();
-        //textPaint.setColor(Color.HSVToColor(hsv));
         textPaint.setColor(Color.GRAY);
         textPaint.setStrokeWidth(15f);
         textPaint.setTextSize(28f);
@@ -80,7 +70,7 @@ public class Entity {
             shape.resetToDefaultColor();
         }
 
-        Vector interpolationVector = getMovementVector(secondsSinceLastGameTick);
+        Vector interpolationVector = calculateMovementVector(secondsSinceLastGameTick);
 
         shape.draw(canvas, interpolationVector);
 
@@ -89,28 +79,37 @@ public class Entity {
     }
 
     /**
-    * Updates the position based on time passed and current movement unit vector.
+    * Updates the shape position and rotation based on time passed and current movement vector.
     * @param secondsSinceLastGameTick time since last game tick, in seconds
     */
     public void move(float secondsSinceLastGameTick){
-        shape.setCenter(getNextPosition(secondsSinceLastGameTick));
+        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
+
+        if (!movementVector.equals(new Vector()))
+            shape.move(movementVector);
     }
 
     /**
     * Returns the new position for this entity based on time passed since last update.
     * This method does NOT update the position with the new value, only returns it.
     * @param secondsSinceLastGameTick time passed since last game tick in seconds
-    * @return New position = oldPosition + (maxSpeed*time)*movementUnitVector
+    * @return New position = oldPosition + (maxSpeed*time)*inputtedMovementVector
     */
     private Point getNextPosition(float secondsSinceLastGameTick){
         if (Float.compare(secondsSinceLastGameTick, 0f) == 0){
             return shape.getCenter();
         }
-        return shape.getCenter().addVector(getMovementVector(secondsSinceLastGameTick));
+        return shape.getCenter().addVector(calculateMovementVector(secondsSinceLastGameTick));
     }
 
-    private Vector getMovementVector(float secondsSinceLastGameTick){
-        return Vector.sMult(movementUnitVector, secondsSinceLastGameTick*movementMaxSpeed);
+    /**
+     * Calculates the movement vector by multipling the inputtedVector by maxSpeed
+     * @param secondsSinceLastGameTick seconds since last game tick
+     * @return complete movement vector
+     */
+    private Vector calculateMovementVector(float secondsSinceLastGameTick){
+        //Log.d(TAG, "calculate movement vector: " + inputtedMovementVector.sMult(secondsSinceLastGameTick*movementMaxSpeed));
+        return inputtedMovementVector != null ? inputtedMovementVector.sMult(secondsSinceLastGameTick*movementMaxSpeed) : new Vector();
     }
 
     public Point getCurrentPosition(){
@@ -121,8 +120,9 @@ public class Entity {
         return this.name;
     }
 
-    public void setMovementUnitVector(Vector movementUnitVector){
-        this.movementUnitVector = movementUnitVector;
+    public void setMovementVector(Vector movementVector){
+        //Log.d(TAG, "set movement vector: "+movementVector.toString());
+        this.inputtedMovementVector = movementVector;
     }
 
     public void setMovementMaxSpeed(float movementMaxSpeed){

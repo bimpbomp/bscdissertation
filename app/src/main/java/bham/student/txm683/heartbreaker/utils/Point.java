@@ -24,7 +24,11 @@ public class Point {
     }
 
     public Point addVector(Vector v){
-        return new Point(x + v.getX(), y + v.getY());
+        return new Point(x + v.getXRelativeToTail(), y + v.getYRelativeToTail());
+    }
+
+    public Point smult(float scalar){
+        return new Point(x*scalar, y*scalar);
     }
 
     public float getX() {

@@ -1,7 +1,7 @@
 package bham.student.txm683.heartbreaker.input;
 
 import android.view.MotionEvent;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.utils.Point;
 
 public class InputManager {
     private static final String TAG = "hb::InputManager";
@@ -15,7 +15,7 @@ public class InputManager {
     public boolean onTouchEvent(MotionEvent event){
         boolean eventHandled = true;
 
-        Vector coordinatesPressed = new Vector(event.getX(), event.getY());
+        Point coordinatesPressed = new Point(event.getX(), event.getY());
 
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:

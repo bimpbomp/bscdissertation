@@ -26,6 +26,10 @@ public class VectorTest {
     private Vector f = new Vector(FX, FY);
     private Vector g = new Vector(GX, GY);
 
+    private Vector h = new Vector(new Point(1,2), new Point(2,3));
+    private Vector i = new Vector(new Point(3,1), new Point(2,2));
+    private Vector hAddi = new Vector(new Point(1,2), new Point(1,4));
+
     @Before
     public void setUp() throws Exception {
         a = new Vector();
@@ -76,47 +80,11 @@ public class VectorTest {
     }
 
     @Test
-    public void staticvAdd() {
-        Vector bc = Vector.vAdd(b,c);
-        Vector cb = Vector.vAdd(c,b);
-
-        assertEquals(bc.toString(),cb.toString());
-
-        Vector ab = Vector.vAdd(a,b);
-
-        assertEquals(b.toString(), ab.toString());
-    }
-
-    @Test
-    public void staticsMult() {
-        float scalarA = 123.123456789f;
-        float scalarB = -234.234f;
-        float scalarC = 0f;
-        int scalarD = 4;
-
-        assertTrue(a.equals(Vector.sMult(b,scalarC)));
-
-        assertTrue(new Vector(-1*scalarA, scalarA).equals(Vector.sMult(b,scalarA)));
-
-        assertTrue(new Vector(4,4).equals(Vector.sMult(d,scalarD)));
-
-        assertTrue(new Vector(FX*scalarB, FY*scalarB).equals(Vector.sMult(f,scalarB)));
-    }
-
-    @Test
     public void equals() {
         assertFalse(a.equals(b));
         assertFalse(b.equals(c));
         assertTrue(a.equals(new Vector()));
         assertFalse(f.equals(g));
-    }
-
-    @Test
-    public void fromAtoB() {
-        assertTrue(Vector.fromAtoB(b,d).equals(new Vector(2f,0)));
-        assertTrue(Vector.fromAtoB(f,g).equals(new Vector(g.getX()-f.getX(), g.getY()-f.getY())));
-
-        assertTrue(Vector.fromAtoB(f,g).equals(Vector.sMult(Vector.fromAtoB(g,f), -1)));
     }
 
     @Test
@@ -129,6 +97,9 @@ public class VectorTest {
         Vector ab = a.vAdd(b);
 
         assertTrue(b.equals(ab));
+
+
+        assertEquals(hAddi, h.vAdd(i));
     }
 
     @Test
@@ -150,9 +121,7 @@ public class VectorTest {
     @Test
     public void directionTo() {
         assertTrue(b.directionTo(d).equals(new Vector(2f,0)));
-        assertTrue(f.directionTo(g).equals(new Vector(g.getX()-f.getX(), g.getY()-f.getY())));
-        assertTrue(f.directionTo(g).equals(Vector.sMult(g.directionTo(f), -1)));
-
-        assertTrue(f.directionTo(g).equals(Vector.sMult(Vector.fromAtoB(g,f), -1)));
+        assertTrue(f.directionTo(g).equals(new Vector(g.getXRelativeToTail()-f.getXRelativeToTail(), g.getYRelativeToTail()-f.getYRelativeToTail())));
+        assertTrue(f.directionTo(g).equals(g.directionTo(f).sMult(-1)));
     }
 }

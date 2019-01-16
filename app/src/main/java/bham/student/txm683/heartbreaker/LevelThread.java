@@ -52,6 +52,8 @@ public class LevelThread extends Thread {
 
         int loops;
 
+        boolean readyToRender = false;
+
         while (running){
 
             loops = 0;
@@ -64,27 +66,37 @@ public class LevelThread extends Thread {
             if (!isPaused) {
                 while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick) {
 
-                    levelState.getPlayer().setMovementUnitVector(inputManager.getThumbstick().getMovementVector().getUnitVector());
+                    //Log.d(TAG, "GAMETICK");
+
+                    levelState.getPlayer().setMovementVector(inputManager.getThumbstick().getMovementVector());
+
+                    //Log.d(TAG, "movement vector set");
 
                     physicsController.update(gameTickTimeStepInMillis / 1000f);
 
+                    //Log.d(TAG, "player updated");
                     collisionManager.checkCollisions();
 
+                    //Log.d(TAG, "collisions checked");
                     levelView.setGrid(collisionManager.getBroadPhaseGrid());
 
                     gameFPSMonitor.updateFPS();
 
                     nextScheduledGameTick += gameTickTimeStepInMillis;
                     loops++;
+
+                    readyToRender = true;
                 }
             }
 
-            if (!isPaused) {
+            if (!isPaused && readyToRender) {
                 timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick)/1000f;
 
                 //Log.d(TAG, "LGT: " + currentGameTick + ", timeSinceLGT: " + timeSinceLastGameTick + ", nextGT: " + nextScheduledGameTick);
 
+                //Log.d(TAG, "RENDERTICK");
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), timeSinceLastGameTick);
+                //Log.d(TAG, "rendered");
             }
 
         }

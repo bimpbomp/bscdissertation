@@ -3,28 +3,31 @@ package bham.student.txm683.heartbreaker.input;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class Thumbstick {
 
     private final String TAG = "hb:: Thumbstick";
 
-    private Vector neutralPosition;
+    private Point neutralPosition;
     private float neutralCircleRadius;
     private Paint neutralPaint;
 
-    private Vector activePosition;
     private float activeCircleRadius;
     private Paint activePaint;
+
+    private Vector inputVector;
 
     private float maxRadius;
     private Paint maxPaint;
 
     private boolean receivingInput;
 
-    public Thumbstick(Vector neutralPosition, float neutralCircleRadius, float maxRadius){
+    public Thumbstick(Point neutralPosition, float neutralCircleRadius, float maxRadius){
         this.neutralPosition = neutralPosition;
-        activePosition = neutralPosition;
+
+        this.inputVector = new Vector(neutralPosition, neutralPosition);
 
         this.receivingInput = false;
 
@@ -47,53 +50,71 @@ public class Thumbstick {
     public void draw(Canvas canvas){
         canvas.drawCircle(neutralPosition.getX(), neutralPosition.getY(), maxRadius, maxPaint);
         canvas.drawCircle(neutralPosition.getX(), neutralPosition.getY(), neutralCircleRadius, neutralPaint);
-        canvas.drawCircle(activePosition.getX(), activePosition.getY(), activeCircleRadius, activePaint);
+
+        canvas.drawCircle(inputVector.getHead().getX(), inputVector.getHead().getY(), activeCircleRadius, activePaint);
     }
 
     public void returnToNeutral(){
-        this.activePosition = neutralPosition;
+        this.inputVector = new Vector(neutralPosition, neutralPosition);
+
         receivingInput = false;
     }
 
     public Vector getMovementVector(){
-        if (activePosition.equals(neutralPosition)){
+        if (inputVector.getTail().equals(inputVector.getHead())){
             return new Vector();
         } else {
-            return neutralPosition.directionTo(activePosition);
+            return inputVector.sMult(1/maxRadius).translate(neutralPosition.smult(-1f));
         }
     }
 
-    public Vector getNeutralPosition() {
-        return neutralPosition;
-    }
+    public void setActivePosition(Point newActivePosition) {
 
-    public void setNeutralPosition(Vector neutralPosition) {
-        this.neutralPosition = neutralPosition;
-    }
+        if (receivingInput){
+            Vector newInputVector = new Vector(neutralPosition, newActivePosition);
 
-    public Vector getActivePosition() {
-        return activePosition;
-    }
+            float proportionOfLengths = newInputVector.getLength() / maxRadius;
 
-    public void setActivePosition(Vector newActivePosition) {
-
-        if (receivingInput) {
-            Vector neutralToActiveVector = neutralPosition.directionTo(newActivePosition);
-            float movementVectorLength = neutralToActiveVector.getLength();
-
-            if (movementVectorLength > maxRadius) {
-                this.activePosition = neutralToActiveVector.getUnitVector().sMult(maxRadius).vAdd(neutralPosition);
-                //Log.d(TAG, "mV: " + newActivePosition.toString() + ", |mVector|: " + movementVectorLength + ", activePosition: " + this.activePosition.toString() + "|aP|: " + this.activePosition.getLength());
-            } else
-                this.activePosition = newActivePosition;
+            if (Float.compare(proportionOfLengths, 1f) > 0){
+                newInputVector = newInputVector.sMult(1f / proportionOfLengths);
+            }
+            this.inputVector = newInputVector;
         }
     }
 
-    public boolean isInRadius(Vector touchEventPosition){
-        if (neutralPosition.directionTo(touchEventPosition).getLength() <= maxRadius){
+    public boolean isInRadius(Point touchEventPosition){
+        if (new Vector(neutralPosition, touchEventPosition).getLength() <= maxRadius){
             receivingInput = true;
             return true;
         }
         return false;
+    }
+
+    public Point getNeutralPosition() {
+        return neutralPosition;
+    }
+
+    public void setNeutralPosition(Point neutralPosition) {
+        this.neutralPosition = neutralPosition;
+    }
+
+    public float getNeutralCircleRadius() {
+        return neutralCircleRadius;
+    }
+
+    public void setNeutralCircleRadius(float neutralCircleRadius) {
+        this.neutralCircleRadius = neutralCircleRadius;
+    }
+
+    public float getActiveCircleRadius() {
+        return activeCircleRadius;
+    }
+
+    public void setActiveCircleRadius(float activeCircleRadius) {
+        this.activeCircleRadius = activeCircleRadius;
+    }
+
+    public Point getActivePosition() {
+        return this.inputVector.getHead();
     }
 }

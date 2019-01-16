@@ -18,7 +18,6 @@ import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.physics.Grid;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
-import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -34,6 +33,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     private int viewHeight;
 
     private Grid grid;
+
+    //private IsoscelesTriangle triangle;
 
     public LevelView(Context context){
         super(context);
@@ -60,7 +61,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         float thumbstickMaxRadius = 150f;
 
-        this.inputManager = new InputManager(new Thumbstick(new Vector(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), 50, thumbstickMaxRadius));
+        this.inputManager = new InputManager(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), 50, thumbstickMaxRadius));
         this.levelThread.setInputManager(inputManager);
 
         UniqueID uniqueID = new UniqueID();
@@ -83,6 +84,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         levelThread.setRunning(true);
         levelThread.start();
+
+        //triangle = new IsoscelesTriangle(new Point(viewWidth/2f, viewHeight/2f), 150, 200, Color.BLACK);
     }
 
     @Override
@@ -120,6 +123,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             canvas.drawRGB(255,255,255);
 
+            //draw physics broad phase grid (if set)
             if (grid != null) {
 
                 for (int i = 0; i < viewWidth; i += grid.getCellSize()) {
