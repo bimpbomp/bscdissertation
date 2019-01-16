@@ -8,6 +8,7 @@ import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class CollisionManager {
     private static final String TAG = "hb::CollisionManager";
@@ -16,22 +17,37 @@ public class CollisionManager {
 
     private LevelState levelState;
 
+    private int collisionCount;
+
+    private HashSet<String> collidedPairNames;
+
+    ArrayList<Pair<Pair<Entity, Entity>, Vector>> collidedPairs;
+    ArrayList<ArrayList<Entity>> bins;
+
     public CollisionManager(LevelState levelState){
         this.levelState = levelState;
+        this.collisionCount = 0;
     }
 
     public void checkCollisions(){
-        ArrayList<ArrayList<Entity>> bins = applySpatialPartitioning();
-        ArrayList<Pair<Pair<Entity, Entity>, Vector>> collidedPairs = applySeparatingAxisTheorem(bins);
+        applySpatialPartitioning();
+
+        applySeparatingAxisTheorem(bins);
 
         for (Pair<Pair<Entity, Entity>, Vector> collidedPair : collidedPairs){
             collidedPair.first.first.setCollided(true);
             collidedPair.first.second.setCollided(true);
 
-            Log.d(TAG, "push vector: " + collidedPair.second.toString());
+            Log.d(TAG+collisionCount, "min push vector: " + collidedPair.second.toString());
 
             Point center = collidedPair.first.first.getShape().getCenter();
-            collidedPair.first.first.getShape().setCenter(center.add(collidedPair.second.getRelativeToTailPoint()));
+
+            Point newCenter = center.add(collidedPair.second.getRelativeToTailPoint());
+            collidedPair.first.first.getShape().setCenter(newCenter);
+
+            Log.d(TAG+collisionCount, "old center: " + center.toString() + ", new center: " + newCenter.toString());
+
+            this.collisionCount += 1;
         }
     }
 
@@ -41,7 +57,7 @@ public class CollisionManager {
      *
      * @return Returns bins with 2 entities or more in for narrow phase checks
      */
-    private ArrayList<ArrayList<Entity>> applySpatialPartitioning(){
+    private void applySpatialPartitioning(){
         //TODO: At the minute, only checking vertices means that edges crossing a different cell reference wont get checked when they should
         Point gridMaximum = new Point(levelState.getMap().getDimensions().first, levelState.getMap().getDimensions().second);
         broadPhaseGrid = new Grid(new Point(), gridMaximum, 70);
@@ -55,7 +71,7 @@ public class CollisionManager {
         }
 
         //each element will be a bin from a grid reference with more than one entity in
-        ArrayList<ArrayList<Entity>> bins = new ArrayList<>();
+        bins = new ArrayList<>();
 
         //get the bins that have 2 or more elements in them
         for (Integer column : broadPhaseGrid.getColumnKeySet()){
@@ -71,14 +87,22 @@ public class CollisionManager {
                 }
             }
         }
-        return bins;
     }
 
-    private ArrayList<Pair<Pair<Entity, Entity>, Vector>> applySeparatingAxisTheorem(ArrayList<ArrayList<Entity>> bins){
-        ArrayList<Pair<Pair<Entity, Entity>, Vector>> collidedPairs = new ArrayList<>();
+    private void applySeparatingAxisTheorem(ArrayList<ArrayList<Entity>> bins){
+        Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
+        collidedPairs = new ArrayList<>();
+        collidedPairNames = new HashSet<>();
 
         for (ArrayList<Entity> bin : bins){
             if (bin.size() > 1){
+
+                StringBuilder sb = new StringBuilder();
+                for (Entity e : bin){
+                    sb.append(e.getName());
+                    sb.append(", ");
+                }
+                Log.d(TAG+collisionCount, "entities in bin: " + sb.toString());
 
                 //check each pair of entities in current bin
                 for (int i = 0; i < bin.size() - 1; i++){
@@ -86,6 +110,14 @@ public class CollisionManager {
 
                         Entity firstEntity = bin.get(i);
                         Entity secondEntity = bin.get(j);
+
+                        if (collidedPairNames.contains(firstEntity.getName()+secondEntity.getName())){
+                            Log.d(TAG+collisionCount, "already collided: " + firstEntity.getName() + ", " + secondEntity.getName());
+                            continue;
+                        } else {
+                            collidedPairNames.add(firstEntity.getName()+secondEntity.getName());
+                            collidedPairNames.add(secondEntity.getName()+firstEntity.getName());
+                        }
 
                         Point[] firstEntityVertices = firstEntity.getShape().getVertices();
                         Point[] secondEntityVertices = secondEntity.getShape().getVertices();
@@ -103,30 +135,37 @@ public class CollisionManager {
                             if (pushVector.equals(new Vector())){
                                 collided = false;
                                 break;
+                            } else {
+                                Log.d(TAG + collisionCount, "push vector: " + pushVector.toString());
+                                pushVectors.add(pushVector);
                             }
-                            pushVectors.add(pushVector);
                         }
 
                         if (collided){
+
                             Vector minPushVector = getMinimumPushVector(pushVectors);
 
                             if (minPushVector.dot(new Vector(firstEntity.getShape().getCenter(), secondEntity.getShape().getCenter())) > 0){
                                 minPushVector = minPushVector.sMult(-1f);
                             }
 
+                            Log.d(TAG+collisionCount, "collided pair added");
                             collidedPairs.add(new Pair<>(new Pair<>(firstEntity, secondEntity), minPushVector));
                         }
                     }
                 }
             }
         }
-        return collidedPairs;
     }
 
     private Vector getMinimumPushVector(ArrayList<Vector> pushVectors){
         Vector minPushVector = new Vector();
-        for (Vector pushVector : pushVectors){
-            minPushVector = minPushVector.getLength() < pushVector.getLength() ? minPushVector : pushVector;
+        if (pushVectors.size() > 0) {
+            minPushVector = pushVectors.get(0);
+
+            for (Vector pushVector : pushVectors) {
+                minPushVector = minPushVector.getLength() < pushVector.getLength() ? minPushVector : pushVector;
+            }
         }
         return minPushVector;
     }
@@ -180,7 +219,7 @@ public class CollisionManager {
         Vector[] orthogonals = new Vector[edges.size()];
 
         for (int i = 0; i < edges.size(); i++){
-            orthogonals[i] = rotateAntiClockwise90(edges.get(i));
+            orthogonals[i] = rotateAntiClockwise90(edges.get(i)).getUnitVector();
         }
         return orthogonals;
     }
