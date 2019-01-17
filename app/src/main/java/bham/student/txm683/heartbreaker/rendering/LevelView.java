@@ -34,6 +34,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Grid grid;
 
+    private boolean resumingFromSaveFile;
+
     //private IsoscelesTriangle triangle;
 
     public LevelView(Context context){
@@ -45,6 +47,16 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         setFocusable(true);
 
         initPaintForText();
+
+        resumingFromSaveFile = false;
+    }
+
+    public void loadSaveFromStateString(String stateString){
+        try {
+            this.levelState = new LevelState(stateString);
+        } catch (Exception e){
+            this.levelState = null;
+        }
     }
 
     public LevelState onPause(){
