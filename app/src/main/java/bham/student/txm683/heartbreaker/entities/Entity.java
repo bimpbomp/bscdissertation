@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.entities;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.SaveableState;
 import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
@@ -58,19 +59,25 @@ public class Entity implements SaveableState {
     public Entity(String stateString) throws ParseException, JSONException {
         JSONObject jsonObject = new JSONObject(stateString);
 
-        this.name = jsonObject.getString("shape");
+        this.name = jsonObject.getString("name");
         this.movementMaxSpeed = Float.parseFloat(jsonObject.getString("maxspeed"));
 
-        switch (ShapeIdentifier.fromInt(jsonObject.getInt("shapeidentifier"))){
-            case ISO_TRIANGLE:
-                this.shape = new IsoscelesTriangle(stateString);
-                break;
-            case RECT:
-                this.shape = new Rectangle(stateString);
-                break;
-            default:
-                throw new ParseException("Invalid shape identifier",0);
+        try {
+            switch (ShapeIdentifier.fromInt(jsonObject.getInt("shapeidentifier"))) {
+                case ISO_TRIANGLE:
+                    this.shape = new IsoscelesTriangle((String)jsonObject.get("shape"));
+                    break;
+                case RECT:
+                    this.shape = new Rectangle(jsonObject.getString("shape"));
+                    break;
+                default:
+                    throw new ParseException("Invalid shape identifier", 0);
+            }
+        } catch (JSONException e){
+            throw new ParseException(name + e.getMessage(),0);
         }
+
+        initTextPaint();
     }
 
     private void initTextPaint(){
@@ -158,15 +165,16 @@ public class Entity implements SaveableState {
     * @return String in JSON format
     */
     @Override
-    public String getStateString() throws JSONException {
+    public JSONObject getStateObject() throws JSONException {
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("name", name);
-        jsonObject.put("shape", shape.getStateString());
+        jsonObject.put("shape", shape.getStateObject());
         jsonObject.put("maxspeed", movementMaxSpeed);
         jsonObject.put("shapeidentifier", shape.getShapeIdentifier().getId());
 
-        return jsonObject.toString();
+        Log.d(TAG, "generated state string: " + jsonObject.toString());
+        return jsonObject;
     }
 
     public boolean isCollided() {

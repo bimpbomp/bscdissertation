@@ -24,7 +24,7 @@ public class Rectangle extends EntityShape {
 
         JSONObject jsonObject = new JSONObject(stateString);
 
-        angleBetweenUpandPrimaryVectors = Float.parseFloat((String)jsonObject.get("anglebetweenprimaryandup"));
+        angleBetweenUpandPrimaryVectors = Float.parseFloat(jsonObject.getString("anglebetweenprimaryandup"));
     }
 
     private void init() {
@@ -60,10 +60,10 @@ public class Rectangle extends EntityShape {
     }
 
     @Override
-    public String getStateString() throws JSONException {
+    public JSONObject getStateObject() throws JSONException {
         JSONObject jsonObject = this.getAbstractJSONObject();
         jsonObject.put("anglebetweenprimaryandup", angleBetweenUpandPrimaryVectors);
 
-        return jsonObject.toString();
+        return jsonObject;
     }
 }

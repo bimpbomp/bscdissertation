@@ -7,7 +7,6 @@ import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.PhysicsController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Level implements Runnable {
     private final String TAG = "hb::Level";
@@ -117,12 +116,5 @@ public class Level implements Runnable {
 
     public void setPaused(boolean isPaused){
         this.isPaused = isPaused;
-    }
-
-    //TODO implement state save feature
-    public String getJSONString(){
-        ObjectMapper mapper = new ObjectMapper();
-
-        return "";
     }
 }

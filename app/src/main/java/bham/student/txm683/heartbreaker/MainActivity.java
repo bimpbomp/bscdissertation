@@ -3,15 +3,12 @@ package bham.student.txm683.heartbreaker;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.*;
 
 public class MainActivity extends Activity {
 
@@ -35,7 +32,7 @@ public class MainActivity extends Activity {
 
         setContentView(levelView);
 
-        if (savedInstanceState.getBoolean(RESUME_FROM_SAVE_STATE_KEY)){
+        if (savedInstanceState != null && savedInstanceState.getBoolean(RESUME_FROM_SAVE_STATE_KEY)){
             Log.d(TAG, "savedInstanceState is not null");
 
             String stateString = readFromFile(SAVE_FILE_NAME);
@@ -90,12 +87,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(RESUME_FROM_SAVE_STATE_KEY, true);
+        Log.d(TAG, "onSaveInstanceState");
         super.onSaveInstanceState(outState);
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.d(TAG, "onRestoreInstanceState");
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     private void saveToFile(String fileName, String contents){
@@ -116,15 +115,45 @@ public class MainActivity extends Activity {
         }
     }
 
-    //TODO: implement file reading
     private String readFromFile(String fileName){
-        String readInString = "";
+        StringBuilder readInString = new StringBuilder();
         try {
+            File file2 = new File(fileName);
+            Log.d(TAG, "fileSize: " + file2.length());
+
             FileInputStream file = openFileInput(fileName);
             Log.d(TAG, "reading from " + fileName);
-        } catch (FileNotFoundException e){
-            e.printStackTrace();
+
+            InputStreamReader inputStreamReader = new InputStreamReader(file);
+
+            char[] inputBuffer = new char[100];
+            int charRead;
+
+            while ((charRead = inputStreamReader.read(inputBuffer)) > 0){
+                String s = String.copyValueOf(inputBuffer);
+                readInString.append(s);
+            }
+
+            inputStreamReader.close();
+        } catch (IOException e){
+            return "";
         }
-        return readInString;
+        return readInString.toString();
     }
+
+    /*
+    *    FileInputStream fileIn=openFileInput("mytextfile.txt");
+         InputStreamReader InputRead= new InputStreamReader(fileIn);
+
+         char[] inputBuffer= new char[READ_BLOCK_SIZE];
+         String s="";
+         int charRead;
+
+         while ((charRead=InputRead.read(inputBuffer))>0) {
+         // char to string conversion
+         String readstring=String.copyValueOf(inputBuffer,0,charRead);
+         s +=readstring;
+         }
+         InputRead.close();
+    * */
 }

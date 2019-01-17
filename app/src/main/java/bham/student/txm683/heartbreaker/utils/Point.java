@@ -4,8 +4,8 @@ import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import bham.student.txm683.heartbreaker.SaveableState;
-
-import java.text.ParseException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Point implements SaveableState {
 
@@ -22,6 +22,11 @@ public class Point implements SaveableState {
     public Point(float x, float y){
         this.x = x;
         this.y = y;
+    }
+
+    public Point(JSONObject jsonObject) throws JSONException{
+        this.x = (float) jsonObject.getDouble("x");
+        this.y = (float) jsonObject.getDouble("y");
     }
 
     public Point add(Point p){
@@ -85,11 +90,15 @@ public class Point implements SaveableState {
     }
 
     @Override
-    public String getStateString() {
-        return x + DELIMITER + y;
+    public JSONObject getStateObject() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("x", x);
+        jsonObject.put("y", y);
+
+        return jsonObject;
     }
 
-    public static Point createPointFromStateString(String stateString) throws ParseException {
+    /*private static Point createPointFromStateString(String stateString) throws ParseException {
         String[] split = stateString.split(",");
 
         Point point;
@@ -104,5 +113,5 @@ public class Point implements SaveableState {
             throw new ParseException("Error parsing String for creation of Point object: error parsing floats",0);
         }
         return point;
-    }
+    }*/
 }

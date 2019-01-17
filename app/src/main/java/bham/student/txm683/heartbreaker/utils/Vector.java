@@ -3,8 +3,8 @@ package bham.student.txm683.heartbreaker.utils;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import bham.student.txm683.heartbreaker.SaveableState;
-
-import java.text.ParseException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Vector implements SaveableState {
 
@@ -60,6 +60,10 @@ public class Vector implements SaveableState {
 
         xRelativeToTail = head.getX() - tail.getX();
         yRelativeToTail = head.getY() - tail.getY();
+    }
+
+    public Vector(JSONObject jsonObject) throws JSONException{
+        this(new Point((JSONObject)jsonObject.get("tail")), new Point((JSONObject)jsonObject.get("head")));
     }
 
     /**
@@ -250,11 +254,14 @@ public class Vector implements SaveableState {
     }
 
     @Override
-    public String getStateString() {
-        return tail.getStateString() + DELIMITER + head.getStateString();
+    public JSONObject getStateObject() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("head", head.getStateObject());
+        jsonObject.put("tail", tail.getStateObject());
+        return jsonObject;
     }
 
-    public static Vector createVectorFromStateString(String stateString) throws ParseException {
+    /*public static Vector createVectorFromStateString(String stateString) throws ParseException {
         String[] split = stateString.split(stateString);
 
         Vector vector;
@@ -267,5 +274,5 @@ public class Vector implements SaveableState {
             throw new ParseException("String cannot be split with " + DELIMITER, 0);
         }
         return vector;
-    }
+    }*/
 }

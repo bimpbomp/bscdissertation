@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.SaveableState;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -47,25 +48,28 @@ public abstract class EntityShape implements SaveableState {
     EntityShape(String jsonString) throws JSONException, ParseException {
         JSONObject jsonObject = new JSONObject(jsonString);
 
-        this.geometricCenter = Point.createPointFromStateString((String)jsonObject.get("center"));
+        Log.d("hb::EntityShape", jsonString);
 
-        this.height = Float.parseFloat((String)jsonObject.get("height"));
-        this.width = Float.parseFloat((String)jsonObject.get("width"));
+        this.height = Float.parseFloat(jsonObject.getString("height"));
+        this.width = Float.parseFloat(jsonObject.getString("width"));
+        this.geometricCenter = new Point(jsonObject.getJSONObject("center"));
 
-        this.defaultColor = Integer.parseInt((String)jsonObject.get("defaultcolor"));
+
+
+        this.defaultColor = jsonObject.getInt("defaultcolor");
 
         this.paint = new Paint();
-        this.paint.setColor(Integer.parseInt((String)jsonObject.get("color")));
+        this.paint.setColor(jsonObject.getInt("color"));
         this.paint.setStyle(Paint.Style.FILL);
         this.paint.setAntiAlias(true);
 
-        this.relativeUpUnitVector = Vector.createVectorFromStateString((String)jsonObject.get("upvector"));
+        this.relativeUpUnitVector = new Vector(geometricCenter, new Point(jsonObject.getJSONObject("upvector")));
 
-        JSONArray verticesArray = new JSONArray((String)jsonObject.get("vertices"));
+        JSONArray verticesArray = jsonObject.getJSONArray("vertices");
         this.vertexVectors = new Vector[verticesArray.length()];
 
         for (int i = 0; i < verticesArray.length(); i++){
-            this.vertexVectors[i] = new Vector(geometricCenter, Point.createPointFromStateString((String) verticesArray.get(i)));
+            this.vertexVectors[i] = new Vector(geometricCenter, new Point(verticesArray.getJSONObject(i)));
         }
     }
 
@@ -234,13 +238,13 @@ public abstract class EntityShape implements SaveableState {
     JSONObject getAbstractJSONObject() throws JSONException {
         JSONObject jsonObject = new JSONObject();
 
-        String[] vertices = new String[vertexVectors.length];
+        JSONObject[] vertices = new JSONObject[vertexVectors.length];
         for (int i = 0; i < vertexVectors.length; i++){
-            vertices[i] = vertexVectors[i].getHead().getStateString();
+            vertices[i] = vertexVectors[i].getHead().getStateObject();
         }
-        jsonObject.put("vertices", vertices);
-        jsonObject.put("upvector", relativeUpUnitVector.getHead().getStateString());
-        jsonObject.put("center", geometricCenter.getStateString());
+        jsonObject.put("vertices", new JSONArray(vertices));
+        jsonObject.put("upvector", relativeUpUnitVector.getHead().getStateObject());
+        jsonObject.put("center", geometricCenter.getStateObject());
         jsonObject.put("height", height);
         jsonObject.put("width",width);
         jsonObject.put("color", paint.getColor());

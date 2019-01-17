@@ -1,11 +1,8 @@
 package bham.student.txm683.heartbreaker;
 
-import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.map.Map;
-import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,12 +50,12 @@ public class LevelState {
     }
 
     private void freshInitFromMap(){
-        Point[] enemySpawns = this.map.getEnemySpawnLocations();
+        /*Point[] enemySpawns = this.map.getEnemySpawnLocations();
         for (Point enemySpawn : enemySpawns) {
             IsoscelesTriangle shape = new IsoscelesTriangle(enemySpawn, 50, 50, Color.BLUE);
             Entity entity = new Entity("NPE-" + uniqueID.id(), 150f, shape);
             this.nonPlayerEntities.add(entity);
-        }
+        }*/
 
         this.player = new Player("player", map.getPlayerSpawnLocation());
     }
@@ -96,7 +93,6 @@ public class LevelState {
         return screenHeight;
     }
 
-    //TODO implement save state feature
     public String getSaveString(){
         JSONObject jsonObject = new JSONObject();
 
@@ -104,13 +100,13 @@ public class LevelState {
             jsonObject.put("mapname", map.getName());
             jsonObject.put("uniqueidcounter", uniqueID.counter());
 
-            jsonObject.put("player", player.getStateString());
+            jsonObject.put("player", player.getStateObject());
 
-            String[] nPEStateString = new String[nonPlayerEntities.size()];
+            JSONObject[] nPEStateString = new JSONObject[nonPlayerEntities.size()];
             for (int i = 0; i < nonPlayerEntities.size(); i++){
-                nPEStateString[i] = nonPlayerEntities.get(i).getStateString();
+                nPEStateString[i] = nonPlayerEntities.get(i).getStateObject();
             }
-            jsonObject.put("npes", nPEStateString);
+            jsonObject.put("npes", new JSONArray(nPEStateString));
 
         } catch (JSONException e){
             //error parsing state for saving, abort

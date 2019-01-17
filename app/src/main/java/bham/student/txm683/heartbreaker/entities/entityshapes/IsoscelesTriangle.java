@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.ParseException;
 
@@ -87,7 +88,7 @@ public class IsoscelesTriangle extends EntityShape {
     }
 
     @Override
-    public String getStateString() throws JSONException {
-        return getAbstractJSONObject().toString();
+    public JSONObject getStateObject() throws JSONException {
+        return getAbstractJSONObject();
     }
 }

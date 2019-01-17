@@ -52,9 +52,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void loadSaveFromStateString(String stateString){
+        Log.d(TAG, "stateStringLengthInBytes: " + stateString.getBytes().length + ", stateString: " + stateString);
         try {
             this.levelState = new LevelState(stateString);
         } catch (Exception e){
+            Log.d(TAG,"Parsing error: " + e.getMessage());
             this.levelState = null;
         }
     }
@@ -85,10 +87,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             this.levelState = new LevelState(new Map());
             this.levelState.setScreenDimensions(viewWidth, viewHeight);
 
-            this.level.setLevelState(levelState);
-
             this.levelState.getMap().loadMap(viewWidth, viewHeight);
         }
+        this.level.setLevelState(levelState);
 
         this.levelThread = new Thread(this.level);
         this.level.setRunning(true);

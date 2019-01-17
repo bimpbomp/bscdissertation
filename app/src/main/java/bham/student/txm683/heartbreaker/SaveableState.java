@@ -1,9 +1,10 @@
 package bham.student.txm683.heartbreaker;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public interface SaveableState {
 
-    String getStateString() throws JSONException;
+    JSONObject getStateObject() throws JSONException;
 
 }
