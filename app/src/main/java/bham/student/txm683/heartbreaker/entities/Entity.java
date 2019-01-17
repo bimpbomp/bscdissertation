@@ -3,13 +3,19 @@ package bham.student.txm683.heartbreaker.entities;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import bham.student.txm683.heartbreaker.SaveableState;
 import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class Entity {
+import java.text.ParseException;
+
+public class Entity implements SaveableState {
     String TAG;
 
     private String name;
@@ -47,6 +53,24 @@ public class Entity {
         this.shape = shape;
 
         initTextPaint();
+    }
+
+    public Entity(String stateString) throws ParseException, JSONException {
+        JSONObject jsonObject = new JSONObject(stateString);
+
+        this.name = jsonObject.getString("shape");
+        this.movementMaxSpeed = Float.parseFloat(jsonObject.getString("maxspeed"));
+
+        switch (ShapeIdentifier.fromInt(jsonObject.getInt("shapeidentifier"))){
+            case ISO_TRIANGLE:
+                this.shape = new IsoscelesTriangle(stateString);
+                break;
+            case RECT:
+                this.shape = new Rectangle(stateString);
+                break;
+            default:
+                throw new ParseException("Invalid shape identifier",0);
+        }
     }
 
     private void initTextPaint(){
@@ -133,9 +157,16 @@ public class Entity {
     * Generates a String in JSON for saving state
     * @return String in JSON format
     */
-    public String getSaveString(){
-        //TODO implement state saving to file
-        return "";
+    @Override
+    public String getStateString() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("name", name);
+        jsonObject.put("shape", shape.getStateString());
+        jsonObject.put("maxspeed", movementMaxSpeed);
+        jsonObject.put("shapeidentifier", shape.getShapeIdentifier().getId());
+
+        return jsonObject.toString();
     }
 
     public boolean isCollided() {

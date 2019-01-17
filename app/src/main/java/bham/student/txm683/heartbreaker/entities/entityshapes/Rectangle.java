@@ -2,14 +2,29 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.ParseException;
 
 public class Rectangle extends EntityShape {
-
     private float angleBetweenUpandPrimaryVectors;
 
     public Rectangle(Point geometricCenter, float width, float height, int colorValue){
         super(geometricCenter, width, height, colorValue);
+
+        shapeIdentifier = ShapeIdentifier.RECT;
+
         init();
+    }
+
+    public Rectangle(String stateString) throws ParseException, JSONException {
+        super(stateString);
+        shapeIdentifier = ShapeIdentifier.RECT;
+
+        JSONObject jsonObject = new JSONObject(stateString);
+
+        angleBetweenUpandPrimaryVectors = Float.parseFloat((String)jsonObject.get("anglebetweenprimaryandup"));
     }
 
     private void init() {
@@ -42,5 +57,13 @@ public class Rectangle extends EntityShape {
     @Override
     public void setWidth(float newWidth) {
         //TODO
+    }
+
+    @Override
+    public String getStateString() throws JSONException {
+        JSONObject jsonObject = this.getAbstractJSONObject();
+        jsonObject.put("anglebetweenprimaryandup", angleBetweenUpandPrimaryVectors);
+
+        return jsonObject.toString();
     }
 }

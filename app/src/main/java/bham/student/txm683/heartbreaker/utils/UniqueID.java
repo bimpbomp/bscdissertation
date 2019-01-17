@@ -12,6 +12,10 @@ public class UniqueID {
         nextID = 0;
     }
 
+    public UniqueID(int startingID){
+        nextID = startingID;
+    }
+
     /**
      * Returns an int for use as a unique identifier for an object, auto-increments internal counter to ensure
      * returned values are unique.
@@ -19,6 +23,14 @@ public class UniqueID {
      */
     public int id(){
         return nextID++;
+    }
+
+    /**
+     * Returns current counter state without incrementing counter
+     * @return Current counter
+     */
+    public int counter(){
+        return nextID;
     }
 
     /**

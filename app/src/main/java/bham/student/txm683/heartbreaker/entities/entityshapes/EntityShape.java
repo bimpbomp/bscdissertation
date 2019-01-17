@@ -4,10 +4,18 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.NonNull;
+import bham.student.txm683.heartbreaker.SaveableState;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public abstract class EntityShape {
+import java.text.ParseException;
+
+public abstract class EntityShape implements SaveableState {
+
+    ShapeIdentifier shapeIdentifier;
 
     Vector[] vertexVectors;
     Vector relativeUpUnitVector;
@@ -34,6 +42,31 @@ public abstract class EntityShape {
         this.paint.setColor(defaultColor);
         this.paint.setStyle(Paint.Style.FILL);
         this.paint.setAntiAlias(true);
+    }
+
+    EntityShape(String jsonString) throws JSONException, ParseException {
+        JSONObject jsonObject = new JSONObject(jsonString);
+
+        this.geometricCenter = Point.createPointFromStateString((String)jsonObject.get("center"));
+
+        this.height = Float.parseFloat((String)jsonObject.get("height"));
+        this.width = Float.parseFloat((String)jsonObject.get("width"));
+
+        this.defaultColor = Integer.parseInt((String)jsonObject.get("defaultcolor"));
+
+        this.paint = new Paint();
+        this.paint.setColor(Integer.parseInt((String)jsonObject.get("color")));
+        this.paint.setStyle(Paint.Style.FILL);
+        this.paint.setAntiAlias(true);
+
+        this.relativeUpUnitVector = Vector.createVectorFromStateString((String)jsonObject.get("upvector"));
+
+        JSONArray verticesArray = new JSONArray((String)jsonObject.get("vertices"));
+        this.vertexVectors = new Vector[verticesArray.length()];
+
+        for (int i = 0; i < verticesArray.length(); i++){
+            this.vertexVectors[i] = new Vector(geometricCenter, Point.createPointFromStateString((String) verticesArray.get(i)));
+        }
     }
 
     public abstract void setHeight(float newHeight);
@@ -196,5 +229,27 @@ public abstract class EntityShape {
                 "center: " + geometricCenter.toString() +
                 ", vertices: " + vertices.toString() +
                 "}";
+    }
+
+    JSONObject getAbstractJSONObject() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+
+        String[] vertices = new String[vertexVectors.length];
+        for (int i = 0; i < vertexVectors.length; i++){
+            vertices[i] = vertexVectors[i].getHead().getStateString();
+        }
+        jsonObject.put("vertices", vertices);
+        jsonObject.put("upvector", relativeUpUnitVector.getHead().getStateString());
+        jsonObject.put("center", geometricCenter.getStateString());
+        jsonObject.put("height", height);
+        jsonObject.put("width",width);
+        jsonObject.put("color", paint.getColor());
+        jsonObject.put("defaultcolor", defaultColor);
+
+        return jsonObject;
+    }
+
+    public ShapeIdentifier getShapeIdentifier() {
+        return shapeIdentifier;
     }
 }

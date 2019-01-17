@@ -9,8 +9,8 @@ import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class LevelThread extends Thread {
-    private final String TAG = "hb::LevelThread";
+public class Level implements Runnable {
+    private final String TAG = "hb::Level";
 
     private LevelView levelView;
     private LevelState levelState;
@@ -26,7 +26,19 @@ public class LevelThread extends Thread {
     private FPSMonitor gameFPSMonitor;
     private FPSMonitor renderFPSMonitor;
 
-    public LevelThread(LevelView levelView){
+    private int gameTicksPerSecond = 25;
+    private int gameTickTimeStepInMillis = 1000 / gameTicksPerSecond;
+    private int maxSkipTick = 10;
+
+    private long currentGameTick;
+    private long nextScheduledGameTick = System.currentTimeMillis();
+
+    private int loops;
+
+    private boolean readyToRender = false;
+
+
+    public Level(LevelView levelView){
         super();
 
         this.messageBus = new MessageBus();
@@ -44,25 +56,12 @@ public class LevelThread extends Thread {
         physicsController = new PhysicsController(levelState);
         collisionManager = new CollisionManager(levelState);
 
-        int gameTicksPerSecond = 25;
-        int gameTickTimeStepInMillis = 1000 / gameTicksPerSecond;
-        int maxSkipTick = 10;
-
-        long currentGameTick;
-        long nextScheduledGameTick = System.currentTimeMillis();
-
-        int loops;
-
-        boolean readyToRender = false;
-
+        nextScheduledGameTick = System.currentTimeMillis();
         while (running){
 
             loops = 0;
 
             currentGameTick = System.currentTimeMillis();
-
-            //used for interpolation. set to 0 so if the game is paused, the positions will not be changed from in levelstate.
-            float timeSinceLastGameTick = 0f;
 
             if (!isPaused) {
                 while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick) {
@@ -92,7 +91,7 @@ public class LevelThread extends Thread {
             }
 
             if (!isPaused && readyToRender) {
-                timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick)/1000f;
+                float timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick) / 1000f;
 
                 //Log.d(TAG, "LGT: " + currentGameTick + ", timeSinceLGT: " + timeSinceLastGameTick + ", nextGT: " + nextScheduledGameTick);
 

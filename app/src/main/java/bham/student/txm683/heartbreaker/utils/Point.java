@@ -3,8 +3,13 @@ package bham.student.txm683.heartbreaker.utils;
 import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import bham.student.txm683.heartbreaker.SaveableState;
 
-public class Point {
+import java.text.ParseException;
+
+public class Point implements SaveableState {
+
+    private static final String DELIMITER = ",";
 
     private final float x;
     private final float y;
@@ -77,5 +82,27 @@ public class Point {
         }
         path.close();
         return path;
+    }
+
+    @Override
+    public String getStateString() {
+        return x + DELIMITER + y;
+    }
+
+    public static Point createPointFromStateString(String stateString) throws ParseException {
+        String[] split = stateString.split(",");
+
+        Point point;
+        try {
+            float sX = Float.parseFloat(split[0]);
+            float sY = Float.parseFloat(split[1]);
+            point = new Point(sX, sY);
+        } catch (IndexOutOfBoundsException e){
+            throw new ParseException("Error parsing String for creation of Point object: String cannot be" +
+                    " split with " + DELIMITER, 0);
+        } catch (NumberFormatException e){
+            throw new ParseException("Error parsing String for creation of Point object: error parsing floats",0);
+        }
+        return point;
     }
 }

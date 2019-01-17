@@ -20,6 +20,8 @@ public class MainActivity extends Activity {
 
     private LevelView levelView;
 
+    private LevelState levelState;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,14 +62,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        levelView.setPaused(true);
 
+        levelState = levelView.onPause();
         Log.d(TAG, "onPause");
     }
 
     @Override
     protected void onStop() {
+        Log.d(TAG, "Entering onStop");
         super.onStop();
+        String saveString = levelState.getSaveString();
+        saveToFile(saveFileName, saveString);
         Log.d(TAG, "onStop");
     }
 
@@ -77,13 +82,12 @@ public class MainActivity extends Activity {
         Log.d(TAG, "onDestroy");
     }
 
-    private void saveToFile(String fileName){
+    private void saveToFile(String fileName, String contents){
         FileOutputStream outputStream = null;
 
         try {
             outputStream = openFileOutput(fileName, Context.MODE_PRIVATE);
-            String fileContents = "Helloworld!!!";
-            outputStream.write(fileContents.getBytes());
+            outputStream.write(contents.getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

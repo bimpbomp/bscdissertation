@@ -2,8 +2,13 @@ package bham.student.txm683.heartbreaker.utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import bham.student.txm683.heartbreaker.SaveableState;
 
-public class Vector {
+import java.text.ParseException;
+
+public class Vector implements SaveableState {
+
+    private static final String DELIMITER = "->";
 
     private final Point tail;
     private final Point head;
@@ -242,5 +247,25 @@ public class Vector {
     @Override
     public String toString() {
         return "tail: " + this.tail.toString() + ", head: " + this.head.toString() + ", x: " + xRelativeToTail + ", y: " + yRelativeToTail;
+    }
+
+    @Override
+    public String getStateString() {
+        return tail.getStateString() + DELIMITER + head.getStateString();
+    }
+
+    public static Vector createVectorFromStateString(String stateString) throws ParseException {
+        String[] split = stateString.split(stateString);
+
+        Vector vector;
+        try {
+            Point sHead = Point.createPointFromStateString(split[0]);
+            Point sTail = Point.createPointFromStateString(split[1]);
+            vector = new Vector(sTail, sHead);
+
+        } catch (IndexOutOfBoundsException e){
+            throw new ParseException("String cannot be split with " + DELIMITER, 0);
+        }
+        return vector;
     }
 }

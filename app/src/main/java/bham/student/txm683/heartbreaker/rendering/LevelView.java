@@ -8,22 +8,22 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.LevelThread;
 import bham.student.txm683.heartbreaker.entities.Entity;
-import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
+import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.physics.Grid;
 import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.UniqueID;
+
 
 public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "hb::LevelView";
 
-    private LevelThread levelThread;
+    private Thread levelThread;
+    private Level level;
     private LevelState levelState;
     private InputManager inputManager;
 
@@ -41,10 +41,15 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         getHolder().addCallback(this);
 
-        this.levelThread = new LevelThread(this);
+        this.level = new Level(this);
         setFocusable(true);
 
         initPaintForText();
+    }
+
+    public LevelState onPause(){
+        this.setPaused(true);
+        return levelState;
     }
 
     @Override
@@ -62,30 +67,20 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         float thumbstickMaxRadius = 150f;
 
         this.inputManager = new InputManager(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), 50, thumbstickMaxRadius));
-        this.levelThread.setInputManager(inputManager);
+        this.level.setInputManager(inputManager);
 
-        UniqueID uniqueID = new UniqueID();
+        if (this.levelState == null) {
+            this.levelState = new LevelState(new Map());
+            this.levelState.setScreenDimensions(viewWidth, viewHeight);
 
-        this.levelState = new LevelState();
-        this.levelState.setScreenDimensions(viewWidth, viewHeight);
-        this.levelState.getMap().loadMap(viewWidth, viewHeight);
+            this.level.setLevelState(levelState);
 
-        this.levelState.setPlayer(new Player("player", new Point(100,100)));
-
-        for (int i = 0; i < 5; i++){
-            for (int j = 0; j < 5; j++) {
-                IsoscelesTriangle shape = new IsoscelesTriangle(new Point(300+200*i,300+200*j), 50, 50, Color.BLUE);
-                Entity entity = new Entity("NPE-" + uniqueID.id(), 150f, shape);
-                this.levelState.addNonPlayerEntity(entity);
-            }
+            this.levelState.getMap().loadMap(viewWidth, viewHeight);
         }
 
-        this.levelThread.setLevelState(levelState);
-
-        levelThread.setRunning(true);
-        levelThread.start();
-
-        //triangle = new IsoscelesTriangle(new Point(viewWidth/2f, viewHeight/2f), 150, 200, Color.BLACK);
+        this.levelThread = new Thread(this.level);
+        this.level.setRunning(true);
+        this.levelThread.start();
     }
 
     @Override
@@ -95,12 +90,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.d(TAG, "surfaceDestroyed");
         boolean retry = true;
 
         while(retry){
             try {
-                levelThread.setRunning(false);
+                level.setRunning(false);
                 levelThread.join();
             } catch (InterruptedException e){
                 e.printStackTrace();
@@ -117,6 +111,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void draw(int renderfps, int gametickfps, float timeSinceLastGameTick){
         Canvas canvas = getHolder().lockCanvas();
+
+        //TODO: This is to disable interpolation
+        timeSinceLastGameTick = 0f;
 
         if (canvas != null){
             super.draw(canvas);
@@ -136,10 +133,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
 
-            levelState.getPlayer().draw(canvas, 0);
+            levelState.getPlayer().draw(canvas, timeSinceLastGameTick);
 
             for (Entity entity : levelState.getNonPlayerEntities()){
-                entity.draw(canvas, 0);
+                entity.draw(canvas, timeSinceLastGameTick);
             }
 
             inputManager.getThumbstick().draw(canvas);
@@ -159,11 +156,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void setPaused(boolean isPaused){
-        this.levelThread.setPaused(isPaused);
+        this.level.setPaused(isPaused);
     }
 
     public void setRunning(boolean running){
-        this.levelThread.setRunning(running);
+        this.level.setRunning(running);
     }
 
     public void setGrid(Grid grid){

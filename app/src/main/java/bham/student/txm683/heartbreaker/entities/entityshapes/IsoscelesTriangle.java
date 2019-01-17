@@ -2,6 +2,9 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+
+import java.text.ParseException;
 
 public class IsoscelesTriangle extends EntityShape {
 
@@ -10,7 +13,16 @@ public class IsoscelesTriangle extends EntityShape {
 
     public IsoscelesTriangle(Point geometricCenter, float baseWidth, float height, int colorValue){
         super(geometricCenter, baseWidth, height, colorValue);
+
+        shapeIdentifier = ShapeIdentifier.ISO_TRIANGLE;
+
         init();
+    }
+
+    public IsoscelesTriangle(String jsonString) throws JSONException, ParseException {
+        super(jsonString);
+
+        shapeIdentifier = ShapeIdentifier.ISO_TRIANGLE;
     }
 
     /**
@@ -72,5 +84,10 @@ public class IsoscelesTriangle extends EntityShape {
 
         this.vertexVectors[1] = this.vertexVectors[1].sMult(proportionOfBaseVectorLengthChange);
         this.vertexVectors[2] = this.vertexVectors[2].sMult(proportionOfBaseVectorLengthChange);
+    }
+
+    @Override
+    public String getStateString() throws JSONException {
+        return getAbstractJSONObject().toString();
     }
 }
