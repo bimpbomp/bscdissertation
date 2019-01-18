@@ -10,7 +10,7 @@ import java.text.ParseException;
 public class Player extends Entity {
 
     public Player(String name, Point spawnCoordinates){
-        super(name, 150f, new Rectangle(spawnCoordinates, 50, 100, Color.BLACK));
+        super(name, 250f, new Rectangle(spawnCoordinates, 50, 50, Color.BLACK));
         this.TAG = "hb::Player:"+ name;
     }
 

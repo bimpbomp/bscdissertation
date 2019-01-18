@@ -1,6 +1,5 @@
 package bham.student.txm683.heartbreaker.physics;
 
-import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
@@ -38,14 +37,14 @@ public class CollisionManager {
             collidedPair.first.first.setCollided(true);
             collidedPair.first.second.setCollided(true);
 
-            Log.d(TAG+collisionCount, "min push vector: " + collidedPair.second.toString());
+            //Log.d(TAG+collisionCount, "min push vector: " + collidedPair.second.toString());
 
             Point center = collidedPair.first.first.getShape().getCenter();
 
             Point newCenter = center.add(collidedPair.second.getRelativeToTailPoint());
             collidedPair.first.first.getShape().setCenter(newCenter);
 
-            Log.d(TAG+collisionCount, "old center: " + center.toString() + ", new center: " + newCenter.toString());
+            //Log.d(TAG+collisionCount, "old center: " + center.toString() + ", new center: " + newCenter.toString());
 
             this.collisionCount += 1;
         }
@@ -90,7 +89,7 @@ public class CollisionManager {
     }
 
     private void applySeparatingAxisTheorem(ArrayList<ArrayList<Entity>> bins){
-        Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
+        //Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
         collidedPairs = new ArrayList<>();
         collidedPairNames = new HashSet<>();
 
@@ -102,7 +101,7 @@ public class CollisionManager {
                     sb.append(e.getName());
                     sb.append(", ");
                 }
-                Log.d(TAG+collisionCount, "entities in bin: " + sb.toString());
+                //Log.d(TAG+collisionCount, "entities in bin: " + sb.toString());
 
                 //check each pair of entities in current bin
                 for (int i = 0; i < bin.size() - 1; i++){
@@ -112,7 +111,7 @@ public class CollisionManager {
                         Entity secondEntity = bin.get(j);
 
                         if (collidedPairNames.contains(firstEntity.getName()+secondEntity.getName())){
-                            Log.d(TAG+collisionCount, "already collided: " + firstEntity.getName() + ", " + secondEntity.getName());
+                            //Log.d(TAG+collisionCount, "already collided: " + firstEntity.getName() + ", " + secondEntity.getName());
                             continue;
                         } else {
                             collidedPairNames.add(firstEntity.getName()+secondEntity.getName());
@@ -136,7 +135,7 @@ public class CollisionManager {
                                 collided = false;
                                 break;
                             } else {
-                                Log.d(TAG + collisionCount, "push vector: " + pushVector.toString());
+                                //Log.d(TAG + collisionCount, "push vector: " + pushVector.toString());
                                 pushVectors.add(pushVector);
                             }
                         }
@@ -149,7 +148,7 @@ public class CollisionManager {
                                 minPushVector = minPushVector.sMult(-1f);
                             }
 
-                            Log.d(TAG+collisionCount, "collided pair added");
+                            //Log.d(TAG+collisionCount, "collided pair added");
                             collidedPairs.add(new Pair<>(new Pair<>(firstEntity, secondEntity), minPushVector));
                         }
                     }
@@ -211,15 +210,13 @@ public class CollisionManager {
         return new Vector();
     }
 
-    private Vector rotateAntiClockwise90(Vector vector){
-        return new Vector(vector.getYRelativeToTail(), -1f * vector.getXRelativeToTail());
-    }
+
 
     private Vector[] getOrthogonals(ArrayList<Vector> edges){
         Vector[] orthogonals = new Vector[edges.size()];
 
         for (int i = 0; i < edges.size(); i++){
-            orthogonals[i] = rotateAntiClockwise90(edges.get(i)).getUnitVector();
+            orthogonals[i] = edges.get(i).rotateAntiClockwise90().getUnitVector();
         }
         return orthogonals;
     }

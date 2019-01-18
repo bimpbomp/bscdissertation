@@ -49,31 +49,29 @@ public class IsoscelesTriangle extends EntityShape {
         this.relativeUpUnitVector = vertexVectors[0].getUnitVector();
     }
 
-    //Explanation in notebook (1)
+    //explanation in notebook [2]
     @Override
     public void setHeight(float newHeight) {
-        float proportionOfHeightChange = newHeight/height;
+        float changeInHeight = newHeight - height;
+        Vector changeInHeightVectorUp = relativeUpUnitVector.sMult(changeInHeight * TWO_THIRDS_CONSTANT);
+        Vector changeInHeightVectorDown = relativeUpUnitVector.sMult(changeInHeight * (1-TWO_THIRDS_CONSTANT) * -1);
 
-        this.vertexVectors[0] = this.vertexVectors[0].sMult(proportionOfHeightChange);
-
-        float oneThirdHeightSquared = (this.height/3f)*(this.height/3f);
-        float newThirdHeightSquared = (newHeight/3f)/(newHeight/3f);
-        float widthSquaredOverFour = (width*width)/4f;
-
-        updateBaseLengths(widthSquaredOverFour, oneThirdHeightSquared,
-                widthSquaredOverFour, newThirdHeightSquared);
+        vertexVectors[0] = vertexVectors[0].vAdd(changeInHeightVectorUp);
+        vertexVectors[1] = vertexVectors[1].vAdd(changeInHeightVectorDown);
+        vertexVectors[2] = vertexVectors[2].vAdd(changeInHeightVectorDown);
 
         this.height = newHeight;
     }
 
-    //explanation in notebook (1)
+    //explanation in notebook [2]
     @Override
     public void setWidth(float newWidth) {
-        float oneThirdHeightSquared = (this.height/3f)*(this.height/3f);
-        float widthSquaredOverFour = (width*width)/4f;
-        float newWidthSquaredOverFour = (newWidth*newWidth)/4f;
+        float changeInHeight = newWidth - width;
+        Vector changeInHeightVectorLeft = relativeUpUnitVector.rotateAntiClockwise90().sMult(changeInHeight/2);
+        Vector changeInHeightVectorRight = changeInHeightVectorLeft.sMult(-1);
 
-        updateBaseLengths(widthSquaredOverFour, oneThirdHeightSquared, newWidthSquaredOverFour, oneThirdHeightSquared);
+        vertexVectors[1] = vertexVectors[1].vAdd(changeInHeightVectorRight);
+        vertexVectors[2] = vertexVectors[2].vAdd(changeInHeightVectorLeft);
 
         this.width = newWidth;
     }

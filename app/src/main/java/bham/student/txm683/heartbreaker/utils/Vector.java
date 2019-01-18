@@ -182,6 +182,11 @@ public class Vector implements SaveableState {
         return new Vector(tail, new Point(newX + tail.getX(), newY + tail.getY()));
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
+    public Vector rotateAntiClockwise90(){
+        return new Vector(yRelativeToTail, -1f * xRelativeToTail);
+    }
+
     public boolean isFromOrigin(){
         return tail.equals(new Point());
     }
@@ -251,6 +256,10 @@ public class Vector implements SaveableState {
     @Override
     public String toString() {
         return "tail: " + this.tail.toString() + ", head: " + this.head.toString() + ", x: " + xRelativeToTail + ", y: " + yRelativeToTail;
+    }
+
+    public String relativeToString(){
+        return "x: " + xRelativeToTail + ", y: " + yRelativeToTail;
     }
 
     @Override

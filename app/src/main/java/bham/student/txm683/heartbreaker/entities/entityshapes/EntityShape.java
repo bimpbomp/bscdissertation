@@ -106,6 +106,16 @@ public abstract class EntityShape implements SaveableState {
         return this.geometricCenter.add(interpolationVector.getRelativeToTailPoint());
     }
 
+    public void scaleKeepingRatios(float scaleByProportion){
+        scaleByProportion = Math.abs(scaleByProportion);
+
+        float heightChange = height*scaleByProportion;
+        float widthChange = width*scaleByProportion;
+
+        this.setHeight(heightChange);
+        this.setWidth(widthChange);
+    }
+
     public Point[] getVertices() {
         Point[] vertices = new Point[vertexVectors.length];
         for (int i = 0; i < vertexVectors.length; i++){

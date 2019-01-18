@@ -3,7 +3,6 @@ package bham.student.txm683.heartbreaker.entities;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.SaveableState;
 import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
@@ -116,8 +115,9 @@ public class Entity implements SaveableState {
     public void move(float secondsSinceLastGameTick){
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
 
-        if (!movementVector.equals(new Vector()))
+        if (!movementVector.equals(new Vector())) {
             shape.move(movementVector);
+        }
     }
 
     /**
@@ -173,7 +173,6 @@ public class Entity implements SaveableState {
         jsonObject.put("maxspeed", movementMaxSpeed);
         jsonObject.put("shapeidentifier", shape.getShapeIdentifier().getId());
 
-        Log.d(TAG, "generated state string: " + jsonObject.toString());
         return jsonObject;
     }
 

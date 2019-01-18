@@ -1,6 +1,5 @@
 package bham.student.txm683.heartbreaker;
 
-import android.util.Log;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
@@ -74,10 +73,8 @@ public class Level implements Runnable {
                     physicsController.update(gameTickTimeStepInMillis / 1000f);
 
                     //Log.d(TAG, "player updated");
-                    Log.d(TAG, "checking collisions");
                     collisionManager.checkCollisions();
 
-                    Log.d(TAG, "collisions checked");
                     levelView.setGrid(collisionManager.getBroadPhaseGrid());
 
                     gameFPSMonitor.updateFPS();
