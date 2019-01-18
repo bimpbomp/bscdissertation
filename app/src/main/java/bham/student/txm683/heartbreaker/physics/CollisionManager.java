@@ -59,7 +59,8 @@ public class CollisionManager {
     private void applySpatialPartitioning(){
         //TODO: At the minute, only checking vertices means that edges crossing a different cell reference wont get checked when they should
         Point gridMaximum = new Point(levelState.getMap().getDimensions().first, levelState.getMap().getDimensions().second);
-        broadPhaseGrid = new Grid(new Point(), gridMaximum, 70);
+        int cellSize = levelState.getScreenWidth()/4;
+        broadPhaseGrid = new Grid(new Point(), gridMaximum, cellSize);
 
         broadPhaseGrid.addEntityToGrid(levelState.getPlayer());
         //Log.d(TAG, levelState.getPlayer().getName() + " added to grid");

@@ -36,14 +36,13 @@ public class Grid {
 
     void addEntityToGrid(Entity entity){
         //Initial method: add entity to the cell that each of it's AABB vertices exist in.
-        //Doesn't consider AABBs that span more than two cells.
-
-
-        Point position = entity.getCurrentPosition();
 
         Point[] vertices = entity.getShape().getVertices();
 
+        //contains unique grid references
         Set<Pair<Integer, Integer>> addedGridReferences = new HashSet<>();
+
+        //adds entities vertices to grid
         for (Point point : vertices){
             Pair<Integer, Integer> pointGridReference = mapPointToGridPosition(point);
 
@@ -51,6 +50,7 @@ public class Grid {
 
             //Log.d(TAG, point.toString() + " maps to: " + pointGridReference.first + ", " + pointGridReference.second);
         }
+
 
         for (Pair<Integer, Integer> gridReference : addedGridReferences){
             insertEntityAtGridPosition(gridReference.first, gridReference.second, entity);

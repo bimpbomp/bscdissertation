@@ -9,9 +9,7 @@ public enum ShapeIdentifier {
 
     INVALID(-1),
     ISO_TRIANGLE(0),
-    EQU_TRIANGLE(1),
-    SQUARE(2),
-    RECT(3);
+    RECT(1);
     
 
     private final int id;

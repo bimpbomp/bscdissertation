@@ -3,7 +3,7 @@ package bham.student.txm683.heartbreaker;
 import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
@@ -60,9 +60,7 @@ public class LevelState {
             this.nonPlayerEntities.add(entity);
         }*/
 
-        Rectangle shape = new Rectangle(new Point(500, 400), 500, 50, Color.BLUE);
-        this.nonPlayerEntities.add(new Entity("NPE-1", 150f, shape));
-        //this.nonPlayerEntities.add(new Entity("NPE-1", new Point(500,400), ShapeIdentifier.RECT, 500, 50, 150f, Color.BLUE));
+        this.nonPlayerEntities.add(new Entity("NPE-1", new Point(500,400), ShapeIdentifier.RECT, 500, 50, 150f, Color.BLUE));
 
         this.player = new Player("player", map.getPlayerSpawnLocation());
     }

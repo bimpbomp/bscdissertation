@@ -36,11 +36,8 @@ public class Entity implements SaveableState {
             case ISO_TRIANGLE:
                 this.shape = new IsoscelesTriangle(spawnCoordinates, width, height, colorValue);
                 break;
-            case EQU_TRIANGLE:
-                break;
-            case SQUARE:
-                break;
             case RECT:
+                this.shape = new Rectangle(spawnCoordinates, width, height, colorValue);
                 break;
         }
 
