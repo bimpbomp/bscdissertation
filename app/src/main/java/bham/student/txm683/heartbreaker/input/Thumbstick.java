@@ -20,6 +20,7 @@ public class Thumbstick {
     private Vector inputVector;
 
     private float maxRadius;
+    private float maxInputLengthRequirement;
     private Paint maxPaint;
 
     private boolean receivingInput;
@@ -45,6 +46,8 @@ public class Thumbstick {
         this.maxPaint = new Paint();
         this.maxPaint.setColor(Color.RED);
         this.maxPaint.setStrokeWidth(10);
+
+        this.maxInputLengthRequirement = maxRadius * 0.9f;
     }
 
     public void draw(Canvas canvas){
@@ -64,7 +67,7 @@ public class Thumbstick {
         if (inputVector.getTail().equals(inputVector.getHead())){
             return new Vector();
         } else {
-            return inputVector.sMult(1/maxRadius).translate(neutralPosition.smult(-1f));
+            return inputVector.sMult(1/maxInputLengthRequirement).translate(neutralPosition.smult(-1f));
         }
     }
 

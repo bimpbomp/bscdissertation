@@ -1,7 +1,10 @@
 package bham.student.txm683.heartbreaker.map;
 
+import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.utils.Point;
+
+import java.util.ArrayList;
 
 public class Map {
 
@@ -9,20 +12,67 @@ public class Map {
 
     private int width, height;
 
-    private Point[] enemySpawnLocations;
+    private ArrayList<Pair<Integer, Point>> enemySpawnLocations;
     private Point playerSpawnLocation;
+    private ArrayList<Point> staticSpawns;
+
+    private int tileSize;
 
     public Map(){
-        initTestMap("TestMap");
-    }
-
-    public Map(String name){
-        initTestMap(name);
+        enemySpawnLocations = new ArrayList<>();
+        playerSpawnLocation = new Point();
+        staticSpawns = new ArrayList<>();
+        this.tileSize = 0;
     }
 
     private void initTestMap(String name){
         this.name = name;
-        //init test map entity locations
+
+        //simulating file reading
+        int[][] mapTiles = new int[][]{
+                {1,1,1,1,1,1,1,1,1},
+                {1,0,0,1,0,0,0,0,1},
+                {1,0,0,1,0,0,4,3,1},
+                {1,0,1,1,1,0,1,1,1},
+                {1,0,0,0,2,0,0,0,1},
+                {1,0,0,1,0,0,1,0,1},
+                {1,1,1,1,1,1,1,1,1},};
+
+        for (int row = 0; row < mapTiles.length; row++){
+            for (int column = 0; column < mapTiles[row].length; column++){
+                Point spawnTile = new Point(column* tileSize, row* tileSize);
+                Point centerOffset = new Point(tileSize /2f, tileSize /2f);
+                Point spawnLocation = spawnTile.add(centerOffset);
+
+                //Log.d("hb::Map", "spawn: " + spawnLocation.toString());
+                switch (mapTiles[row][column]){
+                    case (0):
+                        break;
+                    case (1):
+                        Log.d("hb::Map", "static: " + spawnLocation);
+                        staticSpawns.add(spawnLocation);
+                        break;
+                    case (2):
+                        Log.d("hb::Map", "player: " + spawnLocation);
+                        playerSpawnLocation = spawnLocation;
+                        break;
+                    case (3):
+                        Log.d("hb::Map", "enemy triangle: " + spawnLocation);
+                        enemySpawnLocations.add(new Pair<>(3, spawnLocation));
+                        break;
+                    case (4):
+                        Log.d("hb::Map", "enemy rectangle: " + spawnLocation);
+                        enemySpawnLocations.add(new Pair<>(4, spawnLocation));
+                        break;
+                    default:
+                        Log.d("hb::Map", "Invalid");
+                }
+            }
+            this.width = mapTiles[0].length*tileSize;
+            this.height = mapTiles.length*tileSize;
+        }
+
+        /*//init test map entity locations
         enemySpawnLocations = new Point[25];
         int count = 0;
         for (int i = 0; i < 5; i++){
@@ -31,12 +81,13 @@ public class Map {
                 count++;
             }
         }
-        playerSpawnLocation = new Point(100,100);
+        playerSpawnLocation = new Point(100,100);*/
     }
 
-    public void loadMap(int width, int height){
-        this.width = width;
-        this.height = height;
+    public void loadMap(String mapName, int tileSize){
+        this.tileSize = tileSize;
+
+        initTestMap(mapName);
     }
 
     public String getName() {
@@ -63,11 +114,19 @@ public class Map {
         return new Pair<>(width, height);
     }
 
-    public Point[] getEnemySpawnLocations() {
-        return enemySpawnLocations;
+    public Pair[] getEnemySpawnLocations() {
+        return enemySpawnLocations.toArray(new Pair[0]);
+    }
+
+    public Point[] getStaticSpawns(){
+        return staticSpawns.toArray(new Point[0]);
     }
 
     public Point getPlayerSpawnLocation() {
         return playerSpawnLocation;
+    }
+
+    public int getTileSize() {
+        return tileSize;
     }
 }

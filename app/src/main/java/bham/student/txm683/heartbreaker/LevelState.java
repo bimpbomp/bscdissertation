@@ -1,7 +1,10 @@
 package bham.student.txm683.heartbreaker;
 
 import android.graphics.Color;
+import android.util.Log;
+import android.util.Pair;
 import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.map.Map;
@@ -22,7 +25,8 @@ public class LevelState {
     private final Map map;
 
     private Player player;
-    private ArrayList<Entity> nonPlayerEntities;
+    private ArrayList<Entity> staticEntities;
+    private ArrayList<MoveableEntity> enemyEntities;
 
     private int screenWidth;
     private int screenHeight;
@@ -31,7 +35,8 @@ public class LevelState {
         this.uniqueID = new UniqueID();
         this.map = map;
 
-        this.nonPlayerEntities = new ArrayList<>();
+        this.staticEntities = new ArrayList<>();
+        this.enemyEntities = new ArrayList<>();
 
         freshInitFromMap();
     }
@@ -39,38 +44,66 @@ public class LevelState {
     public LevelState(String stateString) throws ParseException, JSONException {
         JSONObject jsonObject = new JSONObject(stateString);
 
-        this.map = new Map(jsonObject.getString("mapname"));
+        this.map = new Map();
+        this.map.loadMap("TestMap", 50);
         this.uniqueID = new UniqueID(jsonObject.getInt("uniqueidcounter"));
 
         this.player = new Player(jsonObject.getString("player"));
 
-        JSONArray npes = jsonObject.getJSONArray("npes");
+        JSONArray statics = jsonObject.getJSONArray("statics");
 
-        this.nonPlayerEntities = new ArrayList<>();
-        for (int i = 0; i < npes.length(); i++){
-            this.nonPlayerEntities.add(new Entity((String)npes.get(i)));
+        this.staticEntities = new ArrayList<>();
+        for (int i = 0; i < statics.length(); i++){
+            this.staticEntities.add(new Entity((String)statics.get(i)));
+        }
+
+        JSONArray enemies = jsonObject.getJSONArray("enemies");
+
+        this.enemyEntities = new ArrayList<>();
+        for (int i = 0; i < enemies.length(); i++){
+            this.enemyEntities.add(new MoveableEntity(enemies.getString(i)));
         }
     }
 
     private void freshInitFromMap(){
-        /*Point[] enemySpawns = this.map.getEnemySpawnLocations();
-        for (Point enemySpawn : enemySpawns) {
-            IsoscelesTriangle shape = new IsoscelesTriangle(enemySpawn, 50, 50, Color.BLUE);
-            Entity entity = new Entity("NPE-" + uniqueID.id(), 150f, shape);
-            this.nonPlayerEntities.add(entity);
-        }*/
+        /*this.staticEntities.add(new Entity("NPE-1", new Point(500,400), ShapeIdentifier.RECT, 500, 50, Color.BLUE));
 
-        this.nonPlayerEntities.add(new Entity("NPE-1", new Point(500,400), ShapeIdentifier.RECT, 500, 50, 150f, Color.BLUE));
+        this.player = new Player("player", map.getPlayerSpawnLocation());*/
 
-        this.player = new Player("player", map.getPlayerSpawnLocation());
+        Log.d(TAG, "player spawn: " + map.getPlayerSpawnLocation());
+        this.player = new Player("player", map.getPlayerSpawnLocation(), map.getTileSize()/2, map.getTileSize() * 2);
+
+        Point[] staticSpawns = map.getStaticSpawns();
+        for (Point staticSpawn : staticSpawns){
+            Log.d(TAG, "staticSpawn: "+ staticSpawn.toString());
+            this.staticEntities.add(new Entity("Static-"+uniqueID.id(), staticSpawn, ShapeIdentifier.RECT, map.getTileSize(), map.getTileSize(), Color.BLUE));
+        }
+
+        Pair[] enemySpawns = map.getEnemySpawnLocations();
+        for (Pair pair : enemySpawns){
+            Point enemySpawn = (Point)pair.second;
+            Log.d(TAG, "enemySpawn: " + enemySpawn.toString());
+
+            ShapeIdentifier shapeIdentifier;
+
+            if ((int) pair.first == 3){
+                shapeIdentifier = ShapeIdentifier.RECT;
+            } else if ((int) pair.first == 4){
+                shapeIdentifier = ShapeIdentifier.ISO_TRIANGLE;
+            } else {
+                shapeIdentifier = ShapeIdentifier.INVALID;
+            }
+
+            this.enemyEntities.add(new MoveableEntity("E-" + uniqueID.id(), enemySpawn, shapeIdentifier, map.getTileSize()/2, map.getTileSize()/2, Color.YELLOW, 200f));
+        }
     }
 
-    public void addNonPlayerEntity(Entity entity){
-        this.nonPlayerEntities.add(entity);
+    public void addStaticEntity(Entity entity){
+        this.staticEntities.add(entity);
     }
 
-    public ArrayList<Entity> getNonPlayerEntities(){
-        return this.nonPlayerEntities;
+    public ArrayList<Entity> getStaticEntities(){
+        return this.staticEntities;
     }
 
     public void setPlayer(Player player){
@@ -107,11 +140,17 @@ public class LevelState {
 
             jsonObject.put("player", player.getStateObject());
 
-            JSONObject[] nPEStateString = new JSONObject[nonPlayerEntities.size()];
-            for (int i = 0; i < nonPlayerEntities.size(); i++){
-                nPEStateString[i] = nonPlayerEntities.get(i).getStateObject();
+            JSONObject[] staticsStateString = new JSONObject[staticEntities.size()];
+            for (int i = 0; i < staticEntities.size(); i++){
+                staticsStateString[i] = staticEntities.get(i).getStateObject();
             }
-            jsonObject.put("npes", new JSONArray(nPEStateString));
+            jsonObject.put("statics", new JSONArray(staticsStateString));
+
+            JSONObject[] enemiesStateString = new JSONObject[enemyEntities.size()];
+            for (int i = 0; i < enemyEntities.size(); i++){
+                enemiesStateString[i] = enemyEntities.get(i).getStateObject();
+            }
+            jsonObject.put("enemies", new JSONArray(enemiesStateString));
 
         } catch (JSONException e){
             //error parsing state for saving, abort
@@ -120,4 +159,16 @@ public class LevelState {
 
         return jsonObject.toString();
     }
+
+    public ArrayList<MoveableEntity> getEnemyEntities() {
+        return enemyEntities;
+    }
+
+    /*private JSONObject[] getEntityArrayListStateString(ArrayList<Entity> arrayList) throws JSONException{
+        JSONObject[] listStateString = new JSONObject[arrayList.size()];
+        for (int i = 0; i < arrayList.size(); i++){
+            listStateString[i] = arrayList.get(i).getStateObject();
+        }
+        return listStateString;
+    }*/
 }

@@ -1,6 +1,5 @@
 package bham.student.txm683.heartbreaker.utils;
 
-import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import bham.student.txm683.heartbreaker.SaveableState;
@@ -75,7 +74,7 @@ public class Point implements SaveableState {
                 '}';
     }
 
-    public static Path getPathWithPoints(Point[] points){
+    /*public static Path getPathWithPoints(Point[] points){
         Path path = new Path();
 
         if (points.length > 0) {
@@ -87,7 +86,7 @@ public class Point implements SaveableState {
         }
         path.close();
         return path;
-    }
+    }*/
 
     @Override
     public JSONObject getStateObject() throws JSONException {

@@ -59,13 +59,20 @@ public class CollisionManager {
     private void applySpatialPartitioning(){
         //TODO: At the minute, only checking vertices means that edges crossing a different cell reference wont get checked when they should
         Point gridMaximum = new Point(levelState.getMap().getDimensions().first, levelState.getMap().getDimensions().second);
-        int cellSize = levelState.getScreenWidth()/4;
+
+        //int cellSize = 500;
+        int cellSize = levelState.getMap().getTileSize() * 2;
         broadPhaseGrid = new Grid(new Point(), gridMaximum, cellSize);
 
         broadPhaseGrid.addEntityToGrid(levelState.getPlayer());
         //Log.d(TAG, levelState.getPlayer().getName() + " added to grid");
 
-        for (Entity entity : levelState.getNonPlayerEntities()){
+        for (Entity entity : levelState.getStaticEntities()){
+            broadPhaseGrid.addEntityToGrid(entity);
+            //Log.d(TAG, entity.getName() + " added to grid");
+        }
+
+        for (Entity entity : levelState.getEnemyEntities()){
             broadPhaseGrid.addEntityToGrid(entity);
             //Log.d(TAG, entity.getName() + " added to grid");
         }
@@ -110,6 +117,10 @@ public class CollisionManager {
 
                         Entity firstEntity = bin.get(i);
                         Entity secondEntity = bin.get(j);
+
+                        if (!firstEntity.canMove() && !secondEntity.canMove()){
+                            continue;
+                        }
 
                         if (collidedPairNames.contains(firstEntity.getName()+secondEntity.getName())){
                             //Log.d(TAG+collisionCount, "already collided: " + firstEntity.getName() + ", " + secondEntity.getName());

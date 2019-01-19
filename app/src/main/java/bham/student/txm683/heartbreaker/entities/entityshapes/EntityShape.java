@@ -79,18 +79,32 @@ public abstract class EntityShape implements SaveableState {
 
     public abstract void setRelativeUpUnitVector();
 
-    public void draw(Canvas canvas, Vector interpolationVector) {
+    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
         Path path;
 
         if (interpolationVector.equals(new Vector())) {
             //Log.d(TAG+":draw", "zero interpol vector");
-            path = Point.getPathWithPoints(getVertices());
+            path = getPathWithPoints(getVertices(renderOffset));
         } else {
             //Log.d(TAG+":draw", interpolationVector.toString());
-            path = Point.getPathWithPoints(getInterpolatedVertices(interpolationVector));
+            path = getPathWithPoints(getInterpolatedVertices(interpolationVector, renderOffset));
         }
 
         canvas.drawPath(path, this.paint);
+    }
+
+    private static Path getPathWithPoints(Point[] points){
+        Path path = new Path();
+
+        if (points.length > 0) {
+            path.moveTo(points[0].getX(), points[0].getY());
+
+            for (Point point : points) {
+                path.lineTo(point.getX(), point.getY());
+            }
+        }
+        path.close();
+        return path;
     }
 
     public void move(Vector movementVector){
@@ -102,8 +116,8 @@ public abstract class EntityShape implements SaveableState {
         translateShape(new Vector(this.geometricCenter, geometricCenter));
     }
 
-    public Point getInterpolatedCenter(Vector interpolationVector){
-        return this.geometricCenter.add(interpolationVector.getRelativeToTailPoint());
+    public Point getInterpolatedCenter(Vector interpolationVector, Point renderOffset){
+        return this.geometricCenter.add(interpolationVector.getRelativeToTailPoint()).add(renderOffset);
     }
 
     public void scaleKeepingRatios(float scaleByProportion){
@@ -124,7 +138,15 @@ public abstract class EntityShape implements SaveableState {
         return vertices;
     }
 
-    private Point[] getInterpolatedVertices(Vector interpolationVector){
+    public Point[] getVertices(Point renderOffset) {
+        Point[] vertices = new Point[vertexVectors.length];
+        for (int i = 0; i < vertexVectors.length; i++){
+            vertices[i] = vertexVectors[i].getHead().add(renderOffset);
+        }
+        return vertices;
+    }
+
+    private Point[] getInterpolatedVertices(Vector interpolationVector, Point renderOffset){
 
         if (!interpolationVector.equals(new Vector())) {
             Point amountToAdd = interpolationVector.getRelativeToTailPoint();
@@ -137,11 +159,11 @@ public abstract class EntityShape implements SaveableState {
 
             Point[] interpolatedVertices = new Point[vertexVectors.length];
             for (int i = 0; i < vertexVectors.length; i++){
-                interpolatedVertices[i] = rotateVertexVector(vertexVectors[i], cosAngle, sinAngle).translate(amountToAdd).getHead();
+                interpolatedVertices[i] = rotateVertexVector(vertexVectors[i], cosAngle, sinAngle).translate(amountToAdd).getHead().add(renderOffset);
             }
             return interpolatedVertices;
         }
-        return getVertices();
+        return getVertices(renderOffset);
     }
 
     private void rotateVertices(Vector movementVector){

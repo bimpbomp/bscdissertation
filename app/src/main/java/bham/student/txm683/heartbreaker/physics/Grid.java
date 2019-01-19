@@ -53,7 +53,8 @@ public class Grid {
 
 
         for (Pair<Integer, Integer> gridReference : addedGridReferences){
-            insertEntityAtGridPosition(gridReference.first, gridReference.second, entity);
+            if ((gridReference.first >= 0 && gridReference.first <= gridDimensionsInCells.first) && (gridReference.second >= 0 && gridReference.second <= gridDimensionsInCells.second))
+                insertEntityAtGridPosition(gridReference.first, gridReference.second, entity);
         }
     }
 

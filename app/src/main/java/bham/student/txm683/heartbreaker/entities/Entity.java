@@ -18,18 +18,18 @@ import java.text.ParseException;
 public class Entity implements SaveableState {
     String TAG;
 
-    private String name;
-    private EntityShape shape;
-    private Paint textPaint;
+    String name;
+    EntityShape shape;
 
-    private Vector inputtedMovementVector;
-    private float movementMaxSpeed;
+    Paint textPaint;
 
-    private boolean collided;
+    boolean moveable;
 
-    public Entity(String name, Point spawnCoordinates, ShapeIdentifier shapeIdentifier, int width, int height, float movementMaxSpeed, int colorValue){
+    boolean collided;
+
+    public Entity(String name, Point spawnCoordinates, ShapeIdentifier shapeIdentifier, int width, int height, int colorValue){
         this.name = name;
-        this.movementMaxSpeed = movementMaxSpeed;
+        this.TAG = "hb::" + this.getClass().getName() + ":" + name;
 
         switch (shapeIdentifier){
 
@@ -40,14 +40,18 @@ public class Entity implements SaveableState {
                 this.shape = new Rectangle(spawnCoordinates, width, height, colorValue);
                 break;
         }
+        moveable = false;
 
         initTextPaint();
     }
 
-    public Entity(String name, float movementMaxSpeed, EntityShape shape){
+    public Entity(String name, EntityShape shape){
         this.name = name;
-        this.movementMaxSpeed = movementMaxSpeed;
+        this.TAG = "hb::" + this.getClass().getName() + ":" + name;
+
         this.shape = shape;
+
+        moveable = false;
 
         initTextPaint();
     }
@@ -56,7 +60,7 @@ public class Entity implements SaveableState {
         JSONObject jsonObject = new JSONObject(stateString);
 
         this.name = jsonObject.getString("name");
-        this.movementMaxSpeed = Float.parseFloat(jsonObject.getString("maxspeed"));
+        this.TAG = "hb::" + this.getClass().getName() + ":" + name;
 
         try {
             switch (ShapeIdentifier.fromInt(jsonObject.getInt("shapeidentifier"))) {
@@ -73,7 +77,13 @@ public class Entity implements SaveableState {
             throw new ParseException(name + e.getMessage(),0);
         }
 
+        moveable = false;
+
         initTextPaint();
+    }
+
+    public boolean canMove() {
+        return moveable;
     }
 
     private void initTextPaint(){
@@ -86,9 +96,8 @@ public class Entity implements SaveableState {
     /**
     * Draws the entity to the given canvas
     * @param canvas Canvas to draw to.
-    * @param secondsSinceLastGameTick time since last game tick in seconds for interpolation of position
     */
-    public void draw(Canvas canvas, float secondsSinceLastGameTick){
+    public void draw(Canvas canvas, Point renderOffset){
 
         if (collided){
             shape.setColor(Color.RED);
@@ -97,64 +106,14 @@ public class Entity implements SaveableState {
             shape.resetToDefaultColor();
         }
 
-        Vector interpolationVector = calculateMovementVector(secondsSinceLastGameTick);
+        shape.draw(canvas, renderOffset, new Vector());
 
-        shape.draw(canvas, interpolationVector);
-
-        Point interpolatedCenter = shape.getInterpolatedCenter(interpolationVector);
-        canvas.drawText(name, interpolatedCenter.getX(), interpolatedCenter.getY(), textPaint);
-    }
-
-    /**
-    * Updates the shape position and rotation based on time passed and current movement vector.
-    * @param secondsSinceLastGameTick time since last game tick, in seconds
-    */
-    public void move(float secondsSinceLastGameTick){
-        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
-
-        if (!movementVector.equals(new Vector())) {
-            shape.move(movementVector);
-        }
-    }
-
-    /**
-    * Returns the new position for this entity based on time passed since last update.
-    * This method does NOT update the position with the new value, only returns it.
-    * @param secondsSinceLastGameTick time passed since last game tick in seconds
-    * @return New position = oldPosition + (maxSpeed*time)*inputtedMovementVector
-    */
-    private Point getNextPosition(float secondsSinceLastGameTick){
-        if (Float.compare(secondsSinceLastGameTick, 0f) == 0){
-            return shape.getCenter();
-        }
-        return shape.getCenter().addVector(calculateMovementVector(secondsSinceLastGameTick));
-    }
-
-    /**
-     * Calculates the movement vector by multipling the inputtedVector by maxSpeed
-     * @param secondsSinceLastGameTick seconds since last game tick
-     * @return complete movement vector
-     */
-    private Vector calculateMovementVector(float secondsSinceLastGameTick){
-        //Log.d(TAG, "calculate movement vector: " + inputtedMovementVector.sMult(secondsSinceLastGameTick*movementMaxSpeed));
-        return inputtedMovementVector != null ? inputtedMovementVector.sMult(secondsSinceLastGameTick*movementMaxSpeed) : new Vector();
-    }
-
-    public Point getCurrentPosition(){
-        return this.shape.getCenter();
+        Point center = shape.getCenter().add(renderOffset);
+        canvas.drawText(name, center.getX()-shape.getWidth()/2, center.getY(), textPaint);
     }
 
     public String getName(){
         return this.name;
-    }
-
-    public void setMovementVector(Vector movementVector){
-        //Log.d(TAG, "set movement vector: "+movementVector.toString());
-        this.inputtedMovementVector = movementVector;
-    }
-
-    public void setMovementMaxSpeed(float movementMaxSpeed){
-        this.movementMaxSpeed = movementMaxSpeed;
     }
 
     /**
@@ -167,9 +126,7 @@ public class Entity implements SaveableState {
 
         jsonObject.put("name", name);
         jsonObject.put("shape", shape.getStateObject());
-        jsonObject.put("maxspeed", movementMaxSpeed);
         jsonObject.put("shapeidentifier", shape.getShapeIdentifier().getId());
-
         return jsonObject;
     }
 

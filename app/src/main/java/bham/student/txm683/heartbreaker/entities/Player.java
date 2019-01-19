@@ -7,15 +7,13 @@ import org.json.JSONException;
 
 import java.text.ParseException;
 
-public class Player extends Entity {
+public class Player extends MoveableEntity {
 
-    public Player(String name, Point spawnCoordinates){
-        super(name, 250f, new Rectangle(spawnCoordinates, 50, 50, Color.BLACK));
-        this.TAG = "hb::Player:"+ name;
+    public Player(String name, Point spawnCoordinates, int size, float maxSpeed){
+        super(name, new Rectangle(spawnCoordinates, size, size, Color.BLACK), maxSpeed);
     }
 
     public Player(String stateString) throws ParseException, JSONException {
         super(stateString);
-        //TODO add name to tag as in above constructor
     }
 }

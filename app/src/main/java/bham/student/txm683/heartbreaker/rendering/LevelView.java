@@ -17,6 +17,8 @@ import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.physics.Grid;
 import bham.student.txm683.heartbreaker.utils.Point;
 
+import java.util.ArrayList;
+
 
 public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -72,6 +74,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.viewWidth = w;
         this.viewHeight = h;
         super.onSizeChanged(w, h, oldw, oldh);
+
+        if (this.levelState != null)
+            this.levelState.setScreenDimensions(viewWidth, viewHeight);
     }
 
     @Override
@@ -84,10 +89,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.level.setInputManager(inputManager);
 
         if (this.levelState == null) {
-            this.levelState = new LevelState(new Map());
-            this.levelState.setScreenDimensions(viewWidth, viewHeight);
+            Map map = new Map();
+            map.loadMap("TestMap", 300);
+            this.levelState = new LevelState(map);
 
-            this.levelState.getMap().loadMap(viewWidth, viewHeight);
+            this.levelState.setScreenDimensions(viewWidth, viewHeight);
         }
         this.level.setLevelState(levelState);
 
@@ -99,6 +105,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.d(TAG, "surfaceChanged");
+
+        this.viewWidth = width;
+        this.viewHeight = height;
+
+        this.levelState.setScreenDimensions(viewWidth, viewHeight);
     }
 
     @Override
@@ -123,6 +134,37 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void draw(int renderfps, int gametickfps, float timeSinceLastGameTick){
+
+        Point viewWorldOrigin = levelState.getPlayer().getShape().getCenter().add(new Point(-1*viewWidth/2f, -1*viewHeight/2f));
+        Point viewWorldMax = viewWorldOrigin.add(new Point(viewWidth, viewHeight));
+
+        ArrayList<Entity> staticEntitiesToRender = new ArrayList<>();
+
+        for (Entity staticEntity: levelState.getStaticEntities()){
+
+            for (Point point : staticEntity.getShape().getVertices()) {
+
+                if ((point.getX() >= viewWorldOrigin.getX() && point.getX() <= viewWorldMax.getX()) && (point.getY() >= viewWorldOrigin.getY() && point.getY() <= viewWorldMax.getY())) {
+                    staticEntitiesToRender.add(staticEntity);
+                    break;
+                }
+            }
+        }
+
+        ArrayList<Entity> enemiesToRender = new ArrayList<>();
+
+        for (Entity enemy: levelState.getEnemyEntities()){
+
+            for (Point point : enemy.getShape().getVertices()) {
+
+                if ((point.getX() >= viewWorldOrigin.getX() && point.getX() <= viewWorldMax.getX()) && (point.getY() >= viewWorldOrigin.getY() && point.getY() <= viewWorldMax.getY())) {
+                    enemiesToRender.add(enemy);
+                    break;
+                }
+            }
+        }
+
+
         Canvas canvas = getHolder().lockCanvas();
 
         //TODO: This is to disable interpolation
@@ -131,9 +173,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         if (canvas != null){
             super.draw(canvas);
 
+            Point renderOffset = viewWorldOrigin.smult(-1f);
+
             canvas.drawRGB(255,255,255);
 
-            //draw physics broad phase grid (if set)
+            /*//draw physics broad phase grid (if set)
             if (grid != null) {
 
                 for (int i = 0; i < viewWidth; i += grid.getCellSize()) {
@@ -144,12 +188,16 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 for (int i = grid.getCellSize(); i < viewHeight; i += grid.getCellSize()) {
                     canvas.drawLine(0, i, viewWidth, i, textPaint);
                 }
+            }*/
+
+            levelState.getPlayer().draw(canvas, renderOffset, timeSinceLastGameTick);
+
+            for (Entity entity : enemiesToRender){
+                entity.draw(canvas, renderOffset);
             }
 
-            levelState.getPlayer().draw(canvas, timeSinceLastGameTick);
-
-            for (Entity entity : levelState.getNonPlayerEntities()){
-                entity.draw(canvas, timeSinceLastGameTick);
+            for (Entity entity : staticEntitiesToRender){
+                entity.draw(canvas, renderOffset);
             }
 
             inputManager.getThumbstick().draw(canvas);
