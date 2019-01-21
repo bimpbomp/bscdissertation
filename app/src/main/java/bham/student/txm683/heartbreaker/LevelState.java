@@ -31,12 +31,18 @@ public class LevelState {
     private int screenWidth;
     private int screenHeight;
 
+    private boolean readyToRender;
+    private boolean paused;
+
     public LevelState(Map map){
         this.uniqueID = new UniqueID();
         this.map = map;
 
         this.staticEntities = new ArrayList<>();
         this.enemyEntities = new ArrayList<>();
+
+        this.readyToRender = false;
+        this.paused = false;
 
         freshInitFromMap();
     }
@@ -71,7 +77,7 @@ public class LevelState {
         this.player = new Player("player", map.getPlayerSpawnLocation());*/
 
         Log.d(TAG, "player spawn: " + map.getPlayerSpawnLocation());
-        this.player = new Player("player", map.getPlayerSpawnLocation(), map.getTileSize()/2, map.getTileSize() * 2);
+        this.player = new Player("player", map.getPlayerSpawnLocation(), map.getTileSize()/2, map.getTileSize()*2);
 
         Point[] staticSpawns = map.getStaticSpawns();
         for (Point staticSpawn : staticSpawns){
@@ -171,4 +177,20 @@ public class LevelState {
         }
         return listStateString;
     }*/
+
+    public boolean isReadyToRender() {
+        return readyToRender;
+    }
+
+    public void setReadyToRender(boolean readyToRender) {
+        this.readyToRender = readyToRender;
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+    }
 }

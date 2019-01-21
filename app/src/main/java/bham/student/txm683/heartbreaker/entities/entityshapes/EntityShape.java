@@ -79,6 +79,8 @@ public abstract class EntityShape implements SaveableState {
 
     public abstract void setRelativeUpUnitVector();
 
+    public abstract Point[] getCollisionVertices();
+
     public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
         Path path;
 

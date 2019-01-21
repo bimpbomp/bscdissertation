@@ -31,7 +31,7 @@ public enum ShapeIdentifier {
     }
 
     public static ShapeIdentifier fromInt(int i) {
-        ShapeIdentifier type = intToTypeMap.get(Integer.valueOf(i));
+        ShapeIdentifier type = intToTypeMap.get(i);
         if (type == null)
             return ShapeIdentifier.INVALID;
         return type;

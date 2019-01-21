@@ -2,10 +2,12 @@ package bham.student.txm683.heartbreaker;
 
 import android.app.Activity;
 import android.content.Context;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import bham.student.txm683.heartbreaker.audio.AudioController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 
 import java.io.*;
@@ -20,6 +22,7 @@ public class MainActivity extends Activity {
     private LevelView levelView;
 
     private LevelState levelState;
+    private AudioController audioController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +31,7 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        audioController = new AudioController(10);
         levelView = new LevelView(this);
 
         setContentView(levelView);
@@ -45,19 +49,27 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        audioController.initSounds(this);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
         Log.d(TAG, "onStart");
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
+        this.levelState.setReadyToRender(true);
         Log.d(TAG, "onRestart");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        levelView.setPaused(false);
+        if (this.levelState != null) {
+            Log.d(TAG, "onResume levelstate not null");
+            this.levelState.setPaused(true);
+        }
         Log.d(TAG, "onResume");
     }
 
@@ -65,22 +77,28 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
 
-        levelState = levelView.onPause();
+        this.levelState = levelView.getLevelState();
+        levelState.setPaused(true);
         Log.d(TAG, "onPause");
     }
 
     @Override
     protected void onStop() {
-        Log.d(TAG, "Entering onStop");
         super.onStop();
+        this.levelState.setReadyToRender(false);
+
         String saveString = levelState.getSaveString();
         saveToFile(SAVE_FILE_NAME, saveString);
+
+        audioController.releaseResources();
+
         Log.d(TAG, "onStop");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         Log.d(TAG, "onDestroy");
     }
 

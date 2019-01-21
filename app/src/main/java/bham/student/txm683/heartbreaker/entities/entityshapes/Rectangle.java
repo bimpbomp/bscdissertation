@@ -84,6 +84,12 @@ public class Rectangle extends EntityShape {
     }
 
     @Override
+    public Point[] getCollisionVertices() {
+        Point[] vertices = getVertices();
+        return new Point[]{vertices[0], vertices[1]};
+    }
+
+    @Override
     public JSONObject getStateObject() throws JSONException {
         JSONObject jsonObject = this.getAbstractJSONObject();
         jsonObject.put("anglebetweenprimaryandup", angleBetweenUpandPrimaryVectors);

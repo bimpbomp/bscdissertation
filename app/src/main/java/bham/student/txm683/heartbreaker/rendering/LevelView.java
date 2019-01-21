@@ -11,6 +11,7 @@ import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.map.Map;
@@ -34,11 +35,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     private int viewWidth;
     private int viewHeight;
 
+    private Point viewWorldOrigin;
+    private Point viewWorldMax;
+
     private Grid grid;
-
-    private boolean resumingFromSaveFile;
-
-    //private IsoscelesTriangle triangle;
 
     public LevelView(Context context){
         super(context);
@@ -50,7 +50,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         initPaintForText();
 
-        resumingFromSaveFile = false;
     }
 
     public void loadSaveFromStateString(String stateString){
@@ -63,9 +62,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public LevelState onPause(){
-        this.setPaused(true);
-        return levelState;
+    public void setLevelState(LevelState levelState){
+        this.levelState = levelState;
     }
 
     @Override
@@ -83,33 +81,43 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "surfaceCreated");
 
-        float thumbstickMaxRadius = 150f;
-
-        this.inputManager = new InputManager(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), 50, thumbstickMaxRadius));
-        this.level.setInputManager(inputManager);
-
         if (this.levelState == null) {
             Map map = new Map();
             map.loadMap("TestMap", 300);
             this.levelState = new LevelState(map);
 
             this.levelState.setScreenDimensions(viewWidth, viewHeight);
+
+            this.inputManager = new InputManager(levelState);
+
+            this.level.setInputManager(inputManager);
+            this.level.setLevelState(levelState);
         }
-        this.level.setLevelState(levelState);
 
         this.levelThread = new Thread(this.level);
         this.level.setRunning(true);
         this.levelThread.start();
     }
 
+    private void initInGameUI(){
+        float thumbstickMaxRadius = 150f;
+        this.inputManager.setThumbstick(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), thumbstickMaxRadius/3f, thumbstickMaxRadius));
+
+        int pauseButtonRadius = 50;
+        this.inputManager.setPauseButton(new Button(new Point(pauseButtonRadius+20, pauseButtonRadius+20), pauseButtonRadius, Color.LTGRAY));
+    }
+
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.d(TAG, "surfaceChanged");
 
         this.viewWidth = width;
         this.viewHeight = height;
 
         this.levelState.setScreenDimensions(viewWidth, viewHeight);
+
+        initInGameUI();
+
+        Log.d(TAG, "surfaceChanged");
     }
 
     @Override
@@ -133,41 +141,33 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         return inputManager.onTouchEvent(event);
     }
 
-    public void draw(int renderfps, int gametickfps, float timeSinceLastGameTick){
+    public void draw(int renderFPS, int gameTickFPS, float timeSinceLastGameTick){
 
-        Point viewWorldOrigin = levelState.getPlayer().getShape().getCenter().add(new Point(-1*viewWidth/2f, -1*viewHeight/2f));
-        Point viewWorldMax = viewWorldOrigin.add(new Point(viewWidth, viewHeight));
+        //get visible boundaries relative to world coordinates
+        viewWorldOrigin = levelState.getPlayer().getShape().getCenter().add(new Point(-1*viewWidth/2f, -1*viewHeight/2f));
+        viewWorldMax = viewWorldOrigin.add(new Point(viewWidth, viewHeight));
 
+        //Calculate what entities are in view of the player on screen
         ArrayList<Entity> staticEntitiesToRender = new ArrayList<>();
 
         for (Entity staticEntity: levelState.getStaticEntities()){
-
-            for (Point point : staticEntity.getShape().getVertices()) {
-
-                if ((point.getX() >= viewWorldOrigin.getX() && point.getX() <= viewWorldMax.getX()) && (point.getY() >= viewWorldOrigin.getY() && point.getY() <= viewWorldMax.getY())) {
-                    staticEntitiesToRender.add(staticEntity);
-                    break;
-                }
+            if (isOnScreen(staticEntity.getShape().getVertices())){
+                staticEntitiesToRender.add(staticEntity);
             }
         }
 
         ArrayList<Entity> enemiesToRender = new ArrayList<>();
 
         for (Entity enemy: levelState.getEnemyEntities()){
-
-            for (Point point : enemy.getShape().getVertices()) {
-
-                if ((point.getX() >= viewWorldOrigin.getX() && point.getX() <= viewWorldMax.getX()) && (point.getY() >= viewWorldOrigin.getY() && point.getY() <= viewWorldMax.getY())) {
-                    enemiesToRender.add(enemy);
-                    break;
-                }
+            if (isOnScreen(enemy.getShape().getVertices())){
+                enemiesToRender.add(enemy);
             }
         }
 
 
         Canvas canvas = getHolder().lockCanvas();
 
-        //TODO: This is to disable interpolation
+        //TODO: Is currently set to zero to disable interpolation. Remove line to re-enable
         timeSinceLastGameTick = 0f;
 
         if (canvas != null){
@@ -175,20 +175,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             Point renderOffset = viewWorldOrigin.smult(-1f);
 
+            //draw background
             canvas.drawRGB(255,255,255);
-
-            /*//draw physics broad phase grid (if set)
-            if (grid != null) {
-
-                for (int i = 0; i < viewWidth; i += grid.getCellSize()) {
-                    //Log.d(TAG, i + ", " + 0 + ", " + i + ", " + viewHeight);
-                    canvas.drawLine(i, 0, i, viewHeight, textPaint);
-                }
-
-                for (int i = grid.getCellSize(); i < viewHeight; i += grid.getCellSize()) {
-                    canvas.drawLine(0, i, viewWidth, i, textPaint);
-                }
-            }*/
 
             levelState.getPlayer().draw(canvas, renderOffset, timeSinceLastGameTick);
 
@@ -200,12 +188,34 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 entity.draw(canvas, renderOffset);
             }
 
-            inputManager.getThumbstick().draw(canvas);
-
-            canvas.drawText("RenderFPS: " + renderfps + ". GameTickFPS: " + gametickfps, 50, 50, textPaint);
+            //draw in game ui
+            inputManager.draw(canvas);
+            //if paused, draw the pause menu
+            if (!levelState.isPaused()) {
+                canvas.drawText("RenderFPS: " + renderFPS + ". GameTickFPS: " + gameTickFPS, 150, 50, textPaint);
+            } else {
+                //draw pause menu
+                canvas.drawText("Game is paused", viewWidth/2f, viewHeight/3f, textPaint);
+            }
         }
+        try {
+            getHolder().unlockCanvasAndPost(canvas);
+        } catch (IllegalArgumentException e){
+            //canvas is destroyed already
+        }
+    }
 
-        getHolder().unlockCanvasAndPost(canvas);
+    private boolean isOnScreen(Point[] vertices){
+        for (Point point : vertices) {
+            if ((point.getX() >= viewWorldOrigin.getX() && point.getX() <= viewWorldMax.getX()) && (point.getY() >= viewWorldOrigin.getY() && point.getY() <= viewWorldMax.getY())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void renderInGameUI(Canvas canvas){
+        inputManager.getThumbstick().draw(canvas);
     }
 
     //creates a black paint object for use with any text on screen.
@@ -216,15 +226,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.textPaint.setTextSize(48f);
     }
 
-    public void setPaused(boolean isPaused){
-        this.level.setPaused(isPaused);
-    }
-
-    public void setRunning(boolean running){
-        this.level.setRunning(running);
-    }
-
     public void setGrid(Grid grid){
         this.grid = grid;
+    }
+
+    public LevelState getLevelState() {
+        return levelState;
     }
 }

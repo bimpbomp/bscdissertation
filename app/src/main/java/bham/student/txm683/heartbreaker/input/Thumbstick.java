@@ -6,7 +6,7 @@ import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
-public class Thumbstick {
+public class Thumbstick implements InputUIElement{
 
     private final String TAG = "hb:: Thumbstick";
 
@@ -24,6 +24,8 @@ public class Thumbstick {
     private Paint maxPaint;
 
     private boolean receivingInput;
+
+    private int inputPointer;
 
     public Thumbstick(Point neutralPosition, float neutralCircleRadius, float maxRadius){
         this.neutralPosition = neutralPosition;
@@ -48,6 +50,16 @@ public class Thumbstick {
         this.maxPaint.setStrokeWidth(10);
 
         this.maxInputLengthRequirement = maxRadius * 0.9f;
+    }
+
+    @Override
+    public void setPointerID(int id) {
+        this.inputPointer = id;
+    }
+
+    @Override
+    public boolean hasID(int id) {
+        return inputPointer == id;
     }
 
     public void draw(Canvas canvas){
@@ -85,7 +97,7 @@ public class Thumbstick {
         }
     }
 
-    public boolean isInRadius(Point touchEventPosition){
+    public boolean containsPoint(Point touchEventPosition){
         if (new Vector(neutralPosition, touchEventPosition).getLength() <= maxRadius){
             receivingInput = true;
             return true;

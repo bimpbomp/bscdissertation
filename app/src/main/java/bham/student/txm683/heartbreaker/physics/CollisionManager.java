@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.physics;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -133,8 +134,8 @@ public class CollisionManager {
                         Point[] firstEntityVertices = firstEntity.getShape().getVertices();
                         Point[] secondEntityVertices = secondEntity.getShape().getVertices();
 
-                        ArrayList<Vector> edges = new ArrayList<>(getEdges(firstEntityVertices));
-                        edges.addAll(getEdges(secondEntityVertices));
+                        ArrayList<Vector> edges = new ArrayList<>(getEdges(firstEntity.getShape().getShapeIdentifier(), firstEntityVertices));
+                        edges.addAll(getEdges(firstEntity.getShape().getShapeIdentifier(), secondEntityVertices));
 
                         Vector[] orthogonalAxes = getOrthogonals(edges);
 
@@ -215,7 +216,7 @@ public class CollisionManager {
             float pushVectorLength = Math.min((secondEntityMaxLength-firstEntityMinLength), (firstEntityMaxLength-secondEntityMinLength));
 
             //push a bit more than needed so they dont overlap in future tests to compensate for float precision error
-            pushVectorLength += 0.00001f;
+            pushVectorLength += 0.0001f;
 
             return axis.getUnitVector().sMult(pushVectorLength);
         }
@@ -233,14 +234,33 @@ public class CollisionManager {
         return orthogonals;
     }
 
-    private ArrayList<Vector> getEdges(Point[] vertices){
+    private ArrayList<Vector> getEdges(ShapeIdentifier shapeIdentifier, Point[] vertices){
         ArrayList<Vector> edges = new ArrayList<>();
 
+        /*switch (shapeIdentifier){
+            case RECT:
+                //only add first two edges as two remaining edges are parallel.
+                try {
+                    edges.add(new Vector(vertices[0], vertices[1]));
+                    edges.add(new Vector(vertices[1], vertices[2]));
+                } catch (IndexOutOfBoundsException e){
+                    edges.clear();
+                }
+                break;
+            case ISO_TRIANGLE:
+                for (int i = 0; i < vertices.length - 1; i++){
+                    edges.add(new Vector(vertices[i], vertices[i+1]));
+                }
+                edges.add(new Vector(vertices[vertices.length-1], vertices[0]));
+                break;
+            default:
+                break;
+        }*/
         for (int i = 0; i < vertices.length - 1; i++){
             edges.add(new Vector(vertices[i], vertices[i+1]));
         }
-
         edges.add(new Vector(vertices[vertices.length-1], vertices[0]));
+
         return edges;
     }
 

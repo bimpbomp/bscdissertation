@@ -19,7 +19,6 @@ public class Level implements Runnable {
     private MessageBus messageBus;
 
     private boolean running;
-    private boolean isPaused;
 
     private FPSMonitor gameFPSMonitor;
     private FPSMonitor renderFPSMonitor;
@@ -32,9 +31,6 @@ public class Level implements Runnable {
     private long nextScheduledGameTick = System.currentTimeMillis();
 
     private int loops;
-
-    private boolean readyToRender = false;
-
 
     public Level(LevelView levelView){
         super();
@@ -55,16 +51,16 @@ public class Level implements Runnable {
         collisionManager = new CollisionManager(levelState);
 
         nextScheduledGameTick = System.currentTimeMillis();
+
+        //levelState.setPaused(false);
         while (running){
 
             loops = 0;
 
             currentGameTick = System.currentTimeMillis();
 
-            if (!isPaused) {
+            if (!levelState.isPaused()) {
                 while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick) {
-
-                    //Log.d(TAG, "GAMETICK");
 
                     levelState.getPlayer().setMovementVector(inputManager.getThumbstick().getMovementVector());
 
@@ -82,20 +78,18 @@ public class Level implements Runnable {
                     nextScheduledGameTick += gameTickTimeStepInMillis;
                     loops++;
 
-                    readyToRender = true;
+                    levelState.setReadyToRender(true);
                 }
             }
 
-            if (!isPaused && readyToRender) {
+            if (!levelState.isPaused() && levelState.isReadyToRender()) {
+
                 float timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick) / 1000f;
-
-                //Log.d(TAG, "LGT: " + currentGameTick + ", timeSinceLGT: " + timeSinceLastGameTick + ", nextGT: " + nextScheduledGameTick);
-
-                //Log.d(TAG, "RENDERTICK");
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), timeSinceLastGameTick);
-                //Log.d(TAG, "rendered");
-            }
 
+            } else if (levelState.isPaused() && levelState.isReadyToRender()){
+                levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), 0f);
+            }
         }
     }
 
@@ -109,9 +103,5 @@ public class Level implements Runnable {
 
     public void setLevelState(LevelState levelState) {
         this.levelState = levelState;
-    }
-
-    public void setPaused(boolean isPaused){
-        this.isPaused = isPaused;
     }
 }

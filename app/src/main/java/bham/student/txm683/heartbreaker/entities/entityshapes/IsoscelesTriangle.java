@@ -76,6 +76,11 @@ public class IsoscelesTriangle extends EntityShape {
         this.width = newWidth;
     }
 
+    @Override
+    public Point[] getCollisionVertices() {
+        return getVertices();
+    }
+
     private void updateBaseLengths(float oldWidthSquaredOverFour, float oldOneThirdHeightSquared, float newWidthSquaredOverFour, float newOneThirdHeightSquared){
 
         float proportionOfBaseVectorLengthChange = (float) Math.sqrt(newOneThirdHeightSquared + newWidthSquaredOverFour)/
