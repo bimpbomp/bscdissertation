@@ -74,7 +74,7 @@ public class MoveableEntity extends Entity {
         shape.draw(canvas, renderOffset, interpolationVector);
 
         Point interpolatedCenter = shape.getInterpolatedCenter(interpolationVector, renderOffset);
-        canvas.drawText(name, interpolatedCenter.getX()-shape.getWidth()/2, interpolatedCenter.getY(), textPaint);
+        canvas.drawText(name, interpolatedCenter.getX(), interpolatedCenter.getY(), textPaint);
     }
 
     /**

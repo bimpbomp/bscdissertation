@@ -12,8 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-
 public abstract class EntityShape implements SaveableState {
 
     ShapeIdentifier shapeIdentifier;
@@ -45,7 +43,7 @@ public abstract class EntityShape implements SaveableState {
         this.paint.setAntiAlias(true);
     }
 
-    EntityShape(String jsonString) throws JSONException, ParseException {
+    EntityShape(String jsonString) throws JSONException {
         JSONObject jsonObject = new JSONObject(jsonString);
 
         Log.d("hb::EntityShape", jsonString);
@@ -53,8 +51,6 @@ public abstract class EntityShape implements SaveableState {
         this.height = Float.parseFloat(jsonObject.getString("height"));
         this.width = Float.parseFloat(jsonObject.getString("width"));
         this.geometricCenter = new Point(jsonObject.getJSONObject("center"));
-
-
 
         this.defaultColor = jsonObject.getInt("defaultcolor");
 

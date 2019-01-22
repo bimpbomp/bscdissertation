@@ -264,6 +264,10 @@ public class CollisionManager {
         return edges;
     }
 
+    private boolean collisionCheckCircleNotCircle(){
+
+    }
+
     public Grid getBroadPhaseGrid() {
         return broadPhaseGrid;
     }

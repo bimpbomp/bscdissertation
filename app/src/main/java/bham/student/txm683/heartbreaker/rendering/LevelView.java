@@ -40,6 +40,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Grid grid;
 
+    /**
+     * Creates a new Level view with the given context
+     * @param context The context to create the view.
+     */
     public LevelView(Context context){
         super(context);
 
@@ -52,6 +56,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    /**
+     * Creates the LevelState object based off of the given JSON formatted string
+     * @param stateString String containing state LevelState in JSON format
+     */
     public void loadSaveFromStateString(String stateString){
         Log.d(TAG, "stateStringLengthInBytes: " + stateString.getBytes().length + ", stateString: " + stateString);
         try {
@@ -66,6 +74,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.levelState = levelState;
     }
 
+    /**
+     * Called when the dimensions of the surface change
+     * @param w new width
+     * @param h new height
+     * @param oldw old width
+     * @param oldh old height
+     */
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         Log.d(TAG, "onSizeChanged");
@@ -77,6 +92,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             this.levelState.setScreenDimensions(viewWidth, viewHeight);
     }
 
+    /**
+     * Called when the surface is created.
+     * Initialises LevelState if it is null, and starts the levelThread
+     * @param holder container for the canvas
+     */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "surfaceCreated");
@@ -99,6 +119,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.levelThread.start();
     }
 
+    /**
+     * Creates the in game ui objects. Called on surface creation and when the surface changes.
+     * Will dynamically create the positions and sizes based on available space.
+     */
     private void initInGameUI(){
         float thumbstickMaxRadius = 150f;
         this.inputManager.setThumbstick(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), thumbstickMaxRadius/3f, thumbstickMaxRadius));
@@ -107,6 +131,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.inputManager.setPauseButton(new Button(new Point(pauseButtonRadius+20, pauseButtonRadius+20), pauseButtonRadius, Color.LTGRAY));
     }
 
+    /**
+     * Called when the surface changes (and after surfaceCreated) to update the dimensions.
+     * @param holder Container for canvas
+     * @param format
+     * @param width width of screen
+     * @param height height of screen
+     */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
@@ -120,6 +151,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         Log.d(TAG, "surfaceChanged");
     }
 
+    /**
+     * Called when the surface is destroyed, joins with the levelThread to end game ticks
+     * @param holder container for canvas
+     */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         boolean retry = true;
@@ -141,7 +176,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         return inputManager.onTouchEvent(event);
     }
 
-    public void draw(int renderFPS, int gameTickFPS, float timeSinceLastGameTick){
+    /**
+     * Draws the visible entities, and in game ui to the canvas.
+     * @param renderFPS Number of render ticks in the last second
+     * @param gameTickFPS Number of game ticks in the last second
+     * @param secondsSinceLastGameTick Used for interpolation purposes
+     */
+    public void draw(int renderFPS, int gameTickFPS, float secondsSinceLastGameTick){
 
         //get visible boundaries relative to world coordinates
         viewWorldOrigin = levelState.getPlayer().getShape().getCenter().add(new Point(-1*viewWidth/2f, -1*viewHeight/2f));
@@ -168,7 +209,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         Canvas canvas = getHolder().lockCanvas();
 
         //TODO: Is currently set to zero to disable interpolation. Remove line to re-enable
-        timeSinceLastGameTick = 0f;
+        secondsSinceLastGameTick = 0f;
 
         if (canvas != null){
             super.draw(canvas);
@@ -178,7 +219,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw background
             canvas.drawRGB(255,255,255);
 
-            levelState.getPlayer().draw(canvas, renderOffset, timeSinceLastGameTick);
+            levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick);
 
             for (Entity entity : enemiesToRender){
                 entity.draw(canvas, renderOffset);
@@ -205,6 +246,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    /**
+     * Checks if any of the given vertices lie in the region given by the screen boundaries.
+     * @param vertices Point array of vertices to check
+     * @return True if one or more vertices exist in the screen boundaries, false if none are.
+     */
     private boolean isOnScreen(Point[] vertices){
         for (Point point : vertices) {
             if ((point.getX() >= viewWorldOrigin.getX() && point.getX() <= viewWorldMax.getX()) && (point.getY() >= viewWorldOrigin.getY() && point.getY() <= viewWorldMax.getY())){
@@ -214,16 +260,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         return false;
     }
 
-    private void renderInGameUI(Canvas canvas){
-        inputManager.getThumbstick().draw(canvas);
-    }
-
     //creates a black paint object for use with any text on screen.
     private void initPaintForText(){
         this.textPaint = new Paint();
         this.textPaint.setColor(Color.BLACK);
         this.textPaint.setStrokeWidth(2f);
         this.textPaint.setTextSize(48f);
+        this.textPaint.setTextAlign(Paint.Align.CENTER);
     }
 
     public void setGrid(Grid grid){

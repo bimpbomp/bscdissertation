@@ -91,6 +91,7 @@ public class Entity implements SaveableState {
         textPaint.setColor(Color.GRAY);
         textPaint.setStrokeWidth(15f);
         textPaint.setTextSize(28f);
+        textPaint.setTextAlign(Paint.Align.CENTER);
     }
 
     /**
@@ -109,7 +110,7 @@ public class Entity implements SaveableState {
         shape.draw(canvas, renderOffset, new Vector());
 
         Point center = shape.getCenter().add(renderOffset);
-        canvas.drawText(name, center.getX()-shape.getWidth()/2, center.getY(), textPaint);
+        canvas.drawText(name, center.getX(), center.getY(), textPaint);
     }
 
     public String getName(){

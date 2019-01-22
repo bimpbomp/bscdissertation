@@ -146,16 +146,10 @@ public class LevelState {
 
             jsonObject.put("player", player.getStateObject());
 
-            JSONObject[] staticsStateString = new JSONObject[staticEntities.size()];
-            for (int i = 0; i < staticEntities.size(); i++){
-                staticsStateString[i] = staticEntities.get(i).getStateObject();
-            }
+            JSONObject[] staticsStateString = convertEntityListToJSONObjectArray(staticEntities.toArray(new Entity[0]));
             jsonObject.put("statics", new JSONArray(staticsStateString));
 
-            JSONObject[] enemiesStateString = new JSONObject[enemyEntities.size()];
-            for (int i = 0; i < enemyEntities.size(); i++){
-                enemiesStateString[i] = enemyEntities.get(i).getStateObject();
-            }
+            JSONObject[] enemiesStateString = convertEntityListToJSONObjectArray(enemyEntities.toArray(new Entity[0]));
             jsonObject.put("enemies", new JSONArray(enemiesStateString));
 
         } catch (JSONException e){
@@ -166,17 +160,17 @@ public class LevelState {
         return jsonObject.toString();
     }
 
+    private JSONObject[] convertEntityListToJSONObjectArray(Entity[] entityList) throws JSONException{
+        JSONObject[] jsonObjects = new JSONObject[entityList.length];
+        for (int i = 0; i < entityList.length; i++){
+            jsonObjects[i] = entityList[i].getStateObject();
+        }
+        return jsonObjects;
+    }
+
     public ArrayList<MoveableEntity> getEnemyEntities() {
         return enemyEntities;
     }
-
-    /*private JSONObject[] getEntityArrayListStateString(ArrayList<Entity> arrayList) throws JSONException{
-        JSONObject[] listStateString = new JSONObject[arrayList.size()];
-        for (int i = 0; i < arrayList.size(); i++){
-            listStateString[i] = arrayList.get(i).getStateObject();
-        }
-        return listStateString;
-    }*/
 
     public boolean isReadyToRender() {
         return readyToRender;
