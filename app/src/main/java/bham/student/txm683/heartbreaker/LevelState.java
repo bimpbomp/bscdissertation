@@ -94,8 +94,10 @@ public class LevelState {
 
             if ((int) pair.first == 3){
                 shapeIdentifier = ShapeIdentifier.RECT;
-            } else if ((int) pair.first == 4){
+            } else if ((int) pair.first == 4) {
                 shapeIdentifier = ShapeIdentifier.ISO_TRIANGLE;
+            } else if ((int) pair.first == 5){
+                shapeIdentifier = ShapeIdentifier.CIRCLE;
             } else {
                 shapeIdentifier = ShapeIdentifier.INVALID;
             }

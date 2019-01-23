@@ -192,7 +192,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         ArrayList<Entity> staticEntitiesToRender = new ArrayList<>();
 
         for (Entity staticEntity: levelState.getStaticEntities()){
-            if (isOnScreen(staticEntity.getShape().getVertices())){
+            if (isOnScreen(staticEntity.getShape().getCollisionVertices())){
                 staticEntitiesToRender.add(staticEntity);
             }
         }
@@ -200,7 +200,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         ArrayList<Entity> enemiesToRender = new ArrayList<>();
 
         for (Entity enemy: levelState.getEnemyEntities()){
-            if (isOnScreen(enemy.getShape().getVertices())){
+            if (isOnScreen(enemy.getShape().getCollisionVertices())){
                 enemiesToRender.add(enemy);
             }
         }
@@ -233,7 +233,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             inputManager.draw(canvas);
             //if paused, draw the pause menu
             if (!levelState.isPaused()) {
-                canvas.drawText("RenderFPS: " + renderFPS + ". GameTickFPS: " + gameTickFPS, 150, 50, textPaint);
+                canvas.drawText("RenderFPS: " + renderFPS + ". GameTickFPS: " + gameTickFPS + ". Collisions: " + level.getCollisionManager().collisionCount, viewWidth/2f, 50, textPaint);
             } else {
                 //draw pause menu
                 canvas.drawText("Game is paused", viewWidth/2f, viewHeight/3f, textPaint);

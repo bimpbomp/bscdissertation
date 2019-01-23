@@ -5,29 +5,12 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-
-public class Rectangle extends EntityShape {
-    private float angleBetweenUpandPrimaryVectors;
+public class Rectangle extends Polygon {
+    private float angleBetweenUpAndPrimaryVectors;
 
     public Rectangle(Point geometricCenter, float width, float height, int colorValue){
-        super(geometricCenter, width, height, colorValue);
+        super(geometricCenter, width, height, colorValue, ShapeIdentifier.RECT);
 
-        shapeIdentifier = ShapeIdentifier.RECT;
-
-        init();
-    }
-
-    public Rectangle(String stateString) throws ParseException, JSONException {
-        super(stateString);
-        shapeIdentifier = ShapeIdentifier.RECT;
-
-        JSONObject jsonObject = new JSONObject(stateString);
-
-        angleBetweenUpandPrimaryVectors = Float.parseFloat(jsonObject.getString("anglebetweenprimaryandup"));
-    }
-
-    private void init() {
         this.vertexVectors = new Vector[4];
 
         float halfWidth = width/2f;
@@ -38,15 +21,23 @@ public class Rectangle extends EntityShape {
         vertexVectors[2] = new Vector(geometricCenter, new Point(geometricCenter.getX()+halfWidth, geometricCenter.getY() + halfHeight));
         vertexVectors[3] = new Vector(geometricCenter, new Point(geometricCenter.getX()-halfWidth, geometricCenter.getY() + halfHeight));
 
-        this.relativeUpUnitVector = new Vector(geometricCenter, new Point(geometricCenter.getX(), geometricCenter.getY()-1));
+        this.forwardUnitVector = new Vector(geometricCenter, new Point(geometricCenter.getX(), geometricCenter.getY()-1));
 
-        this.angleBetweenUpandPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.relativeUpUnitVector);
+        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+    }
+
+    public Rectangle(String stateString) throws JSONException {
+        super(stateString, ShapeIdentifier.RECT);
+
+        JSONObject jsonObject = new JSONObject(stateString);
+
+        angleBetweenUpAndPrimaryVectors = Float.parseFloat(jsonObject.getString("anglebetweenupandprimaryvectors"));
     }
 
     @Override
-    public void setRelativeUpUnitVector() {
+    public void setForwardUnitVector() {
 
-        this.relativeUpUnitVector = rotateVertexVector(vertexVectors[0], (float) Math.cos(angleBetweenUpandPrimaryVectors), (float) Math.sin(angleBetweenUpandPrimaryVectors));
+        this.forwardUnitVector = rotateVertexVector(vertexVectors[0], (float) Math.cos(angleBetweenUpAndPrimaryVectors), (float) Math.sin(angleBetweenUpAndPrimaryVectors));
     }
 
     /**
@@ -57,7 +48,7 @@ public class Rectangle extends EntityShape {
     @Override
     public void setHeight(float newHeight) {
         float changeInHeight = newHeight - height;
-        Vector changeInHeightVectorUp = relativeUpUnitVector.sMult(changeInHeight/2);
+        Vector changeInHeightVectorUp = forwardUnitVector.sMult(changeInHeight/2);
         Vector changeInHeightVectorDown = changeInHeightVectorUp.sMult(-1);
 
         vertexVectors[0] = vertexVectors[0].vAdd(changeInHeightVectorUp);
@@ -72,7 +63,7 @@ public class Rectangle extends EntityShape {
     @Override
     public void setWidth(float newWidth) {
         float changeInWidth = newWidth - width;
-        Vector changeInWidthVectorLeft = relativeUpUnitVector.rotateAntiClockwise90().sMult(changeInWidth/2);
+        Vector changeInWidthVectorLeft = forwardUnitVector.rotateAntiClockwise90().sMult(changeInWidth/2);
         Vector changeInWidthVectorRight = changeInWidthVectorLeft.sMult(-1);
 
         vertexVectors[0] = vertexVectors[0].vAdd(changeInWidthVectorLeft);
@@ -85,14 +76,13 @@ public class Rectangle extends EntityShape {
 
     @Override
     public Point[] getCollisionVertices() {
-        Point[] vertices = getVertices();
-        return new Point[]{vertices[0], vertices[1]};
+        return getVertices();
     }
 
     @Override
     public JSONObject getStateObject() throws JSONException {
-        JSONObject jsonObject = this.getAbstractJSONObject();
-        jsonObject.put("anglebetweenprimaryandup", angleBetweenUpandPrimaryVectors);
+        JSONObject jsonObject = this.getJSONObject();
+        jsonObject.put("anglebetweenupandprimaryvectors", angleBetweenUpAndPrimaryVectors);
 
         return jsonObject;
     }

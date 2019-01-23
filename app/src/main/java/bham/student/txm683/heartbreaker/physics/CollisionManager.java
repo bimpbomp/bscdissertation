@@ -1,8 +1,11 @@
 package bham.student.txm683.heartbreaker.physics;
 
+import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -11,28 +14,35 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class CollisionManager {
-    private static final String TAG = "hb::CollisionManager";
+
+    private static final float PUSH_VECTOR_ERROR = 0.0001f;
 
     private Grid broadPhaseGrid;
 
     private LevelState levelState;
 
-    private int collisionCount;
+    public int collisionCount;
+    private String TAG = "hb::CollisionManager" + collisionCount;
 
-    private HashSet<String> collidedPairNames;
+    private HashSet<String> checkedPairNames;
 
-    ArrayList<Pair<Pair<Entity, Entity>, Vector>> collidedPairs;
-    ArrayList<ArrayList<Entity>> bins;
+    private ArrayList<Pair<Pair<Entity, Entity>, Vector>> collidedPairs;
+    private ArrayList<ArrayList<Entity>> bins;
 
     public CollisionManager(LevelState levelState){
         this.levelState = levelState;
         this.collisionCount = 0;
     }
 
+    private void countCollision(){
+        collisionCount++;
+        TAG = "hb::CollisionManager" + collisionCount;
+    }
+
     public void checkCollisions(){
         applySpatialPartitioning();
 
-        applySeparatingAxisTheorem(bins);
+        fineGrainCollisionDetection(bins);
 
         for (Pair<Pair<Entity, Entity>, Vector> collidedPair : collidedPairs){
             collidedPair.first.first.setCollided(true);
@@ -47,15 +57,13 @@ public class CollisionManager {
 
             //Log.d(TAG+collisionCount, "old center: " + center.toString() + ", new center: " + newCenter.toString());
 
-            this.collisionCount += 1;
+            countCollision();
         }
     }
 
     /**
      * Inserts each vertex of every entity into their corresponding position in a grid,
-     * returns the cells containing 2 or more entities for more in depth collision checks.
-     *
-     * @return Returns bins with 2 entities or more in for narrow phase checks
+     * returns the cells containing 2 or more entities for more in depth countCollision checks.
      */
     private void applySpatialPartitioning(){
         //TODO: At the minute, only checking vertices means that edges crossing a different cell reference wont get checked when they should
@@ -97,10 +105,10 @@ public class CollisionManager {
         }
     }
 
-    private void applySeparatingAxisTheorem(ArrayList<ArrayList<Entity>> bins){
+    private void fineGrainCollisionDetection(ArrayList<ArrayList<Entity>> bins){
         //Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
         collidedPairs = new ArrayList<>();
-        collidedPairNames = new HashSet<>();
+        checkedPairNames = new HashSet<>();
 
         for (ArrayList<Entity> bin : bins){
             if (bin.size() > 1){
@@ -123,46 +131,38 @@ public class CollisionManager {
                             continue;
                         }
 
-                        if (collidedPairNames.contains(firstEntity.getName()+secondEntity.getName())){
+                        if (checkedPairNames.contains(firstEntity.getName()+secondEntity.getName())){
                             //Log.d(TAG+collisionCount, "already collided: " + firstEntity.getName() + ", " + secondEntity.getName());
                             continue;
                         } else {
-                            collidedPairNames.add(firstEntity.getName()+secondEntity.getName());
-                            collidedPairNames.add(secondEntity.getName()+firstEntity.getName());
+                            checkedPairNames.add(firstEntity.getName() + secondEntity.getName());
+                            checkedPairNames.add(secondEntity.getName() + firstEntity.getName());
                         }
 
-                        Point[] firstEntityVertices = firstEntity.getShape().getVertices();
-                        Point[] secondEntityVertices = secondEntity.getShape().getVertices();
+                        Vector pushVector;
+                        ShapeIdentifier firstEntityIdentifier = firstEntity.getShape().getShapeIdentifier();
+                        ShapeIdentifier secondEntityIdentifier = secondEntity.getShape().getShapeIdentifier();
 
-                        ArrayList<Vector> edges = new ArrayList<>(getEdges(firstEntity.getShape().getShapeIdentifier(), firstEntityVertices));
-                        edges.addAll(getEdges(firstEntity.getShape().getShapeIdentifier(), secondEntityVertices));
+                        Log.d(TAG, "first entity: " + firstEntity.getName() + ", second entity: " + secondEntity.getName());
 
-                        Vector[] orthogonalAxes = getOrthogonals(edges);
+                        if (firstEntityIdentifier == ShapeIdentifier.CIRCLE && secondEntityIdentifier == ShapeIdentifier.CIRCLE){
+                            pushVector = collisionCheckTwoCircles((Circle) firstEntity.getShape(), (Circle) secondEntity.getShape());
 
-                        ArrayList<Vector> pushVectors = new ArrayList<>();
-                        boolean collided = true;
-                        for (Vector axis : orthogonalAxes){
-                            Vector pushVector = isSeparatingAxis(axis, convertToVectorsFromOrigin(firstEntityVertices), convertToVectorsFromOrigin(secondEntityVertices));
+                        } else if (firstEntityIdentifier == ShapeIdentifier.CIRCLE){
+                            pushVector = collisionCheckCircleAndPolygon((Circle) firstEntity.getShape(), (Polygon) secondEntity.getShape());
 
-                            if (pushVector.equals(new Vector())){
-                                collided = false;
-                                break;
-                            } else {
-                                //Log.d(TAG + collisionCount, "push vector: " + pushVector.toString());
-                                pushVectors.add(pushVector);
-                            }
+                        } else if (secondEntityIdentifier == ShapeIdentifier.CIRCLE){
+                            //inverted so that first entity is always the one pushed away
+                            pushVector = collisionCheckCircleAndPolygon((Circle) secondEntity.getShape(), (Polygon) firstEntity.getShape());
+                            pushVector.sMult(-1f);
+                        } else {
+                            pushVector = collisionCheckTwoPolygons((Polygon) firstEntity.getShape(), (Polygon) secondEntity.getShape());
                         }
+                        //Log.d(TAG, "push vector: " + pushVector.relativeToString());
 
-                        if (collided){
-
-                            Vector minPushVector = getMinimumPushVector(pushVectors);
-
-                            if (minPushVector.dot(new Vector(firstEntity.getShape().getCenter(), secondEntity.getShape().getCenter())) > 0){
-                                minPushVector = minPushVector.sMult(-1f);
-                            }
-
+                        if (!pushVector.equals(new Vector())) {
                             //Log.d(TAG+collisionCount, "collided pair added");
-                            collidedPairs.add(new Pair<>(new Pair<>(firstEntity, secondEntity), minPushVector));
+                            collidedPairs.add(new Pair<>(new Pair<>(firstEntity, secondEntity), pushVector));
                         }
                     }
                 }
@@ -212,13 +212,33 @@ public class CollisionManager {
             secondEntityMaxLength = Math.max(secondEntityMaxLength, projection);
         }
 
-        if (firstEntityMaxLength >= secondEntityMinLength && secondEntityMaxLength >= firstEntityMinLength){
-            float pushVectorLength = Math.min((secondEntityMaxLength-firstEntityMinLength), (firstEntityMaxLength-secondEntityMinLength));
+        if (firstEntityMaxLength >= secondEntityMinLength && secondEntityMaxLength >= firstEntityMinLength) {
+            float pushVectorLength = Math.min((secondEntityMaxLength - firstEntityMinLength), (firstEntityMaxLength - secondEntityMinLength));
 
             //push a bit more than needed so they dont overlap in future tests to compensate for float precision error
-            pushVectorLength += 0.0001f;
+            pushVectorLength += PUSH_VECTOR_ERROR;
 
             return axis.getUnitVector().sMult(pushVectorLength);
+        }
+        return new Vector();
+    }
+
+    private Vector isSeparatingAxis(Vector axis, Vector nearSidePoint, Vector[] secondEntityVertices){
+        float firstEntityMaxLength = Float.NEGATIVE_INFINITY;
+
+        float projection;
+        for (Vector vertexVector : secondEntityVertices){
+            projection = vertexVector.dot(axis);
+            firstEntityMaxLength = Math.max(firstEntityMaxLength, projection);
+        }
+
+        if (firstEntityMaxLength > nearSidePoint.dot(axis)) {
+            float pushVectorLength = firstEntityMaxLength - nearSidePoint.dot(axis);
+
+            //push a bit more than needed so they dont overlap in future tests to compensate for float precision error
+            pushVectorLength += PUSH_VECTOR_ERROR;
+
+            return axis.sMult(pushVectorLength);
         }
         return new Vector();
     }
@@ -237,25 +257,6 @@ public class CollisionManager {
     private ArrayList<Vector> getEdges(ShapeIdentifier shapeIdentifier, Point[] vertices){
         ArrayList<Vector> edges = new ArrayList<>();
 
-        /*switch (shapeIdentifier){
-            case RECT:
-                //only add first two edges as two remaining edges are parallel.
-                try {
-                    edges.add(new Vector(vertices[0], vertices[1]));
-                    edges.add(new Vector(vertices[1], vertices[2]));
-                } catch (IndexOutOfBoundsException e){
-                    edges.clear();
-                }
-                break;
-            case ISO_TRIANGLE:
-                for (int i = 0; i < vertices.length - 1; i++){
-                    edges.add(new Vector(vertices[i], vertices[i+1]));
-                }
-                edges.add(new Vector(vertices[vertices.length-1], vertices[0]));
-                break;
-            default:
-                break;
-        }*/
         for (int i = 0; i < vertices.length - 1; i++){
             edges.add(new Vector(vertices[i], vertices[i+1]));
         }
@@ -264,8 +265,104 @@ public class CollisionManager {
         return edges;
     }
 
-    private boolean collisionCheckCircleNotCircle(){
+    private Vector collisionCheckTwoPolygons(Polygon polygon1, Polygon polygon2){
+        Point[] firstEntityVertices = polygon1.getVertices();
+        Point[] secondEntityVertices = polygon2.getVertices();
 
+        ArrayList<Vector> edges = new ArrayList<>(getEdges(polygon1.getShapeIdentifier(), firstEntityVertices));
+        edges.addAll(getEdges(polygon2.getShapeIdentifier(), secondEntityVertices));
+
+        Vector[] orthogonalAxes = getOrthogonals(edges);
+
+        ArrayList<Vector> pushVectors = new ArrayList<>();
+        boolean collided = true;
+        for (Vector axis : orthogonalAxes){
+            Vector pushVector = isSeparatingAxis(axis, convertToVectorsFromOrigin(firstEntityVertices), convertToVectorsFromOrigin(secondEntityVertices));
+
+            if (pushVector.equals(new Vector())){
+                collided = false;
+                break;
+            } else {
+                //Log.d(TAG + collisionCount, "push vector: " + pushVector.toString());
+                pushVectors.add(pushVector);
+            }
+        }
+
+        if (collided) {
+            Vector minPushVector = getMinimumPushVector(pushVectors);
+
+            if (minPushVector.dot(new Vector(polygon1.getCenter(), polygon2.getCenter())) > 0) {
+                minPushVector = minPushVector.sMult(-1f);
+            }
+            return minPushVector;
+        }
+        return new Vector();
+    }
+
+    private Vector collisionCheckTwoCircles(Circle circle1, Circle circle2){
+        Vector center2ToCenter1 = new Vector(circle2.getCenter(), circle1.getCenter());
+        float distanceBetweenCenters = center2ToCenter1.getLength();
+        float radiiSum = circle1.getRadius() + circle2.getRadius();
+        if (distanceBetweenCenters < radiiSum){
+            return center2ToCenter1.getUnitVector().sMult(radiiSum - distanceBetweenCenters + PUSH_VECTOR_ERROR);
+        }
+        return new Vector();
+    }
+
+    private Vector collisionCheckCircleAndPolygon(Circle circle, Polygon polygon){
+        //vector from circle center to polygon center
+        Vector vectorBetweenCenters = new Vector(circle.getCenter(), polygon.getCenter());
+        //Point on circle circumference closest to polygon
+        Point pointOnNearSideCircumference = vectorBetweenCenters.getUnitVector().sMult(circle.getRadius()).getHead();
+
+        //vector from origin to pointOnNearSideCircumference
+        Vector nearSideRadius = new Vector(pointOnNearSideCircumference);
+
+        //get unit vector of the vector in the direction from polygon center to circle center
+        //will be used as the axis for isSeparatingAxis
+        vectorBetweenCenters = vectorBetweenCenters.sMult(-1f).getUnitVector();
+
+        //normal vectors for each of the polygon's edges
+        Vector[] orthogonals = getOrthogonals(getEdges(polygon.getShapeIdentifier(), polygon.getCollisionVertices()));
+
+        int minOrthIndex = -1;
+        float maxOrthDot = -1;
+
+        //find the normal vector with the smallest angle between itself and the vectorBetweenCenters
+        for (int i = 0; i < orthogonals.length; i++){
+            float currentOrthDot = orthogonals[i].dot(vectorBetweenCenters);
+            Log.d(TAG, "orth " + i + ": " + orthogonals[i].relativeToString());
+            Log.d(TAG, "orth dot " + i + ": " + currentOrthDot);
+
+            if (maxOrthDot < currentOrthDot){
+                maxOrthDot = currentOrthDot;
+                minOrthIndex = i;
+            }
+        }
+
+        Vector pushVector;
+
+        Vector[] polygonVerticesFromOrigin = convertToVectorsFromOrigin(polygon.getCollisionVertices());
+
+        pushVector = isSeparatingAxis(vectorBetweenCenters, nearSideRadius, polygonVerticesFromOrigin);
+
+        Log.d(TAG, "pushVector: " + pushVector.relativeToString() + ", max orth index: " + minOrthIndex);
+
+        if (minOrthIndex >= 0 && !pushVector.equals(new Vector())){
+                Vector secondaryPushVector = isSeparatingAxis(orthogonals[minOrthIndex],
+                        new Vector(circle.getCenter().add(orthogonals[minOrthIndex].sMult(-1f*circle.getRadius()).getRelativeToTailPoint())),
+                        polygonVerticesFromOrigin);
+
+                Log.d(TAG, "secondary push: " + secondaryPushVector.relativeToString());
+                if (!secondaryPushVector.equals(new Vector())){
+                    pushVector = secondaryPushVector;
+                } else {
+                    pushVector = new Vector();
+                }
+        } else {
+            pushVector = new Vector();
+        }
+        return pushVector;
     }
 
     public Grid getBroadPhaseGrid() {

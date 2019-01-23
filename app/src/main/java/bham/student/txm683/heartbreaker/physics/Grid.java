@@ -37,7 +37,7 @@ public class Grid {
     void addEntityToGrid(Entity entity){
         //Initial method: add entity to the cell that each of it's AABB vertices exist in.
 
-        Point[] vertices = entity.getShape().getVertices();
+        Point[] vertices = entity.getShape().getCollisionVertices();
 
         //contains unique grid references
         Set<Pair<Integer, Integer>> addedGridReferences = new HashSet<>();

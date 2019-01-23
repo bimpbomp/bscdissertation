@@ -32,7 +32,7 @@ public class Map {
         int[][] mapTiles = new int[][]{
                 {1,1,1,1,1,1,1,1,1},
                 {1,0,0,1,0,0,0,0,1},
-                {1,0,0,1,0,0,4,3,1},
+                {1,0,0,1,5,0,4,3,1},
                 {1,0,1,1,1,0,1,1,1},
                 {1,0,0,0,2,0,0,0,1},
                 {1,0,0,1,0,0,1,0,1},
@@ -64,6 +64,9 @@ public class Map {
                         Log.d("hb::Map", "enemy rectangle: " + spawnLocation);
                         enemySpawnLocations.add(new Pair<>(4, spawnLocation));
                         break;
+                    case (5):
+                        Log.d("hb::Map", "enemy circle: " + spawnLocation);
+                        enemySpawnLocations.add(new Pair<>(5, spawnLocation));
                     default:
                         Log.d("hb::Map", "Invalid");
                 }
@@ -71,17 +74,6 @@ public class Map {
             this.width = mapTiles[0].length*tileSize;
             this.height = mapTiles.length*tileSize;
         }
-
-        /*//init test map entity locations
-        enemySpawnLocations = new Point[25];
-        int count = 0;
-        for (int i = 0; i < 5; i++){
-            for (int j = 0; j < 5; j++) {
-                enemySpawnLocations[count] = new Point(300+200*i,300+200*j);
-                count++;
-            }
-        }
-        playerSpawnLocation = new Point(100,100);*/
     }
 
     public void loadMap(String mapName, int tileSize){

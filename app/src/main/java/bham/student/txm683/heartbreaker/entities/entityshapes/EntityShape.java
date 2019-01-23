@@ -2,38 +2,39 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.SaveableState;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public abstract class EntityShape implements SaveableState {
 
+    String TAG;
+
     ShapeIdentifier shapeIdentifier;
 
-    Vector[] vertexVectors;
-    Vector relativeUpUnitVector;
+    Vector forwardUnitVector;
     Point geometricCenter;
-    float height;
-    float width;
 
-    private Paint paint;
-    private int defaultColor;
+    Paint paint;
+    int defaultColor;
 
     EntityShape(){
 
     }
 
-    EntityShape(Point geometricCenter, float width, float height, int colorValue){
-        this.geometricCenter = geometricCenter;
+    /**
+     * Creates an EntityShape with center at the given coordinates.
+     * @param geometricCenter Point for the center of the shape.
+     * @param colorValue Color.constant for shape color.
+     */
+    EntityShape(Point geometricCenter, int colorValue, ShapeIdentifier shapeIdentifier){
+        TAG = "hb::" + this.getClass().getName();
 
-        this.height = height;
-        this.width = width;
+        this.geometricCenter = geometricCenter;
 
         this.defaultColor = colorValue;
 
@@ -41,15 +42,22 @@ public abstract class EntityShape implements SaveableState {
         this.paint.setColor(defaultColor);
         this.paint.setStyle(Paint.Style.FILL);
         this.paint.setAntiAlias(true);
+
+        this.shapeIdentifier = shapeIdentifier;
     }
 
-    EntityShape(String jsonString) throws JSONException {
+    /**
+     * Creates an EntityShape object from the given JSON formatted String.
+     * @param jsonString String in JSON format
+     * @throws JSONException Thrown if the required members cannot be extracted from the jsonString
+     */
+    EntityShape(String jsonString, ShapeIdentifier shapeIdentifier) throws JSONException {
+        TAG = "hb::" + this.getClass().getName();
+
         JSONObject jsonObject = new JSONObject(jsonString);
 
         Log.d("hb::EntityShape", jsonString);
 
-        this.height = Float.parseFloat(jsonObject.getString("height"));
-        this.width = Float.parseFloat(jsonObject.getString("width"));
         this.geometricCenter = new Point(jsonObject.getJSONObject("center"));
 
         this.defaultColor = jsonObject.getInt("defaultcolor");
@@ -59,143 +67,92 @@ public abstract class EntityShape implements SaveableState {
         this.paint.setStyle(Paint.Style.FILL);
         this.paint.setAntiAlias(true);
 
-        this.relativeUpUnitVector = new Vector(geometricCenter, new Point(jsonObject.getJSONObject("upvector")));
+        this.forwardUnitVector = new Vector(geometricCenter, new Point(jsonObject.getJSONObject("forwardvector")));
 
-        JSONArray verticesArray = jsonObject.getJSONArray("vertices");
-        this.vertexVectors = new Vector[verticesArray.length()];
-
-        for (int i = 0; i < verticesArray.length(); i++){
-            this.vertexVectors[i] = new Vector(geometricCenter, new Point(verticesArray.getJSONObject(i)));
-        }
+        this.shapeIdentifier = shapeIdentifier;
     }
 
     public abstract void setHeight(float newHeight);
 
+    public abstract float getHeight();
+
     public abstract void setWidth(float newWidth);
 
-    public abstract void setRelativeUpUnitVector();
+    public abstract float getWidth();
+
+    public abstract void setForwardUnitVector();
 
     public abstract Point[] getCollisionVertices();
 
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
-        Path path;
+    /**
+     * Draws the shape to the given canvas.
+     * InterpolationVector of zero will render the shape as it was on the last game tick
+     * @param canvas Canvas to draw to.
+     * @param renderOffset Offset to translate shape's world coordinates into screen coordinates. Given as a negative value
+     * @param interpolationVector Vector describing movement direction
+     */
+    public abstract void draw(Canvas canvas, Point renderOffset, Vector interpolationVector);
 
-        if (interpolationVector.equals(new Vector())) {
-            //Log.d(TAG+":draw", "zero interpol vector");
-            path = getPathWithPoints(getVertices(renderOffset));
-        } else {
-            //Log.d(TAG+":draw", interpolationVector.toString());
-            path = getPathWithPoints(getInterpolatedVertices(interpolationVector, renderOffset));
-        }
+    public abstract void translateShape(Vector translationVector);
 
-        canvas.drawPath(path, this.paint);
-    }
-
-    private static Path getPathWithPoints(Point[] points){
-        Path path = new Path();
-
-        if (points.length > 0) {
-            path.moveTo(points[0].getX(), points[0].getY());
-
-            for (Point point : points) {
-                path.lineTo(point.getX(), point.getY());
-            }
-        }
-        path.close();
-        return path;
-    }
-
-    public void move(Vector movementVector){
-        rotateVertices(movementVector);
-        translateShape(movementVector);
-    }
+    public abstract void rotateShape(Vector rotationVector);
 
     public void setCenter(Point geometricCenter){
         translateShape(new Vector(this.geometricCenter, geometricCenter));
     }
 
+    /**
+     * Interpolates the shapes center for rendering, and applies the given renderOffset.
+     * Doesn't update the shapes stored value for it's center
+     * @param interpolationVector Vector describing movement direction
+     * @param renderOffset Offset to translate shape's world coordinates into screen coordinates. Given as a negative value
+     * @return The interpolated center for this shape after adding the interpolationVector and renderOffset
+     */
     public Point getInterpolatedCenter(Vector interpolationVector, Point renderOffset){
         return this.geometricCenter.add(interpolationVector.getRelativeToTailPoint()).add(renderOffset);
     }
 
-    public void scaleKeepingRatios(float scaleByProportion){
-        scaleByProportion = Math.abs(scaleByProportion);
-
-        float heightChange = height*scaleByProportion;
-        float widthChange = width*scaleByProportion;
-
-        this.setHeight(heightChange);
-        this.setWidth(widthChange);
+    /**
+     * Rotates, then translates the shape in the direction of the given vector.
+     * Rotation makes the shapes forward vector point in the same direction as the movementVector.
+     * @param movementVector Vector for use in rotation and translation
+     */
+    public void move(Vector movementVector){
+        rotateShape(movementVector);
+        translateShape(movementVector);
     }
 
-    public Point[] getVertices() {
-        Point[] vertices = new Point[vertexVectors.length];
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertices[i] = vertexVectors[i].getHead();
-        }
-        return vertices;
-    }
-
-    public Point[] getVertices(Point renderOffset) {
-        Point[] vertices = new Point[vertexVectors.length];
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertices[i] = vertexVectors[i].getHead().add(renderOffset);
-        }
-        return vertices;
-    }
-
-    private Point[] getInterpolatedVertices(Vector interpolationVector, Point renderOffset){
-
-        if (!interpolationVector.equals(new Vector())) {
-            Point amountToAdd = interpolationVector.getRelativeToTailPoint();
-
-            float angle = calculateAngleBetweenVectors(relativeUpUnitVector, interpolationVector);
-
-            float cosAngle = (float) Math.cos(angle);
-
-            float sinAngle = (float) Math.sin(angle);
-
-            Point[] interpolatedVertices = new Point[vertexVectors.length];
-            for (int i = 0; i < vertexVectors.length; i++){
-                interpolatedVertices[i] = rotateVertexVector(vertexVectors[i], cosAngle, sinAngle).translate(amountToAdd).getHead().add(renderOffset);
-            }
-            return interpolatedVertices;
-        }
-        return getVertices(renderOffset);
-    }
-
-    private void rotateVertices(Vector movementVector){
-
-        float angle = calculateAngleBetweenVectors(relativeUpUnitVector, movementVector);
-
-        float cosAngle = (float) Math.cos(angle);
-        float sinAngle = (float) Math.sin(angle);
-
-
-        if (!(Math.abs(cosAngle - 1f) < 0.0001f)) {
-
-            for (int i = 0; i < vertexVectors.length; i++){
-                vertexVectors[i] = rotateVertexVector(vertexVectors[i], cosAngle, sinAngle);
-            }
-        }
-
-        setRelativeUpUnitVector();
+    @NonNull
+    @Override
+    public String toString() {
+        return this.getClass().getName() + "{" +
+                "center: " + geometricCenter.toString() +
+                "}";
     }
 
     /**
-     * Translates the vertices of this shape by the given movement vector.
-     * @param movementVector The vector to move the vertices.
+     * Serialises the EntityShape into a JSON object.
+     * Since this class is abstract, this function is called by the extending classes as part
+     * of the serialisation to JSON format.
+     * @return JSONObject containing the members of this class.
+     * @throws JSONException Throws JSON exception if the object cannot be serialised.
      */
-    private void translateShape(Vector movementVector){
-        Point amountToTranslate = movementVector.getRelativeToTailPoint();
+    JSONObject getJSONObject() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
 
-        this.geometricCenter = this.geometricCenter.add(amountToTranslate);
+        jsonObject.put("forwardvector", forwardUnitVector.getHead().getStateObject());
+        jsonObject.put("center", geometricCenter.getStateObject());
+        jsonObject.put("color", paint.getColor());
+        jsonObject.put("defaultcolor", defaultColor);
 
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertexVectors[i] = vertexVectors[i].translate(amountToTranslate);
-        }
+        return jsonObject;
+    }
 
-        setRelativeUpUnitVector();
+    float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
+        float dot = primaryVector.dot(movementVector);
+        float det = primaryVector.det(movementVector);
+
+        return (float) Math.atan2(det, dot);
     }
 
     Vector rotateVertexVector(Vector vectorToRotate, float cosAngle, float sinAngle){
@@ -208,23 +165,8 @@ public abstract class EntityShape implements SaveableState {
         }
     }
 
-    float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
-        float dot = primaryVector.dot(movementVector);
-        float det = primaryVector.det(movementVector);
-
-        return (float) Math.atan2(det, dot);
-    }
-
     public Point getCenter(){
         return geometricCenter;
-    }
-
-    public float getHeight() {
-        return height;
-    }
-
-    public float getWidth() {
-        return width;
     }
 
     public void setPaint(Paint paint) {
@@ -249,38 +191,6 @@ public abstract class EntityShape implements SaveableState {
 
     public void setDefaultColor(int defaultColor) {
         this.defaultColor = defaultColor;
-    }
-
-    @NonNull
-    @Override
-    public String toString() {
-        StringBuilder vertices = new StringBuilder();
-        for (Point vertex : getVertices()){
-            vertices.append(vertex.toString());
-            vertices.append(", ");
-        }
-        return this.getClass().getName() + "{" +
-                "center: " + geometricCenter.toString() +
-                ", vertices: " + vertices.toString() +
-                "}";
-    }
-
-    JSONObject getAbstractJSONObject() throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-
-        JSONObject[] vertices = new JSONObject[vertexVectors.length];
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertices[i] = vertexVectors[i].getHead().getStateObject();
-        }
-        jsonObject.put("vertices", new JSONArray(vertices));
-        jsonObject.put("upvector", relativeUpUnitVector.getHead().getStateObject());
-        jsonObject.put("center", geometricCenter.getStateObject());
-        jsonObject.put("height", height);
-        jsonObject.put("width",width);
-        jsonObject.put("color", paint.getColor());
-        jsonObject.put("defaultcolor", defaultColor);
-
-        return jsonObject;
     }
 
     public ShapeIdentifier getShapeIdentifier() {

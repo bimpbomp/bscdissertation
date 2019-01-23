@@ -4,10 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.SaveableState;
-import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
-import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
-import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.entities.entityshapes.*;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -38,6 +35,9 @@ public class Entity implements SaveableState {
                 break;
             case RECT:
                 this.shape = new Rectangle(spawnCoordinates, width, height, colorValue);
+                break;
+            case CIRCLE:
+                this.shape = new Circle(spawnCoordinates, width/2f, colorValue);
                 break;
         }
         moveable = false;

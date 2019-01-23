@@ -57,9 +57,12 @@ public class Level implements Runnable {
 
             loops = 0;
 
-            currentGameTick = System.currentTimeMillis();
+
 
             if (!levelState.isPaused()) {
+
+                currentGameTick = System.currentTimeMillis();
+
                 while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick) {
 
                     levelState.getPlayer().setMovementVector(inputManager.getThumbstick().getMovementVector());
@@ -80,6 +83,8 @@ public class Level implements Runnable {
 
                     levelState.setReadyToRender(true);
                 }
+            } else {
+                nextScheduledGameTick = System.currentTimeMillis();
             }
 
             if (!levelState.isPaused() && levelState.isReadyToRender()) {
@@ -103,5 +108,9 @@ public class Level implements Runnable {
 
     public void setLevelState(LevelState levelState) {
         this.levelState = levelState;
+    }
+
+    public CollisionManager getCollisionManager() {
+        return collisionManager;
     }
 }
