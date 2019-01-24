@@ -121,6 +121,7 @@ public class CollisionManager {
 
                         //if a collision has occurred (zero vector says a collision hasn't occurred)
                         if (!pushVector.equals(new Vector())) {
+                            countCollision();
                             //at least one entity can move, as we ignored any pairs of static entities earlier on
 
                             firstEntity.setCollided(true);
@@ -194,7 +195,6 @@ public class CollisionManager {
                         }
                         //add entity names to the checked names set so that they aren't checked twice
                         addCheckedPairNames(firstEntity, secondEntity);
-                        countCollision();
                     }
                 }
             }
