@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.physics;
 
 import android.util.Log;
+import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
@@ -21,10 +22,12 @@ public class CollisionManager {
 
     private LevelState levelState;
 
-    public int collisionCount;
-    private String TAG = "hb::CollisionManager" + collisionCount;
+    HashSet<String> checkedPairNames;
 
-    private ArrayList<ArrayList<Entity>> bins;
+    public int collisionCount;
+    private String TAG = "hb::CollisionManager";
+
+    private ArrayList<Pair<ArrayList<Entity>, Pair<Integer,Integer>>> bins;
 
     private HashMap<Entity, Vector> pushVectorMap;
 
@@ -38,7 +41,7 @@ public class CollisionManager {
         TAG = "hb::CollisionManager" + collisionCount;
     }
 
-    private void addToPushVectorInMap(Entity entity, Vector pushVector){
+    private void addToPushVectorMap(Entity entity, Vector pushVector){
         Vector resultantPushVector;
 
         if (pushVectorMap.containsKey(entity)){
@@ -55,7 +58,7 @@ public class CollisionManager {
 
         fineGrainCollisionDetection(bins);
 
-        for (Entity entity : pushVectorMap.keySet()){
+        /*for (Entity entity : pushVectorMap.keySet()){
             Vector pushVector = pushVectorMap.get(entity);
 
             if (pushVector != null && !pushVector.equals(new Vector())) {
@@ -64,13 +67,15 @@ public class CollisionManager {
                 Point newCenter = entity.getShape().getCenter().add(pushVector.getRelativeToTailPoint());
                 entity.getShape().setCenter(newCenter);
 
+                //entity.getShape().move(pushVector);
+
                 entity.setPushVector(pushVector);
 
                 countCollision();
             }
 
             entity.setCollided(true);
-        }
+        }*/
     }
 
     /**
@@ -82,16 +87,16 @@ public class CollisionManager {
 
         //initialise empty grid
         int cellSize = levelState.getMap().getTileSize() * 2;
-        broadPhaseGrid = new Grid(new Point(), gridMaximum, cellSize);
+        broadPhaseGrid = new Grid(new Point(levelState.getMap().getTileSize()/-2f,levelState.getMap().getTileSize()/-2f), gridMaximum, cellSize);
 
 
         broadPhaseGrid.addEntityToGrid(levelState.getPlayer());
 
-        for (Entity entity : levelState.getStaticEntities()){
+        for (Entity entity : levelState.getEnemyEntities()){
             broadPhaseGrid.addEntityToGrid(entity);
         }
 
-        for (Entity entity : levelState.getEnemyEntities()){
+        for (Entity entity : levelState.getStaticEntities()){
             broadPhaseGrid.addEntityToGrid(entity);
         }
 
@@ -101,22 +106,25 @@ public class CollisionManager {
         //fetch the bins that have more than one entity in them for the next stage of collision detection
         for (Integer column : broadPhaseGrid.getColumnKeySet()){
             for (Integer row : broadPhaseGrid.getRowKeySet(column)){
-                ArrayList<Entity> bin = broadPhaseGrid.getBin(column, row);
+                Pair<ArrayList<Entity>, Pair<Integer, Integer>> bin = new Pair<>(broadPhaseGrid.getBin(column, row), new Pair<>(column, row));
 
-                if (bin.size() > 1){
+                if (bin.first.size() > 1){
                     bins.add(bin);
                 }
             }
         }
     }
 
-    private void fineGrainCollisionDetection(ArrayList<ArrayList<Entity>> bins){
+    private void fineGrainCollisionDetection(ArrayList<Pair<ArrayList<Entity>, Pair<Integer, Integer>>> bins){
         //Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
-        HashSet<String> checkedPairNames = new HashSet<>();
+        checkedPairNames = new HashSet<>();
 
         pushVectorMap = new HashMap<>();
 
-        for (ArrayList<Entity> bin : bins){
+        for (Pair<ArrayList<Entity>, Pair<Integer, Integer>> binPair : bins){
+            ArrayList<Entity> bin = binPair.first;
+            Pair<Integer, Integer> binGridReference = binPair.second;
+
             if (bin.size() > 1){
 
                 StringBuilder sb = new StringBuilder();
@@ -124,7 +132,7 @@ public class CollisionManager {
                     sb.append(e.getName());
                     sb.append(", ");
                 }
-                //Log.d(TAG+collisionCount, "entities in bin: " + sb.toString());
+                //Log.d(TAG, "entities in bin: " + sb.toString());
 
                 //check each pair of entities in current bin
                 for (int i = 0; i < bin.size() - 1; i++){
@@ -133,56 +141,169 @@ public class CollisionManager {
                         Entity firstEntity = bin.get(i);
                         Entity secondEntity = bin.get(j);
 
+                        //if both entities are static, skip
                         if (!firstEntity.canMove() && !secondEntity.canMove()){
                             continue;
                         }
 
+                        //if the two entities have already been checked together for collisions, skip
+                        //otherwise add them to the checked pair set.
                         if (checkedPairNames.contains(firstEntity.getName()+secondEntity.getName())){
                             //Log.d(TAG+collisionCount, "already collided: " + firstEntity.getName() + ", " + secondEntity.getName());
                             continue;
-                        } else {
-                            checkedPairNames.add(firstEntity.getName() + secondEntity.getName());
-                            checkedPairNames.add(secondEntity.getName() + firstEntity.getName());
                         }
+                        
+                        Vector pushVector = getPushVectorBetweenTwoEntities(firstEntity, secondEntity);
 
-                        Vector pushVector;
-                        ShapeIdentifier firstEntityIdentifier = firstEntity.getShape().getShapeIdentifier();
-                        ShapeIdentifier secondEntityIdentifier = secondEntity.getShape().getShapeIdentifier();
 
-                        Log.d(TAG, "first entity: " + firstEntity.getName() + ", second entity: " + secondEntity.getName());
-
-                        if (firstEntityIdentifier == ShapeIdentifier.CIRCLE && secondEntityIdentifier == ShapeIdentifier.CIRCLE){
-                            pushVector = collisionCheckTwoCircles((Circle) firstEntity.getShape(), (Circle) secondEntity.getShape());
-
-                        } else if (firstEntityIdentifier == ShapeIdentifier.CIRCLE){
-                            pushVector = collisionCheckCircleAndPolygon((Circle) firstEntity.getShape(), (Polygon) secondEntity.getShape());
-
-                        } else if (secondEntityIdentifier == ShapeIdentifier.CIRCLE){
-                            //inverted so that first entity is always the one pushed away
-                            pushVector = collisionCheckCircleAndPolygon((Circle) secondEntity.getShape(), (Polygon) firstEntity.getShape());
-                            pushVector = pushVector.sMult(-1f);
-                        } else {
-                            pushVector = collisionCheckTwoPolygons((Polygon) firstEntity.getShape(), (Polygon) secondEntity.getShape());
-                        }
-                        //Log.d(TAG, "push vector: " + pushVector.relativeToString());
-
+                        //if a collision has occurred (zero vector says a collision hasn't occurred)
                         if (!pushVector.equals(new Vector())) {
-                            //Log.d(TAG+collisionCount, "collided pair added");
-                            if (firstEntity.canMove() && secondEntity.canMove()){
-                                addToPushVectorInMap(firstEntity, pushVector.sMult(0.5f));
-                                addToPushVectorInMap(secondEntity, pushVector.sMult(-0.5f));
-                            } else if (firstEntity.canMove() && !secondEntity.canMove()){
-                                addToPushVectorInMap(firstEntity, pushVector);
-                                addToPushVectorInMap(secondEntity, new Vector());
+                            //at least one entity can move, as we ignored any pairs of static entities earlier on
+
+                            firstEntity.setCollided(true);
+                            secondEntity.setCollided(true);
+
+                            boolean firstAbleToMove;
+                            boolean secondAbleToMove;
+
+                            Point newCenter;
+
+                            Point firstAmountMoved;
+                            Point secondAmountMoved;
+
+                            if (firstEntity.canMove() && secondEntity.canMove()) {
+
+                                isEntityAbleToBePushed(firstEntity, binGridReference, true);
+                                isEntityAbleToBePushed(secondEntity, binGridReference, true);
+
+                                firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
+                                newCenter = firstEntity.getShape().getCenter().add(firstAmountMoved);
+                                firstEntity.getShape().setCenter(newCenter);
+
+                                secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
+                                newCenter = secondEntity.getShape().getCenter().add(secondAmountMoved);
+                                secondEntity.getShape().setCenter(newCenter);
+
+                                firstAbleToMove = isEntityAbleToBePushed(firstEntity, binGridReference, false);
+                                secondAbleToMove = isEntityAbleToBePushed(secondEntity, binGridReference, false);
+
+                            } else if (firstEntity.canMove()){
+
+                                firstAmountMoved = pushVector.getRelativeToTailPoint();
+                                newCenter = firstEntity.getShape().getCenter().add(firstAmountMoved);
+                                firstEntity.getShape().setCenter(newCenter);
+
+                                continue;
+
                             } else {
-                                addToPushVectorInMap(firstEntity, new Vector());
-                                addToPushVectorInMap(secondEntity, pushVector.sMult(-1f));
+                                secondAmountMoved = pushVector.sMult(-1).getRelativeToTailPoint();
+                                newCenter = secondEntity.getShape().getCenter().add(secondAmountMoved);
+                                secondEntity.getShape().setCenter(newCenter);
+
+                                continue;
                             }
+                            Log.d(TAG, "FIRST: " + firstEntity.getName() + " abletomove: " + firstAbleToMove + ", SECOND: " + secondEntity.getName() + " abletomove: " + secondAbleToMove);
+
+                            if (!firstAbleToMove && !secondAbleToMove){
+                                Log.d(TAG, "FIRST and SECOND UNABLE TO MOVE: " + firstEntity.getName() + ": " + secondEntity.getName());
+                                /*moveEntityCenter(firstEntity, firstAmountMoved.smult(-1f));
+
+                                moveEntityCenter(secondEntity, secondAmountMoved.smult(-1f));*/
+
+                            } else if (!secondAbleToMove){
+                                Log.d(TAG, "SECOND UNABLE TO MOVE: " + firstEntity.getName() + ": " + secondEntity.getName());
+                                moveEntityCenter(firstEntity, firstAmountMoved);
+
+                                moveEntityCenter(secondEntity, secondAmountMoved.smult(-1f));
+
+                            } else if (!firstAbleToMove){
+                                Log.d(TAG, "FIRST UNABLE TO MOVE: " + firstEntity.getName() + ": " + secondEntity.getName());
+                                moveEntityCenter(firstEntity, firstAmountMoved.smult(-1f));
+
+                                moveEntityCenter(secondEntity, secondAmountMoved);
+                            }
+                            addCheckedPairNames(firstEntity, secondEntity);
+                        } else {
+                            addCheckedPairNames(firstEntity, secondEntity);
                         }
                     }
                 }
             }
         }
+    }
+
+    private void moveEntityCenter(Entity entity, Point amountToMove){
+        Point newCenter = entity.getShape().getCenter().add(amountToMove);
+        entity.getShape().setCenter(newCenter);
+    }
+    
+    private Vector getPushVectorBetweenTwoEntities(Entity firstEntity, Entity secondEntity){
+        Vector pushVector;
+
+        ShapeIdentifier firstEntityIdentifier = firstEntity.getShape().getShapeIdentifier();
+        ShapeIdentifier secondEntityIdentifier = secondEntity.getShape().getShapeIdentifier();
+
+        //Log.d(TAG, "first entity: " + firstEntity.getName() + ", second entity: " + secondEntity.getName());
+
+        //collision detection method varies depending on shape combination
+        if (firstEntityIdentifier == ShapeIdentifier.CIRCLE && secondEntityIdentifier == ShapeIdentifier.CIRCLE){
+            pushVector = collisionCheckTwoCircles((Circle) firstEntity.getShape(), (Circle) secondEntity.getShape());
+
+        } else if (firstEntityIdentifier == ShapeIdentifier.CIRCLE){
+            pushVector = collisionCheckCircleAndPolygon((Circle) firstEntity.getShape(), (Polygon) secondEntity.getShape());
+
+        } else if (secondEntityIdentifier == ShapeIdentifier.CIRCLE){
+            //inverted so that first entity is always the one pushed away
+            pushVector = collisionCheckCircleAndPolygon((Circle) secondEntity.getShape(), (Polygon) firstEntity.getShape());
+            pushVector = pushVector.sMult(-1f);
+        } else {
+            pushVector = collisionCheckTwoPolygons((Polygon) firstEntity.getShape(), (Polygon) secondEntity.getShape());
+        }
+        return pushVector;
+    }
+
+    private void addCheckedPairNames(Entity entity1, Entity entity2){
+        checkedPairNames.add(entity1.getName() + entity2.getName());
+        checkedPairNames.add(entity2.getName() + entity1.getName());
+    }
+    
+    private boolean isEntityAbleToBePushed(Entity entity, Pair<Integer, Integer> binReference, boolean resolveCollision){
+        //if entity is static, it doesn't matter if it collides with another static.
+
+        //look at adjacent cells in grid that the entity exists in.
+        for (int i = binReference.first - 1; i < binReference.first + 2; i++){
+            for (int j = binReference.second - 1; j < binReference.second + 2; j++){
+
+                ArrayList<Entity> bin = broadPhaseGrid.getBin(i, j);
+                if (bin != null && bin.contains(entity)){
+                    boolean collided = isStaticCollision(entity, bin, resolveCollision);
+                    if (collided)
+                        return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isStaticCollision(Entity entity, ArrayList<Entity> bin, boolean resolveCollision){
+        boolean collided;
+            for (Entity entityInBin : bin) {
+                if (!entityInBin.canMove()) {
+                    //push vector == zero vector -> no collision
+                    //push vector != zero vector -> collision
+                    Vector pushVector = getPushVectorBetweenTwoEntities(entity, entityInBin);
+                    collided = !(pushVector.equals(new Vector()));
+
+                    if (collided) {
+                        if (resolveCollision){
+                            addCheckedPairNames(entity, entityInBin);
+                            moveEntityCenter(entity, pushVector.getRelativeToTailPoint());
+                        }
+                        return true;
+                    }
+                }
+            }
+        return false;
     }
 
     private Vector getMinimumPushVector(ArrayList<Vector> pushVectors){
@@ -352,8 +473,8 @@ public class CollisionManager {
         //find the normal vector with the smallest angle between itself and the vectorBetweenCenters
         for (int i = 0; i < orthogonals.length; i++){
             float currentOrthDot = orthogonals[i].dot(vectorBetweenCenters);
-            Log.d(TAG, "orth " + i + ": " + orthogonals[i].relativeToString());
-            Log.d(TAG, "orth dot " + i + ": " + currentOrthDot);
+            /*Log.d(TAG, "orth " + i + ": " + orthogonals[i].relativeToString());
+            Log.d(TAG, "orth dot " + i + ": " + currentOrthDot);*/
 
             if (maxOrthDot < currentOrthDot){
                 maxOrthDot = currentOrthDot;
@@ -367,14 +488,14 @@ public class CollisionManager {
 
         pushVector = isSeparatingAxis(vectorBetweenCenters, nearSideRadius, polygonVerticesFromOrigin);
 
-        Log.d(TAG, "pushVector: " + pushVector.relativeToString() + ", max orth index: " + minOrthIndex);
+        //Log.d(TAG, "pushVector: " + pushVector.relativeToString() + ", max orth index: " + minOrthIndex);
 
         if (minOrthIndex >= 0 && !pushVector.equals(new Vector())){
                 Vector secondaryPushVector = isSeparatingAxis(orthogonals[minOrthIndex],
                         new Vector(circle.getCenter().add(orthogonals[minOrthIndex].sMult(-1f*circle.getRadius()).getRelativeToTailPoint())),
                         polygonVerticesFromOrigin);
 
-                Log.d(TAG, "secondary push: " + secondaryPushVector.relativeToString());
+                //Log.d(TAG, "secondary push: " + secondaryPushVector.relativeToString());
                 if (!secondaryPushVector.equals(new Vector())){
                     pushVector = secondaryPushVector;
                 } else {

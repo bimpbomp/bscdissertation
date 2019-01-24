@@ -2,7 +2,6 @@ package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -15,10 +14,16 @@ import java.text.ParseException;
 public class MoveableEntity extends Entity {
     private Vector inputtedMovementVector;
     private float maxSpeed;
+    private float maxAcc;
+    private Point oldCenter;
 
     public MoveableEntity(String name, Point spawnCoordinates, ShapeIdentifier shapeIdentifier, int width, int height, int colorValue, float maxSpeed) {
         super(name, spawnCoordinates, shapeIdentifier, width, height, colorValue);
         this.maxSpeed = maxSpeed;
+
+        this.maxAcc = maxSpeed / 3f;
+        this.oldCenter = spawnCoordinates;
+
         this.inputtedMovementVector = new Vector();
 
         moveable = true;
@@ -28,6 +33,9 @@ public class MoveableEntity extends Entity {
         super(name, shape);
         this.maxSpeed = maxSpeed;
         this.inputtedMovementVector = new Vector();
+
+        this.maxAcc = maxSpeed / 3f;
+        this.oldCenter = shape.getCenter();
 
         moveable = true;
     }
@@ -39,6 +47,9 @@ public class MoveableEntity extends Entity {
         this.maxSpeed = Float.parseFloat(jsonObject.getString("maxspeed"));
         this.inputtedMovementVector = new Vector();
 
+        this.maxAcc = maxSpeed / 3f;
+        this.oldCenter = shape.getCenter();
+
         moveable = true;
     }
 
@@ -48,8 +59,10 @@ public class MoveableEntity extends Entity {
      */
     public void move(float secondsSinceLastGameTick){
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
+        //Log.d(TAG, "movement vector: " + movementVector.relativeToString());
 
         if (!movementVector.equals(new Vector())) {
+            //moves and translates the shape by the calculated amounts
             shape.move(movementVector);
         }
     }
@@ -64,7 +77,7 @@ public class MoveableEntity extends Entity {
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastGameTick){
 
         if (collided){
-            shape.setColor(Color.RED);
+            shape.setColor(Color.GREEN);
             collided = false;
         } else {
             shape.resetToDefaultColor();
@@ -74,7 +87,7 @@ public class MoveableEntity extends Entity {
 
         shape.draw(canvas, renderOffset, interpolationVector);
 
-        Log.d(TAG, name + " push: " + pushVector.toString());
+        //Log.d(TAG, name + " push: " + pushVector.toString());
         Vector tpushVector = pushVector.translate(shape.getCenter());
         tpushVector = new Vector(tpushVector.getTail().add(renderOffset), tpushVector.getHead().add(renderOffset));
         canvas.drawLine(tpushVector.getTail().getX(),
@@ -87,25 +100,20 @@ public class MoveableEntity extends Entity {
         canvas.drawText(name, interpolatedCenter.getX(), interpolatedCenter.getY(), textPaint);
     }
 
-    /**
-     * Returns the new position for this entity based on time passed since last update.
-     * This method does NOT update the position with the new value, only returns it.
-     * @param secondsSinceLastGameTick time passed since last game tick in seconds
-     * @return New position = oldPosition + (maxSpeed*time)*inputtedMovementVector
-     */
-    private Point getNextPosition(float secondsSinceLastGameTick){
-        if (Float.compare(secondsSinceLastGameTick, 0f) == 0){
-            return shape.getCenter();
-        }
-        return shape.getCenter().addVector(calculateMovementVector(secondsSinceLastGameTick));
-    }
-
-    /**
-     * Calculates the movement vector by multipling the inputtedVector by maxSpeed
-     * @param secondsSinceLastGameTick seconds since last game tick
-     * @return complete movement vector
-     */
     private Vector calculateMovementVector(float secondsSinceLastGameTick){
+        /*if (Float.compare(secondsSinceLastGameTick, 0f) != 0) {
+            if (!inputtedMovementVector.equals(new Vector())) {
+                Log.d(TAG, shape.getCenter().toString());
+                Vector velocity = new Vector(oldCenter, shape.getCenter());
+                Vector accVector = inputtedMovementVector.sMult(50 * secondsSinceLastGameTick);
+                oldCenter = shape.getCenter();
+
+
+                return velocity.vAdd(accVector);
+            }
+        }
+        return new Vector();*/
+
         return inputtedMovementVector != null ? inputtedMovementVector.sMult(secondsSinceLastGameTick * maxSpeed) : new Vector();
     }
 

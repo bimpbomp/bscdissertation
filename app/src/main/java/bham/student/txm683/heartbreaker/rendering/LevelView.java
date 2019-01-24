@@ -220,6 +220,20 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw background
             canvas.drawRGB(255,255,255);
 
+            //draw physics grid
+            if (grid != null){
+                Point gridMin = grid.getGridMinimum();
+                Point gridMax = grid.getGridMaximum();
+
+                for (float i = gridMin.getX(); i <= grid.getGridDimensionsInCells().first*grid.getCellSize(); i += grid.getCellSize()){
+                    canvas.drawLine(i+renderOffset.getX(),gridMin.getY()+renderOffset.getY(), i+renderOffset.getX(), gridMax.getY()+renderOffset.getY(), textPaint);
+                }
+
+                for (float i = gridMin.getY(); i <= grid.getGridDimensionsInCells().second*grid.getCellSize(); i += grid.getCellSize()){
+                    canvas.drawLine(gridMin.getX()+renderOffset.getX(),i+renderOffset.getY(), gridMax.getX()+renderOffset.getX(), i+renderOffset.getY(), textPaint);
+                }
+            }
+
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick);
 
             for (Entity entity : enemiesToRender){

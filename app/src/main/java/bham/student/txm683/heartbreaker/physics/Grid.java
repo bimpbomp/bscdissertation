@@ -15,6 +15,7 @@ public class Grid {
     private TreeMap<Integer, TreeMap<Integer, ArrayList<Entity>>> grid;
 
     private Point gridMinimum;
+    private Point gridMaximum;
 
     private Pair<Integer, Integer> gridDimensionsInCells;
 
@@ -22,6 +23,7 @@ public class Grid {
 
     public Grid(Point gridMinimum, Point gridMaximum, int cellSize) {
         this.gridMinimum = gridMinimum;
+        this.gridMaximum = gridMaximum;
 
         this.cellSize = cellSize;
 
@@ -63,7 +65,6 @@ public class Grid {
 
         int column = (int) Math.floor((point.getX() - gridMinimum.getX()) / cellSize);
         int row = (int) Math.floor((point.getY() - gridMinimum.getY()) / cellSize);
-
         return new Pair<>(column, row);
     }
 
@@ -85,7 +86,11 @@ public class Grid {
     }
 
     ArrayList<Entity> getBin(int column, int row){
-        return grid.get(column).get(row);
+        if (grid.containsKey(column)) {
+            if (grid.get(column).containsKey(row))
+                return grid.get(column).get(row);
+        }
+        return null;
     }
 
     Set<Integer> getColumnKeySet(){
@@ -102,5 +107,13 @@ public class Grid {
 
     public int getCellSize(){
         return cellSize;
+    }
+
+    public Point getGridMinimum() {
+        return gridMinimum;
+    }
+
+    public Point getGridMaximum() {
+        return gridMaximum;
     }
 }

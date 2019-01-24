@@ -137,7 +137,7 @@ public abstract class Polygon extends EntityShape {
     @Override
     public void rotateShape(Vector movementVector){
 
-        float angle = calculateAngleBetweenVectors(forwardUnitVector, movementVector);
+        float angle = calculateAngleBetweenVectors(forwardUnitVector, movementVector.getUnitVector());
 
         float cosAngle = (float) Math.cos(angle);
         float sinAngle = (float) Math.sin(angle);
