@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.physics;
 
 import android.util.Log;
-import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
@@ -11,11 +10,12 @@ import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class CollisionManager {
 
-    private static final float PUSH_VECTOR_ERROR = 0.0001f;
+    private static final float PUSH_VECTOR_ERROR = 0.001f;
 
     private Grid broadPhaseGrid;
 
@@ -24,10 +24,9 @@ public class CollisionManager {
     public int collisionCount;
     private String TAG = "hb::CollisionManager" + collisionCount;
 
-    private HashSet<String> checkedPairNames;
-
-    private ArrayList<Pair<Pair<Entity, Entity>, Vector>> collidedPairs;
     private ArrayList<ArrayList<Entity>> bins;
+
+    private HashMap<Entity, Vector> pushVectorMap;
 
     public CollisionManager(LevelState levelState){
         this.levelState = levelState;
@@ -39,25 +38,38 @@ public class CollisionManager {
         TAG = "hb::CollisionManager" + collisionCount;
     }
 
+    private void addToPushVectorInMap(Entity entity, Vector pushVector){
+        Vector resultantPushVector;
+
+        if (pushVectorMap.containsKey(entity)){
+            resultantPushVector = pushVectorMap.get(entity).vAdd(pushVector);
+            Log.d(TAG, "RESULT:" + resultantPushVector.relativeToString());
+        } else {
+            resultantPushVector = pushVector;
+        }
+        pushVectorMap.put(entity, resultantPushVector);
+    }
+
     public void checkCollisions(){
         applySpatialPartitioning();
 
         fineGrainCollisionDetection(bins);
 
-        for (Pair<Pair<Entity, Entity>, Vector> collidedPair : collidedPairs){
-            collidedPair.first.first.setCollided(true);
-            collidedPair.first.second.setCollided(true);
+        for (Entity entity : pushVectorMap.keySet()){
+            Vector pushVector = pushVectorMap.get(entity);
 
-            //Log.d(TAG+collisionCount, "min push vector: " + collidedPair.second.toString());
+            if (pushVector != null && !pushVector.equals(new Vector())) {
+                Log.d(TAG, entity.getName() + " resultantPushVector: " + pushVector.relativeToString());
 
-            Point center = collidedPair.first.first.getShape().getCenter();
+                Point newCenter = entity.getShape().getCenter().add(pushVector.getRelativeToTailPoint());
+                entity.getShape().setCenter(newCenter);
 
-            Point newCenter = center.add(collidedPair.second.getRelativeToTailPoint());
-            collidedPair.first.first.getShape().setCenter(newCenter);
+                entity.setPushVector(pushVector);
 
-            //Log.d(TAG+collisionCount, "old center: " + center.toString() + ", new center: " + newCenter.toString());
+                countCollision();
+            }
 
-            countCollision();
+            entity.setCollided(true);
         }
     }
 
@@ -66,39 +78,32 @@ public class CollisionManager {
      * returns the cells containing 2 or more entities for more in depth countCollision checks.
      */
     private void applySpatialPartitioning(){
-        //TODO: At the minute, only checking vertices means that edges crossing a different cell reference wont get checked when they should
         Point gridMaximum = new Point(levelState.getMap().getDimensions().first, levelState.getMap().getDimensions().second);
 
-        //int cellSize = 500;
+        //initialise empty grid
         int cellSize = levelState.getMap().getTileSize() * 2;
         broadPhaseGrid = new Grid(new Point(), gridMaximum, cellSize);
 
+
         broadPhaseGrid.addEntityToGrid(levelState.getPlayer());
-        //Log.d(TAG, levelState.getPlayer().getName() + " added to grid");
 
         for (Entity entity : levelState.getStaticEntities()){
             broadPhaseGrid.addEntityToGrid(entity);
-            //Log.d(TAG, entity.getName() + " added to grid");
         }
 
         for (Entity entity : levelState.getEnemyEntities()){
             broadPhaseGrid.addEntityToGrid(entity);
-            //Log.d(TAG, entity.getName() + " added to grid");
         }
 
         //each element will be a bin from a grid reference with more than one entity in
         bins = new ArrayList<>();
 
-        //get the bins that have 2 or more elements in them
+        //fetch the bins that have more than one entity in them for the next stage of collision detection
         for (Integer column : broadPhaseGrid.getColumnKeySet()){
             for (Integer row : broadPhaseGrid.getRowKeySet(column)){
                 ArrayList<Entity> bin = broadPhaseGrid.getBin(column, row);
 
                 if (bin.size() > 1){
-
-                    /*for (Entity entity : bin){
-                        entity.setCollided(true);
-                    }*/
                     bins.add(bin);
                 }
             }
@@ -107,8 +112,9 @@ public class CollisionManager {
 
     private void fineGrainCollisionDetection(ArrayList<ArrayList<Entity>> bins){
         //Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
-        collidedPairs = new ArrayList<>();
-        checkedPairNames = new HashSet<>();
+        HashSet<String> checkedPairNames = new HashSet<>();
+
+        pushVectorMap = new HashMap<>();
 
         for (ArrayList<Entity> bin : bins){
             if (bin.size() > 1){
@@ -154,7 +160,7 @@ public class CollisionManager {
                         } else if (secondEntityIdentifier == ShapeIdentifier.CIRCLE){
                             //inverted so that first entity is always the one pushed away
                             pushVector = collisionCheckCircleAndPolygon((Circle) secondEntity.getShape(), (Polygon) firstEntity.getShape());
-                            pushVector.sMult(-1f);
+                            pushVector = pushVector.sMult(-1f);
                         } else {
                             pushVector = collisionCheckTwoPolygons((Polygon) firstEntity.getShape(), (Polygon) secondEntity.getShape());
                         }
@@ -162,7 +168,16 @@ public class CollisionManager {
 
                         if (!pushVector.equals(new Vector())) {
                             //Log.d(TAG+collisionCount, "collided pair added");
-                            collidedPairs.add(new Pair<>(new Pair<>(firstEntity, secondEntity), pushVector));
+                            if (firstEntity.canMove() && secondEntity.canMove()){
+                                addToPushVectorInMap(firstEntity, pushVector.sMult(0.5f));
+                                addToPushVectorInMap(secondEntity, pushVector.sMult(-0.5f));
+                            } else if (firstEntity.canMove() && !secondEntity.canMove()){
+                                addToPushVectorInMap(firstEntity, pushVector);
+                                addToPushVectorInMap(secondEntity, new Vector());
+                            } else {
+                                addToPushVectorInMap(firstEntity, new Vector());
+                                addToPushVectorInMap(secondEntity, pushVector.sMult(-1f));
+                            }
                         }
                     }
                 }
@@ -257,10 +272,16 @@ public class CollisionManager {
     private ArrayList<Vector> getEdges(ShapeIdentifier shapeIdentifier, Point[] vertices){
         ArrayList<Vector> edges = new ArrayList<>();
 
-        for (int i = 0; i < vertices.length - 1; i++){
-            edges.add(new Vector(vertices[i], vertices[i+1]));
+        if (shapeIdentifier != ShapeIdentifier.RECT) {
+
+            for (int i = 0; i < vertices.length - 1; i++) {
+                edges.add(new Vector(vertices[i], vertices[i + 1]));
+            }
+            edges.add(new Vector(vertices[vertices.length - 1], vertices[0]));
+        } else {
+            edges.add(new Vector(vertices[0], vertices[1]));
+            edges.add(new Vector(vertices[1], vertices[2]));
         }
-        edges.add(new Vector(vertices[vertices.length-1], vertices[0]));
 
         return edges;
     }

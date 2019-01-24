@@ -11,6 +11,7 @@ import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
@@ -222,7 +223,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick);
 
             for (Entity entity : enemiesToRender){
-                entity.draw(canvas, renderOffset);
+                ((MoveableEntity)entity).draw(canvas, renderOffset, secondsSinceLastGameTick);
             }
 
             for (Entity entity : staticEntitiesToRender){

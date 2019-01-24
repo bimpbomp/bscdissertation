@@ -23,10 +23,11 @@ public class Entity implements SaveableState {
     boolean moveable;
 
     boolean collided;
+    Vector pushVector;
 
     public Entity(String name, Point spawnCoordinates, ShapeIdentifier shapeIdentifier, int width, int height, int colorValue){
         this.name = name;
-        this.TAG = "hb::" + this.getClass().getName() + ":" + name;
+        this.TAG = "hb::" + this.getClass().getSimpleName() + ":" + name;
 
         switch (shapeIdentifier){
 
@@ -42,16 +43,20 @@ public class Entity implements SaveableState {
         }
         moveable = false;
 
+        pushVector = new Vector();
+
         initTextPaint();
     }
 
     public Entity(String name, EntityShape shape){
         this.name = name;
-        this.TAG = "hb::" + this.getClass().getName() + ":" + name;
+        this.TAG = "hb::" + this.getClass().getSimpleName() + ":" + name;
 
         this.shape = shape;
 
         moveable = false;
+
+        pushVector = new Vector();
 
         initTextPaint();
     }
@@ -111,6 +116,10 @@ public class Entity implements SaveableState {
 
         Point center = shape.getCenter().add(renderOffset);
         canvas.drawText(name, center.getX(), center.getY(), textPaint);
+    }
+
+    public void setPushVector(Vector pushVector) {
+        this.pushVector = pushVector.sMult(5);
     }
 
     public String getName(){

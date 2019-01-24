@@ -269,19 +269,4 @@ public class Vector implements SaveableState {
         jsonObject.put("tail", tail.getStateObject());
         return jsonObject;
     }
-
-    /*public static Vector createVectorFromStateString(String stateString) throws ParseException {
-        String[] split = stateString.split(stateString);
-
-        Vector vector;
-        try {
-            Point sHead = Point.createPointFromStateString(split[0]);
-            Point sTail = Point.createPointFromStateString(split[1]);
-            vector = new Vector(sTail, sHead);
-
-        } catch (IndexOutOfBoundsException e){
-            throw new ParseException("String cannot be split with " + DELIMITER, 0);
-        }
-        return vector;
-    }*/
 }

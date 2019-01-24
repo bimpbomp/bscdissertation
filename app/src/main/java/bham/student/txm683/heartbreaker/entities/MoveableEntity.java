@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -72,6 +73,15 @@ public class MoveableEntity extends Entity {
         Vector interpolationVector = calculateMovementVector(secondsSinceLastGameTick);
 
         shape.draw(canvas, renderOffset, interpolationVector);
+
+        Log.d(TAG, name + " push: " + pushVector.toString());
+        Vector tpushVector = pushVector.translate(shape.getCenter());
+        tpushVector = new Vector(tpushVector.getTail().add(renderOffset), tpushVector.getHead().add(renderOffset));
+        canvas.drawLine(tpushVector.getTail().getX(),
+                tpushVector.getTail().getY(),
+                tpushVector.getHead().getX(),
+                tpushVector.getHead().getY(),
+                textPaint);
 
         Point interpolatedCenter = shape.getInterpolatedCenter(interpolationVector, renderOffset);
         canvas.drawText(name, interpolatedCenter.getX(), interpolatedCenter.getY(), textPaint);
