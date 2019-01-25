@@ -263,8 +263,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         for (float i = minimum.getY(); i <= maximum.getY(); i += cellSize){
             canvas.drawLine(minimum.getX()+renderOffset.getX(),i+renderOffset.getY(), maximum.getX() + renderOffset.getX(), i+renderOffset.getY(), textPaint);
         }
-
-        Log.d(TAG, "grid h cells: " + maximum.getX()/cellSize + ", stored grid h cells: " + grid.getGridDimensionsInCells().first);
     }
 
     /**

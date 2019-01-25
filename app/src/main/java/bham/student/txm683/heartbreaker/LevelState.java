@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker;
 
 import android.graphics.Color;
-import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
@@ -76,19 +75,19 @@ public class LevelState {
 
         this.player = new Player("player", map.getPlayerSpawnLocation());*/
 
-        Log.d(TAG, "player spawn: " + map.getPlayerSpawnLocation());
+        //Log.d(TAG, "player spawn: " + map.getPlayerSpawnLocation());
         this.player = new Player("player", map.getPlayerSpawnLocation(), map.getTileSize()/2, map.getTileSize()*2);
 
         Point[] staticSpawns = map.getStaticSpawns();
         for (Point staticSpawn : staticSpawns){
-            Log.d(TAG, "staticSpawn: "+ staticSpawn.toString());
+            //Log.d(TAG, "staticSpawn: "+ staticSpawn.toString());
             this.staticEntities.add(new Entity("Static-"+uniqueID.id(), staticSpawn, ShapeIdentifier.RECT, map.getTileSize(), map.getTileSize(), Color.BLUE));
         }
 
         Pair[] enemySpawns = map.getEnemySpawnLocations();
         for (Pair pair : enemySpawns){
             Point enemySpawn = (Point)pair.second;
-            Log.d(TAG, "enemySpawn: " + enemySpawn.toString());
+            //Log.d(TAG, "enemySpawn: " + enemySpawn.toString());
 
             ShapeIdentifier shapeIdentifier;
 

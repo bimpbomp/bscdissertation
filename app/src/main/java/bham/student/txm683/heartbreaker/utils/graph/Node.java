@@ -1,24 +1,17 @@
 package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.Nullable;
-import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Node {
-    private String name;
-    private Point coordinates;
+    private Tile coordinates;
 
     private List<Edge> connections;
 
-    Node(String name){
-        this.name = name;
-        this.connections = new ArrayList<>();
-    }
-
-    Node(String name, Point coordinates){
-        this.name = name;
+    Node(Tile coordinates){
         this.connections = new ArrayList<>();
 
         this.coordinates = coordinates;
@@ -26,10 +19,6 @@ public class Node {
 
     void addConnection(Edge newConnection){
         this.connections.add(newConnection);
-    }
-
-    public String getName() {
-        return name;
     }
 
     public List<Edge> getConnections() {
@@ -53,6 +42,14 @@ public class Node {
         return false;
     }
 
+    public Tile getCoordinates() {
+        return coordinates;
+    }
+
+    public void setCoordinates(Tile coordinates) {
+        this.coordinates = coordinates;
+    }
+
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj == this)
@@ -61,6 +58,6 @@ public class Node {
         if (!(obj instanceof Node))
             return false;
 
-        return ((Node) obj).name.equals(this.name);
+        return ((Node) obj).coordinates.equals(this.coordinates);
     }
 }

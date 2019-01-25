@@ -41,8 +41,8 @@ public class Edge {
     @Override
     public String toString() {
         return "Edge{" +
-                "firstNode=" + firstNode.getName() +
-                ", secondNode=" + secondNode.getName() +
+                "firstNode=" + firstNode.getCoordinates().toString() +
+                ", secondNode=" + secondNode.getCoordinates().toString() +
                 ", weight=" + weight +
                 '}';
     }

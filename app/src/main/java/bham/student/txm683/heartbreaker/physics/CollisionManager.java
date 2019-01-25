@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.physics;
 
+import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
@@ -22,6 +23,10 @@ public class CollisionManager {
 
     private HashSet<String> checkedPairNames;
 
+    private HashSet<String> currentTickCollidedPairs;
+
+    private HashSet<String> collidedLastTick;
+
     public int collisionCount;
     private String TAG = "hb::CollisionManager";
 
@@ -30,11 +35,17 @@ public class CollisionManager {
     public CollisionManager(LevelState levelState){
         this.levelState = levelState;
         this.collisionCount = 0;
+
+        this.collidedLastTick = new HashSet<>();
     }
 
-    private void countCollision(){
-        collisionCount++;
-        TAG = "hb::CollisionManager" + collisionCount;
+    private void addToCollidedThisTickSet(Entity entity1, Entity entity2){
+        if (!collidedLastTick.contains(entity1.getName()+entity2.getName())) {
+            collisionCount++;
+            TAG = "hb::CollisionManager" + collisionCount;
+        }
+        currentTickCollidedPairs.add(entity1.getName() + entity2.getName());
+        currentTickCollidedPairs.add(entity2.getName() + entity1.getName());
     }
 
     public void checkCollisions(){
@@ -45,7 +56,7 @@ public class CollisionManager {
 
     /**
      * Inserts each vertex of every entity into their corresponding position in a grid,
-     * returns the cells containing 2 or more entities for more in depth countCollision checks.
+     * returns the cells containing 2 or more entities for more in depth addToCollidedThisTickSet checks.
      */
     private void applySpatialPartitioning(){
         Point gridMaximum = new Point(levelState.getMap().getDimensions().first, levelState.getMap().getDimensions().second);
@@ -83,6 +94,7 @@ public class CollisionManager {
     private void fineGrainCollisionDetection(ArrayList<Pair<ArrayList<Entity>, Pair<Integer, Integer>>> bins){
         //Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
         checkedPairNames = new HashSet<>();
+        currentTickCollidedPairs = new HashSet<>();
 
         for (Pair<ArrayList<Entity>, Pair<Integer, Integer>> binPair : bins){
             ArrayList<Entity> bin = binPair.first;
@@ -121,7 +133,7 @@ public class CollisionManager {
 
                         //if a collision has occurred (zero vector says a collision hasn't occurred)
                         if (!pushVector.equals(new Vector())) {
-                            countCollision();
+
                             //at least one entity can move, as we ignored any pairs of static entities earlier on
 
                             //TODO: (not todo) Uncomment to highlight entities that collide
@@ -192,7 +204,7 @@ public class CollisionManager {
                                 newCenter = secondEntity.getShape().getCenter().add(secondAmountMoved);
                                 secondEntity.getShape().setCenter(newCenter);
                             }
-
+                            addToCollidedThisTickSet(firstEntity, secondEntity);
                         }
                         //add entity names to the checked names set so that they aren't checked twice
                         addCheckedPairNames(firstEntity, secondEntity);
@@ -200,6 +212,7 @@ public class CollisionManager {
                 }
             }
         }
+        collidedLastTick = currentTickCollidedPairs;
     }
 
     private void moveEntityCenter(Entity entity, Point amountToMove){
@@ -260,24 +273,26 @@ public class CollisionManager {
     //resolveCollision  determines if a collision is resolved should one be detected or not
     private boolean isStaticCollision(Entity entity, ArrayList<Entity> bin, boolean resolveCollision){
         boolean collided;
-            for (Entity entityInBin : bin) {
-                if (!entityInBin.canMove()) {
-                    //check if the two entities collide
-                    Vector pushVector = getPushVectorBetweenTwoEntities(entity, entityInBin);
-                    collided = !(pushVector.equals(new Vector()));
+        for (Entity entityInBin : bin) {
+            if (!entityInBin.canMove()) {
+                //check if the two entities collide
+                Vector pushVector = getPushVectorBetweenTwoEntities(entity, entityInBin);
+                collided = !(pushVector.equals(new Vector()));
 
-                    if (collided) {
-                        if (resolveCollision){
-                            //if the collision is meant to be resolved at this stage, resolve it and mark
-                            //the entities as checked
-                            addCheckedPairNames(entity, entityInBin);
-                            moveEntityCenter(entity, pushVector.getRelativeToTailPoint());
-                            countCollision();
-                        }
-                        return true;
+                if (collided) {
+                    if (resolveCollision){
+                        //if the collision is meant to be resolved at this stage, resolve it and mark
+                        //the entities as checked
+                        addCheckedPairNames(entity, entityInBin);
+                        moveEntityCenter(entity, pushVector.getRelativeToTailPoint());
+
+                        Log.d(TAG, entity.getName() + ":" + entityInBin.getName());
                     }
+                    addToCollidedThisTickSet(entity, entityInBin);
+                    return true;
                 }
             }
+        }
         return false;
     }
 
