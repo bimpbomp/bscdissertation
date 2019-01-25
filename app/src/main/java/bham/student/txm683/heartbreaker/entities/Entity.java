@@ -114,8 +114,8 @@ public class Entity implements SaveableState {
 
         shape.draw(canvas, renderOffset, new Vector());
 
-        Point center = shape.getCenter().add(renderOffset);
-        canvas.drawText(name, center.getX(), center.getY(), textPaint);
+        /*Point center = shape.getCenter().add(renderOffset);
+        canvas.drawText(name, center.getX(), center.getY(), textPaint);*/
     }
 
     public void setPushVector(Vector pushVector) {

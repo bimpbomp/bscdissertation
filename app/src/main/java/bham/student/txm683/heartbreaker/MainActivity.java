@@ -34,6 +34,7 @@ public class MainActivity extends Activity {
         audioController = new AudioController(10);
         levelView = new LevelView(this);
 
+        //GraphView graphView = new GraphView(this);
         setContentView(levelView);
 
         if (savedInstanceState != null && savedInstanceState.getBoolean(RESUME_FROM_SAVE_STATE_KEY)){

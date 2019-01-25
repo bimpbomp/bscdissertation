@@ -40,6 +40,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     private Point viewWorldMax;
 
     private Grid grid;
+    private int tileSize;
 
     /**
      * Creates a new Level view with the given context
@@ -53,7 +54,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.level = new Level(this);
         setFocusable(true);
 
-        initPaintForText();
+        textPaint = RenderingTools.initPaintForText(Color.BLACK, 48f, Paint.Align.CENTER);
 
     }
 
@@ -104,7 +105,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         if (this.levelState == null) {
             Map map = new Map();
-            map.loadMap("TestMap", 300);
+            tileSize = 300;
+            map.loadMap("TestMap", tileSize);
             this.levelState = new LevelState(map);
 
             this.levelState.setScreenDimensions(viewWidth, viewHeight);
@@ -220,19 +222,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw background
             canvas.drawRGB(255,255,255);
 
-            //draw physics grid
-            if (grid != null){
-                Point gridMin = grid.getGridMinimum();
-                Point gridMax = grid.getGridMaximum();
+            //drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset);
 
-                for (float i = gridMin.getX(); i <= grid.getGridDimensionsInCells().first*grid.getCellSize(); i += grid.getCellSize()){
-                    canvas.drawLine(i+renderOffset.getX(),gridMin.getY()+renderOffset.getY(), i+renderOffset.getX(), gridMax.getY()+renderOffset.getY(), textPaint);
-                }
-
-                for (float i = gridMin.getY(); i <= grid.getGridDimensionsInCells().second*grid.getCellSize(); i += grid.getCellSize()){
-                    canvas.drawLine(gridMin.getX()+renderOffset.getX(),i+renderOffset.getY(), gridMax.getX()+renderOffset.getX(), i+renderOffset.getY(), textPaint);
-                }
-            }
+            drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset);
 
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick);
 
@@ -261,6 +253,20 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private void drawGrid(Canvas canvas, Point minimum, Point maximum, int cellSize, Point renderOffset){
+        maximum = maximum.add(minimum.smult(-1f));
+
+        for (float i = minimum.getX(); i <= maximum.getX(); i += cellSize){
+            canvas.drawLine(i+renderOffset.getX(),minimum.getY()+renderOffset.getY(), i+renderOffset.getX(), maximum.getY() + renderOffset.getY(), textPaint);
+        }
+
+        for (float i = minimum.getY(); i <= maximum.getY(); i += cellSize){
+            canvas.drawLine(minimum.getX()+renderOffset.getX(),i+renderOffset.getY(), maximum.getX() + renderOffset.getX(), i+renderOffset.getY(), textPaint);
+        }
+
+        Log.d(TAG, "grid h cells: " + maximum.getX()/cellSize + ", stored grid h cells: " + grid.getGridDimensionsInCells().first);
+    }
+
     /**
      * Checks if any of the given vertices lie in the region given by the screen boundaries.
      * @param vertices Point array of vertices to check
@@ -273,15 +279,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
         return false;
-    }
-
-    //creates a black paint object for use with any text on screen.
-    private void initPaintForText(){
-        this.textPaint = new Paint();
-        this.textPaint.setColor(Color.BLACK);
-        this.textPaint.setStrokeWidth(2f);
-        this.textPaint.setTextSize(48f);
-        this.textPaint.setTextAlign(Paint.Align.CENTER);
     }
 
     public void setGrid(Grid grid){

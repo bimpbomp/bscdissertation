@@ -124,8 +124,9 @@ public class CollisionManager {
                             countCollision();
                             //at least one entity can move, as we ignored any pairs of static entities earlier on
 
-                            firstEntity.setCollided(true);
-                            secondEntity.setCollided(true);
+                            //TODO: (not todo) Uncomment to highlight entities that collide
+                            /*firstEntity.setCollided(true);
+                            secondEntity.setCollided(true);*/
 
                             //true if the entity doesnt collide with any statics after applying
                             //pushVector.

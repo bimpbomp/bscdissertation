@@ -3,6 +3,8 @@ package bham.student.txm683.heartbreaker.map;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.graph.Graph;
+import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.ArrayList;
 
@@ -16,6 +18,8 @@ public class Map {
     private Point playerSpawnLocation;
     private ArrayList<Point> staticSpawns;
 
+    private Graph aiGraph;
+
     private int tileSize;
 
     public Map(){
@@ -23,6 +27,8 @@ public class Map {
         playerSpawnLocation = new Point();
         staticSpawns = new ArrayList<>();
         this.tileSize = 0;
+
+        this.aiGraph = new Graph();
     }
 
     private void initTestMap(String name){
@@ -74,6 +80,59 @@ public class Map {
             this.width = mapTiles[0].length*tileSize;
             this.height = mapTiles.length*tileSize;
         }
+        initAIGraph(mapTiles);
+    }
+
+    private void initAIGraph(int[][] mapTiles){
+        int currentTile;
+        String currentNodeName;
+        Node currentNode;
+
+        //iterate over each cell
+        for (int row = 0; row < mapTiles.length; row++) {
+            for (int column = 0; column < mapTiles[row].length; column++) {
+
+                currentTile = mapTiles[row][column];
+                currentNodeName = row + "," + column;
+
+                //if the cell doesn't contain a static
+                if (currentTile != 1){
+                    currentNode = getNodeIfExists(currentNodeName);
+
+                    checkAdjacentCell(currentNode, mapTiles, row-1, column);
+                    checkAdjacentCell(currentNode, mapTiles, row+1, column);
+                    checkAdjacentCell(currentNode, mapTiles, row, column-1);
+                    checkAdjacentCell(currentNode, mapTiles, row, column+1);
+                }
+            }
+        }
+        Log.d("hb::AIGRAPH", aiGraph.toString());
+    }
+
+    private void checkAdjacentCell(Node currentNode, int[][] mapTiles, int row, int column){
+        //if the adjacent cell exists, and isn't a static
+        //create a node for it if one doesn't already exist
+        //and connect that adjacent node to the current node if
+        //they aren't already connected
+        try {
+            int adjacentTile = mapTiles[row][column];
+            String adjacentNodeName = row + "," + column;
+
+            if (adjacentTile != 1){
+                Node adjacentNode = getNodeIfExists(adjacentNodeName);
+
+                if (!currentNode.isConnectedToNode(adjacentNode)){
+                    aiGraph.addConnection(currentNode, adjacentNode, 1);
+                }
+            }
+
+        } catch (IndexOutOfBoundsException e){
+            //cell doesn't exist, ignore and move on
+        }
+    }
+
+    private Node getNodeIfExists(String nodeName){
+        return aiGraph.containsNode(nodeName) ? aiGraph.getNode(nodeName): aiGraph.addNode(nodeName);
     }
 
     public void loadMap(String mapName, int tileSize){
