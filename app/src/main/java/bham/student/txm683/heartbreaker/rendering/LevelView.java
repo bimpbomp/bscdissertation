@@ -17,6 +17,7 @@ import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.physics.Grid;
+import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
 
 import java.util.ArrayList;
@@ -42,6 +43,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     private Grid grid;
     private int tileSize;
 
+    private DebugInfo debugInfo;
+
     /**
      * Creates a new Level view with the given context
      * @param context The context to create the view.
@@ -55,7 +58,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         setFocusable(true);
 
         textPaint = RenderingTools.initPaintForText(Color.BLACK, 48f, Paint.Align.CENTER);
-
     }
 
     /**
@@ -117,6 +119,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             this.level.setLevelState(levelState);
         }
 
+        this.debugInfo = levelState.getDebugInfo();
+
         this.levelThread = new Thread(this.level);
         this.level.setRunning(true);
         this.levelThread.start();
@@ -130,8 +134,14 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         float thumbstickMaxRadius = 150f;
         this.inputManager.setThumbstick(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), thumbstickMaxRadius/3f, thumbstickMaxRadius));
 
-        int pauseButtonRadius = 50;
-        this.inputManager.setPauseButton(new Button(new Point(pauseButtonRadius+20, pauseButtonRadius+20), pauseButtonRadius, Color.LTGRAY));
+        int pauseButtonRadius = 100;
+        //levelState.setPaused(!levelState.isPaused());
+        this.inputManager.setPauseButton(new Button(new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, Color.LTGRAY, () -> levelState.setPaused(!levelState.isPaused())));
+    }
+
+    private void invertPause(){
+        Log.d("H", "INVETTING");
+        levelState.setPaused(!levelState.isPaused());
     }
 
     /**
@@ -222,9 +232,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw background
             canvas.drawRGB(255,255,255);
 
-            //drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset);
+            if (debugInfo.renderPhysicsGrid())
+                drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset);
 
-            drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset);
+            if (debugInfo.renderMapTileGrid())
+                drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset);
 
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick);
 

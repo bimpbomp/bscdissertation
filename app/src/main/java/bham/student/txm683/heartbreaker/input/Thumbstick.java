@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.input;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.view.MotionEvent;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -25,7 +26,7 @@ public class Thumbstick implements InputUIElement{
 
     private boolean receivingInput;
 
-    private int inputPointer;
+    private int pointerID;
 
     public Thumbstick(Point neutralPosition, float neutralCircleRadius, float maxRadius){
         this.neutralPosition = neutralPosition;
@@ -50,16 +51,24 @@ public class Thumbstick implements InputUIElement{
         this.maxPaint.setStrokeWidth(10);
 
         this.maxInputLengthRequirement = maxRadius * 0.9f;
+
+        this.pointerID = MotionEvent.INVALID_POINTER_ID;
     }
 
     @Override
     public void setPointerID(int id) {
-        this.inputPointer = id;
+        if (id >= 0)
+            this.pointerID = id;
+    }
+
+    public void deactivate() {
+        this.pointerID = MotionEvent.INVALID_POINTER_ID;
+        returnToNeutral();
     }
 
     @Override
     public boolean hasID(int id) {
-        return inputPointer == id;
+        return pointerID == id;
     }
 
     public void draw(Canvas canvas){
@@ -69,7 +78,7 @@ public class Thumbstick implements InputUIElement{
         canvas.drawCircle(inputVector.getHead().getX(), inputVector.getHead().getY(), activeCircleRadius, activePaint);
     }
 
-    public void returnToNeutral(){
+    private void returnToNeutral(){
         this.inputVector = new Vector(neutralPosition, neutralPosition);
 
         receivingInput = false;
@@ -83,7 +92,7 @@ public class Thumbstick implements InputUIElement{
         }
     }
 
-    public void setActivePosition(Point newActivePosition) {
+    void setActivePosition(Point newActivePosition) {
 
         if (receivingInput){
             Vector newInputVector = new Vector(neutralPosition, newActivePosition);
@@ -98,38 +107,15 @@ public class Thumbstick implements InputUIElement{
     }
 
     public boolean containsPoint(Point touchEventPosition){
-        if (new Vector(neutralPosition, touchEventPosition).getLength() <= maxRadius){
+        if (new Vector(neutralPosition, touchEventPosition).getLength() <= maxRadius && pointerID < 0){
             receivingInput = true;
             return true;
         }
         return false;
     }
 
-    public Point getNeutralPosition() {
-        return neutralPosition;
-    }
-
-    public void setNeutralPosition(Point neutralPosition) {
-        this.neutralPosition = neutralPosition;
-    }
-
-    public float getNeutralCircleRadius() {
-        return neutralCircleRadius;
-    }
-
-    public void setNeutralCircleRadius(float neutralCircleRadius) {
-        this.neutralCircleRadius = neutralCircleRadius;
-    }
-
-    public float getActiveCircleRadius() {
-        return activeCircleRadius;
-    }
-
-    public void setActiveCircleRadius(float activeCircleRadius) {
-        this.activeCircleRadius = activeCircleRadius;
-    }
-
-    public Point getActivePosition() {
-        return this.inputVector.getHead();
+    @Override
+    public int getID() {
+        return pointerID;
     }
 }

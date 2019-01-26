@@ -7,6 +7,7 @@ import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.map.Map;
+import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
 import org.json.JSONArray;
@@ -33,6 +34,8 @@ public class LevelState {
     private boolean readyToRender;
     private boolean paused;
 
+    private DebugInfo debugInfo;
+
     public LevelState(Map map){
         this.uniqueID = new UniqueID();
         this.map = map;
@@ -42,6 +45,8 @@ public class LevelState {
 
         this.readyToRender = false;
         this.paused = false;
+
+        this.debugInfo = new DebugInfo();
 
         freshInitFromMap();
     }
@@ -68,6 +73,8 @@ public class LevelState {
         for (int i = 0; i < enemies.length(); i++){
             this.enemyEntities.add(new MoveableEntity(enemies.getString(i)));
         }
+
+        this.debugInfo = new DebugInfo();
     }
 
     private void freshInitFromMap(){
@@ -187,5 +194,9 @@ public class LevelState {
 
     public void setPaused(boolean paused) {
         this.paused = paused;
+    }
+
+    public DebugInfo getDebugInfo() {
+        return debugInfo;
     }
 }

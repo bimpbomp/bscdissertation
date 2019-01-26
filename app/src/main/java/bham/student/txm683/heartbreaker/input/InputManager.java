@@ -12,6 +12,8 @@ public class InputManager {
     private Thumbstick thumbstick;
     private Button pauseButton;
 
+    private Button[] debugButtons;
+
     private LevelState levelState;
 
     public InputManager(LevelState levelState){
@@ -21,52 +23,40 @@ public class InputManager {
     public boolean onTouchEvent(MotionEvent event){
         boolean eventHandled = true;
 
-        int eventID = event.getPointerId(event.getActionIndex());
+        int eventIndex = event.getActionIndex();
+        int eventID = event.getPointerId(eventIndex);
 
-        Point coordinatesPressed = new Point(event.getX(), event.getY());
+        Point coordinatesPressed = new Point(event.getX(eventIndex), event.getY(eventIndex));
 
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
-                Log.d(TAG, "ACTION_DOWN " + "index: " + event.getActionIndex() + ", id: " + event.getPointerId(event.getActionIndex()));
 
                 if (thumbstick.containsPoint(coordinatesPressed)){
                     thumbstick.setActivePosition(coordinatesPressed);
                     thumbstick.setPointerID(eventID);
+
                 } else if (pauseButton.containsPoint(coordinatesPressed)){
                     pauseButton.setPointerID(eventID);
                 }
                 break;
-            case MotionEvent.ACTION_UP:
-                Log.d(TAG, "ACTION_UP " + "index: " + event.getActionIndex() + ", id: " + event.getPointerId(event.getActionIndex()));
-                if (thumbstick.hasID(eventID)) {
-                    thumbstick.returnToNeutral();
-                    thumbstick.setPointerID(MotionEvent.INVALID_POINTER_ID);
 
-                } else if (pauseButton.hasID(eventID)){
-                    levelState.setPaused(!levelState.isPaused());
-                    pauseButton.setPointerID(MotionEvent.INVALID_POINTER_ID);
-                }
+            case MotionEvent.ACTION_UP:
+                handleUp(eventID);
                 break;
+
             case MotionEvent.ACTION_MOVE:
-                Log.d(TAG, "ACTION_MOVE " + "index: " + event.getActionIndex() + ", id: " + event.getPointerId(event.getActionIndex()));
                 if (thumbstick.hasID(eventID))
                     thumbstick.setActivePosition(coordinatesPressed);
                 break;
+
             case MotionEvent.ACTION_POINTER_DOWN:
-                Log.d(TAG, "ACTION_POINTER_DOWN " + "index: " + event.getActionIndex() + ", id: " + event.getPointerId(event.getActionIndex()));
-                if (pauseButton.containsPoint(coordinatesPressed)){
+                if (pauseButton.containsPoint(coordinatesPressed))
                     pauseButton.setPointerID(eventID);
-                }
+
                 break;
+
             case MotionEvent.ACTION_POINTER_UP:
-                Log.d(TAG, "ACTION_POINTER_UP " + "index: " + event.getActionIndex() + ", id: " + event.getPointerId(event.getActionIndex()));
-                if (thumbstick.hasID(eventID)){
-                    thumbstick.returnToNeutral();
-                    thumbstick.setPointerID(MotionEvent.INVALID_POINTER_ID);
-                } else if (pauseButton.hasID(eventID)) {
-                    pauseButton.setPointerID(MotionEvent.INVALID_POINTER_ID);
-                    levelState.setPaused(!levelState.isPaused());
-                }
+                handleUp(eventID);
                 break;
             default:
                 eventHandled = false;
@@ -76,13 +66,29 @@ public class InputManager {
         return eventHandled;
     }
 
-    private void handleDown(MotionEvent event){
+    private void handleUp(int eventID){
+        if (thumbstick.hasID(eventID)){
+            thumbstick.deactivate();
 
+        } else if (pauseButton.hasID(eventID)) {
+            //levelState.setPaused(!levelState.isPaused());
+            Log.d("hh", "button entering fire");
+            pauseButton.deactivate();
+            Log.d("hh", "button leaving fire");
+        }
     }
 
     public void draw(Canvas canvas){
         if (!levelState.isPaused()) {
             thumbstick.draw(canvas);
+
+            if (debugButtons != null) {
+                for (Button button : debugButtons) {
+
+                }
+            }
+        } else {
+
         }
 
         pauseButton.draw(canvas);
@@ -102,5 +108,9 @@ public class InputManager {
 
     public void setPauseButton(Button pauseButton) {
         this.pauseButton = pauseButton;
+    }
+
+    public void setDebugButtons(Button[] buttons){
+        this.debugButtons = buttons;
     }
 }

@@ -8,4 +8,6 @@ public interface InputUIElement {
     void setPointerID(int id);
 
     boolean hasID(int id);
+
+    int getID();
 }
