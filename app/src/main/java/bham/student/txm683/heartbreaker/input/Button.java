@@ -3,8 +3,8 @@ package bham.student.txm683.heartbreaker.input;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.MotionEvent;
+import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -16,36 +16,42 @@ public class Button implements InputUIElement {
     private int pointerID;
 
     private int defaultColor;
-    private int pressedColor = Color.BLACK;
+    private int pressedColor;
 
-    private Click onFire;
+    private String label;
 
-    public Button(Point center, int radius, int color, Click onFire){
+    private Click buttonFunction;
+
+    public Button(String label, Point center, int radius, int color, Click buttonFunction){
         this.center = center;
         this.radius = radius;
 
         this.paint = new Paint();
         this.paint.setColor(color);
+        this.pressedColor = Color.GRAY;
 
         this.defaultColor = color;
 
         this.pointerID = MotionEvent.INVALID_POINTER_ID;
 
-        this.onFire = onFire;
+        this.buttonFunction = buttonFunction;
+
+        this.label = label;
     }
 
     @Override
     public void setPointerID(int id) {
         if (id >= 0)
             this.paint.setColor(pressedColor);
+
+        this.pointerID = id;
     }
 
-    public void deactivate() {
+    public void onClick() {
         this.pointerID = MotionEvent.INVALID_POINTER_ID;
         this.paint.setColor(defaultColor);
-        Log.d("hh", "button firing");
-        this.onFire.onClick();
-        Log.d("hh", "button fired");
+
+        this.buttonFunction.click();
     }
 
     @Override
@@ -53,8 +59,9 @@ public class Button implements InputUIElement {
         return pointerID == id;
     }
 
-    public void draw(Canvas canvas){
+    public void draw(Canvas canvas, Paint textPaint){
         canvas.drawCircle(center.getX(), center.getY(), radius, paint);
+        RenderingTools.renderCenteredText(canvas, textPaint, label, center);
     }
 
     public boolean containsPoint(Point touchEventPosition){

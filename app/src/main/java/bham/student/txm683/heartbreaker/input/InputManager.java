@@ -1,7 +1,7 @@
 package bham.student.txm683.heartbreaker.input;
 
 import android.graphics.Canvas;
-import android.util.Log;
+import android.graphics.Paint;
 import android.view.MotionEvent;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -37,6 +37,8 @@ public class InputManager {
 
                 } else if (pauseButton.containsPoint(coordinatesPressed)){
                     pauseButton.setPointerID(eventID);
+                } else {
+                    checkDebugButtonsOnDown(eventID, coordinatesPressed);
                 }
                 break;
 
@@ -52,6 +54,8 @@ public class InputManager {
             case MotionEvent.ACTION_POINTER_DOWN:
                 if (pauseButton.containsPoint(coordinatesPressed))
                     pauseButton.setPointerID(eventID);
+                else
+                    checkDebugButtonsOnDown(eventID, coordinatesPressed);
 
                 break;
 
@@ -66,32 +70,39 @@ public class InputManager {
         return eventHandled;
     }
 
-    private void handleUp(int eventID){
-        if (thumbstick.hasID(eventID)){
-            thumbstick.deactivate();
-
-        } else if (pauseButton.hasID(eventID)) {
-            //levelState.setPaused(!levelState.isPaused());
-            Log.d("hh", "button entering fire");
-            pauseButton.deactivate();
-            Log.d("hh", "button leaving fire");
+    private void checkDebugButtonsOnDown(int eventID, Point coordinatesPressed){
+        for (Button button : debugButtons){
+            if (button.containsPoint(coordinatesPressed))
+                button.setPointerID(eventID);
         }
     }
 
-    public void draw(Canvas canvas){
-        if (!levelState.isPaused()) {
-            thumbstick.draw(canvas);
-
-            if (debugButtons != null) {
-                for (Button button : debugButtons) {
-
-                }
-            }
+    private void handleUp(int eventID){
+        if (thumbstick.hasID(eventID)){
+            thumbstick.deactivate();
+        } else if (pauseButton.hasID(eventID)) {
+            pauseButton.onClick();
         } else {
 
+            for (Button button : debugButtons) {
+                if (button.hasID(eventID))
+                    button.onClick();
+            }
+        }
+    }
+
+    public void draw(Canvas canvas, Paint textPaint){
+        if (!levelState.isPaused()) {
+            thumbstick.draw(canvas);
+        } else {
+            if (debugButtons != null) {
+                for (Button button : debugButtons) {
+                    button.draw(canvas, textPaint);
+                }
+            }
         }
 
-        pauseButton.draw(canvas);
+        pauseButton.draw(canvas, textPaint);
     }
 
     public Thumbstick getThumbstick() {

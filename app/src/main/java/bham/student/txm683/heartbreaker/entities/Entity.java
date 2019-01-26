@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.SaveableState;
 import bham.student.txm683.heartbreaker.entities.entityshapes.*;
+import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -103,7 +104,7 @@ public class Entity implements SaveableState {
     * Draws the entity to the given canvas
     * @param canvas Canvas to draw to.
     */
-    public void draw(Canvas canvas, Point renderOffset){
+    public void draw(Canvas canvas, Point renderOffset, boolean renderName){
 
         if (collided){
             shape.setColor(Color.RED);
@@ -114,8 +115,10 @@ public class Entity implements SaveableState {
 
         shape.draw(canvas, renderOffset, new Vector());
 
-        /*Point center = shape.getCenter().add(renderOffset);
-        canvas.drawText(name, center.getX(), center.getY(), textPaint);*/
+        if (renderName) {
+            Point center = shape.getCenter().add(renderOffset);
+            RenderingTools.renderCenteredText(canvas, textPaint, name, center);
+        }
     }
 
     public void setPushVector(Vector pushVector) {

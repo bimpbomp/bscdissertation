@@ -1,6 +1,9 @@
 package bham.student.txm683.heartbreaker.rendering;
 
+import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import bham.student.txm683.heartbreaker.utils.Point;
 
 public class RenderingTools {
 
@@ -18,5 +21,11 @@ public class RenderingTools {
         textPaint.setTextAlign(alignment);
 
         return textPaint;
+    }
+
+    public static void renderCenteredText(Canvas canvas, Paint textPaint, String text, Point center){
+        Rect textBounds = new Rect();
+        textPaint.getTextBounds(text, 0, text.length(), textBounds);
+        canvas.drawText(text, center.getX(), center.getY() - textBounds.exactCenterY(), textPaint);
     }
 }

@@ -13,6 +13,7 @@ import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.input.Button;
+import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.map.Map;
@@ -57,7 +58,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.level = new Level(this);
         setFocusable(true);
 
-        textPaint = RenderingTools.initPaintForText(Color.BLACK, 48f, Paint.Align.CENTER);
+        textPaint = RenderingTools.initPaintForText(Color.BLACK, 48, Paint.Align.CENTER);
     }
 
     /**
@@ -134,14 +135,22 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         float thumbstickMaxRadius = 150f;
         this.inputManager.setThumbstick(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), thumbstickMaxRadius/3f, thumbstickMaxRadius));
 
-        int pauseButtonRadius = 100;
-        //levelState.setPaused(!levelState.isPaused());
-        this.inputManager.setPauseButton(new Button(new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, Color.LTGRAY, () -> levelState.setPaused(!levelState.isPaused())));
-    }
+        int pauseButtonRadius = 75;
+        Click pauseButtonFunction = () -> levelState.setPaused(!levelState.isPaused());
+        this.inputManager.setPauseButton(new Button("PAUSE", new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, Color.LTGRAY, pauseButtonFunction));
 
-    private void invertPause(){
-        Log.d("H", "INVETTING");
-        levelState.setPaused(!levelState.isPaused());
+        textPaint.setTextSize(36f);
+        //gives space for 8 debug buttons
+        int debugButtonDiameter = viewHeight/6;
+        int debugButtonRadius = debugButtonDiameter / 2;
+        Button[] debugButtons = {
+                new Button("PHYS", new Point(viewWidth-debugButtonRadius, debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderPhysicsGrid()),
+                new Button("ENGRID", new Point(viewWidth-debugButtonRadius, debugButtonDiameter + debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderMapTileGrid()),
+                new Button("NAMES", new Point(viewWidth-debugButtonRadius, 2*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderEntityNames())
+        };
+
+        textPaint.setTextSize(48f);
+        inputManager.setDebugButtons(debugButtons);
     }
 
     /**
@@ -238,18 +247,18 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             if (debugInfo.renderMapTileGrid())
                 drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset);
 
-            levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick);
+            levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
 
             for (Entity entity : enemiesToRender){
-                ((MoveableEntity)entity).draw(canvas, renderOffset, secondsSinceLastGameTick);
+                ((MoveableEntity)entity).draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
             for (Entity entity : staticEntitiesToRender){
-                entity.draw(canvas, renderOffset);
+                entity.draw(canvas, renderOffset, debugInfo.renderEntityNames());
             }
 
             //draw in game ui
-            inputManager.draw(canvas);
+            inputManager.draw(canvas, textPaint);
             //if paused, draw the pause menu
             if (!levelState.isPaused()) {
                 canvas.drawText("RenderFPS: " + renderFPS + ". GameTickFPS: " + gameTickFPS + ". Collisions: " + level.getCollisionManager().collisionCount, viewWidth/2f, 50, textPaint);

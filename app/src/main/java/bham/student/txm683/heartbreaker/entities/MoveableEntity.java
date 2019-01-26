@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -74,7 +75,7 @@ public class MoveableEntity extends Entity {
      * @param secondsSinceLastGameTick time since last game tick in seconds for interpolation of position
      * @param renderOffset Point to offset vertices by for rendering on scrolling screen. Provided as negative.
      */
-    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastGameTick){
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastGameTick, boolean renderName){
 
         if (collided){
             shape.setColor(Color.GREEN);
@@ -96,8 +97,10 @@ public class MoveableEntity extends Entity {
                 tpushVector.getHead().getY(),
                 textPaint);
 
-        Point interpolatedCenter = shape.getInterpolatedCenter(interpolationVector, renderOffset);
-        canvas.drawText(name, interpolatedCenter.getX(), interpolatedCenter.getY(), textPaint);
+        if (renderName) {
+            Point interpolatedCenter = shape.getInterpolatedCenter(interpolationVector, renderOffset);
+            RenderingTools.renderCenteredText(canvas, textPaint, name, interpolatedCenter);
+        }
     }
 
     private Vector calculateMovementVector(float secondsSinceLastGameTick){
