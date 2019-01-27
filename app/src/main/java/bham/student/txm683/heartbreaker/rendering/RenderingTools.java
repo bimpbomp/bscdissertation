@@ -28,4 +28,19 @@ public class RenderingTools {
         textPaint.getTextBounds(text, 0, text.length(), textBounds);
         canvas.drawText(text, center.getX(), center.getY() - textBounds.exactCenterY(), textPaint);
     }
+
+    public static void renderCenteredTextWithBoundingBox(Canvas canvas, Paint textPaint, String text, Point center, int boxColor, int padding){
+        Rect textBounds = new Rect();
+        textPaint.getTextBounds(text, 0, text.length(), textBounds);
+
+        int textColor = textPaint.getColor();
+        textPaint.setColor(boxColor);
+
+
+        Rect bg = new Rect((int) (center.getX() - textBounds.width()/2) - padding, (int) (center.getY() - textBounds.height()/2) - padding, (int) (center.getX() + textBounds.width()/2)+padding, (int) (center.getY() + textBounds.height()/2)+padding);
+        canvas.drawRect(bg, textPaint);
+
+        textPaint.setColor(textColor);
+        canvas.drawText(text, center.getX(), center.getY() - textBounds.exactCenterY(), textPaint);
+    }
 }

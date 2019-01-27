@@ -34,6 +34,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     private InputManager inputManager;
 
     private Paint textPaint;
+    private Paint tilePaint;
 
     private int viewWidth;
     private int viewHeight;
@@ -59,6 +60,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         setFocusable(true);
 
         textPaint = RenderingTools.initPaintForText(Color.BLACK, 48, Paint.Align.CENTER);
+
+        tilePaint = new Paint();
+        tilePaint.setStrokeWidth(8f);
+        tilePaint.setColor(Color.MAGENTA);
     }
 
     /**
@@ -242,10 +247,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawRGB(255,255,255);
 
             if (debugInfo.renderPhysicsGrid())
-                drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset);
+                drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset, textPaint);
 
             if (debugInfo.renderMapTileGrid())
-                drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset);
+                drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset, tilePaint);
 
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
 
@@ -257,15 +262,23 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 entity.draw(canvas, renderOffset, debugInfo.renderEntityNames());
             }
 
+            if (debugInfo.renderMapTileGrid()){
+                drawGridLabels(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset, textPaint);
+            }
+
+            if (!levelState.isPaused()) {
+                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "RenderFPS: " + renderFPS + ". GameTickFPS: " + gameTickFPS + ". Collisions: " + level.getCollisionManager().collisionCount, new Point(viewWidth/2f, 50), Color.WHITE, 10);
+            } else {
+                canvas.drawARGB(200, 0,0,0);
+
+                int oldColor = textPaint.getColor();
+                textPaint.setColor(Color.WHITE);
+                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "Game is Paused", new Point(viewWidth/2f, viewHeight/3f), Color.RED, 50);
+                textPaint.setColor(oldColor);
+            }
+
             //draw in game ui
             inputManager.draw(canvas, textPaint);
-            //if paused, draw the pause menu
-            if (!levelState.isPaused()) {
-                canvas.drawText("RenderFPS: " + renderFPS + ". GameTickFPS: " + gameTickFPS + ". Collisions: " + level.getCollisionManager().collisionCount, viewWidth/2f, 50, textPaint);
-            } else {
-                //draw pause menu
-                canvas.drawText("Game is paused", viewWidth/2f, viewHeight/3f, textPaint);
-            }
         }
         try {
             getHolder().unlockCanvasAndPost(canvas);
@@ -274,15 +287,25 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    private void drawGrid(Canvas canvas, Point minimum, Point maximum, int cellSize, Point renderOffset){
+    private void drawGridLabels(Canvas canvas, Point minimum, Point maximum, int cellSize, Point renderOffset, Paint gridPaint){
+        Point center;
+        for (int i = (int)minimum.getX(); i < maximum.getX()/cellSize; i++){
+            for (int j = (int)minimum.getY(); j < maximum.getY()/cellSize; j++){
+                center = new Point(i * cellSize + cellSize/2f, j * cellSize + cellSize/2f).add(renderOffset);
+                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "[" + j + "," + i + "]", center, Color.WHITE, 10);
+            }
+        }
+    }
+
+    private void drawGrid(Canvas canvas, Point minimum, Point maximum, int cellSize, Point renderOffset, Paint gridPaint){
         maximum = maximum.add(minimum.smult(-1f));
 
         for (float i = minimum.getX(); i <= maximum.getX(); i += cellSize){
-            canvas.drawLine(i+renderOffset.getX(),minimum.getY()+renderOffset.getY(), i+renderOffset.getX(), maximum.getY() + renderOffset.getY(), textPaint);
+            canvas.drawLine(i+renderOffset.getX(),minimum.getY()+renderOffset.getY(), i+renderOffset.getX(), maximum.getY() + renderOffset.getY(), gridPaint);
         }
 
         for (float i = minimum.getY(); i <= maximum.getY(); i += cellSize){
-            canvas.drawLine(minimum.getX()+renderOffset.getX(),i+renderOffset.getY(), maximum.getX() + renderOffset.getX(), i+renderOffset.getY(), textPaint);
+            canvas.drawLine(minimum.getX()+renderOffset.getX(),i+renderOffset.getY(), maximum.getX() + renderOffset.getX(), i+renderOffset.getY(), gridPaint);
         }
     }
 

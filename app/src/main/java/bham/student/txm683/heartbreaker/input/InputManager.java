@@ -21,12 +21,57 @@ public class InputManager {
     }
 
     public boolean onTouchEvent(MotionEvent event){
-        boolean eventHandled = true;
+        boolean eventHandled;
 
         int eventIndex = event.getActionIndex();
         int eventID = event.getPointerId(eventIndex);
 
         Point coordinatesPressed = new Point(event.getX(eventIndex), event.getY(eventIndex));
+
+        if (!levelState.isPaused()){
+            eventHandled = handleWhileResumed(event, eventID, eventIndex, coordinatesPressed);
+        } else {
+            eventHandled = handleWhilePaused(event, eventID, eventIndex, coordinatesPressed);
+        }
+
+
+        return eventHandled;
+    }
+
+    private boolean handleWhilePaused(MotionEvent event, int eventID, int eventIndex, Point coordinatesPressed){
+
+        switch (event.getActionMasked()){
+            case MotionEvent.ACTION_DOWN:
+
+                if (pauseButton.containsPoint(coordinatesPressed)){
+                    pauseButton.setPointerID(eventID);
+                } else {
+                    checkDebugButtonsOnDown(eventID, coordinatesPressed);
+                }
+                break;
+
+            case MotionEvent.ACTION_UP:
+                handleUp(eventID);
+                break;
+
+            case MotionEvent.ACTION_POINTER_DOWN:
+                if (pauseButton.containsPoint(coordinatesPressed))
+                    pauseButton.setPointerID(eventID);
+                else
+                    checkDebugButtonsOnDown(eventID, coordinatesPressed);
+
+                break;
+
+            case MotionEvent.ACTION_POINTER_UP:
+                handleUp(eventID);
+                break;
+            default:
+                return false;
+        }
+        return true;
+    }
+
+    private boolean handleWhileResumed(MotionEvent event, int eventID, int eventIndex, Point coordinatesPressed){
 
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
@@ -37,8 +82,6 @@ public class InputManager {
 
                 } else if (pauseButton.containsPoint(coordinatesPressed)){
                     pauseButton.setPointerID(eventID);
-                } else {
-                    checkDebugButtonsOnDown(eventID, coordinatesPressed);
                 }
                 break;
 
@@ -54,8 +97,6 @@ public class InputManager {
             case MotionEvent.ACTION_POINTER_DOWN:
                 if (pauseButton.containsPoint(coordinatesPressed))
                     pauseButton.setPointerID(eventID);
-                else
-                    checkDebugButtonsOnDown(eventID, coordinatesPressed);
 
                 break;
 
@@ -63,11 +104,9 @@ public class InputManager {
                 handleUp(eventID);
                 break;
             default:
-                eventHandled = false;
-                break;
+                return false;
         }
-
-        return eventHandled;
+        return true;
     }
 
     private void checkDebugButtonsOnDown(int eventID, Point coordinatesPressed){
@@ -78,15 +117,18 @@ public class InputManager {
     }
 
     private void handleUp(int eventID){
-        if (thumbstick.hasID(eventID)){
-            thumbstick.deactivate();
-        } else if (pauseButton.hasID(eventID)) {
+        if (pauseButton.hasID(eventID)) {
             pauseButton.onClick();
-        } else {
+        }
 
+        if (levelState.isPaused()){
             for (Button button : debugButtons) {
                 if (button.hasID(eventID))
                     button.onClick();
+            }
+        } else {
+            if (thumbstick.hasID(eventID)){
+                thumbstick.deactivate();
             }
         }
     }

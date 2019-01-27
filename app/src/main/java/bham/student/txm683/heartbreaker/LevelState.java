@@ -78,23 +78,16 @@ public class LevelState {
     }
 
     private void freshInitFromMap(){
-        /*this.staticEntities.add(new Entity("NPE-1", new Point(500,400), ShapeIdentifier.RECT, 500, 50, Color.BLUE));
-
-        this.player = new Player("player", map.getPlayerSpawnLocation());*/
-
-        //Log.d(TAG, "player spawn: " + map.getPlayerSpawnLocation());
-        this.player = new Player("player", map.getPlayerSpawnLocation(), map.getTileSize()/2, map.getTileSize()*2);
+        this.player = new Player("player", map.getPlayerSpawnLocation(), map.getTileSize()/2, map.getTileSize()*2, Color.rgb(0,0,255));
 
         Point[] staticSpawns = map.getStaticSpawns();
         for (Point staticSpawn : staticSpawns){
-            //Log.d(TAG, "staticSpawn: "+ staticSpawn.toString());
-            this.staticEntities.add(new Entity("Static-"+uniqueID.id(), staticSpawn, ShapeIdentifier.RECT, map.getTileSize(), map.getTileSize(), Color.BLUE));
+            this.staticEntities.add(new Entity("Static-"+uniqueID.id(), staticSpawn, ShapeIdentifier.RECT, map.getTileSize(), map.getTileSize(), Color.rgb(32,32,32)));
         }
 
         Pair[] enemySpawns = map.getEnemySpawnLocations();
         for (Pair pair : enemySpawns){
             Point enemySpawn = (Point)pair.second;
-            //Log.d(TAG, "enemySpawn: " + enemySpawn.toString());
 
             ShapeIdentifier shapeIdentifier;
 
@@ -108,7 +101,7 @@ public class LevelState {
                 shapeIdentifier = ShapeIdentifier.INVALID;
             }
 
-            this.enemyEntities.add(new MoveableEntity("E-" + uniqueID.id(), enemySpawn, shapeIdentifier, map.getTileSize()/2, map.getTileSize()/2, Color.YELLOW, 200f));
+            this.enemyEntities.add(new MoveableEntity("E-" + uniqueID.id(), enemySpawn, shapeIdentifier, map.getTileSize()/2, map.getTileSize()/2, Color.rgb(255, 153, 51), 200f));
         }
     }
 

@@ -42,7 +42,8 @@ public class Thumbstick implements InputUIElement{
         this.activePaint.setColor(Color.GRAY);
         this.activePaint.setStrokeWidth(10);
 
-        this.neutralPaint = new Paint(Color.BLACK);
+        this.neutralPaint = new Paint();
+        this.neutralPaint.setColor(Color.DKGRAY);
         this.neutralPaint.setStrokeWidth(10);
 
         this.maxRadius = maxRadius;
