@@ -38,10 +38,10 @@ public class Map {
         //simulating file reading
         int[][] mapTiles = new int[][]{
                 {1,1,1,1,1,1,1,1,1},
-                {1,0,0,1,0,0,0,0,1},
-                {1,0,0,1,3,0,4,3,1},
+                {1,3,0,1,0,0,0,0,1},
+                {1,2,0,1,0,0,0,0,1},
                 {1,0,1,1,1,0,1,1,1},
-                {1,0,3,0,2,0,0,3,1},
+                {1,0,0,0,0,0,0,0,1},
                 {1,0,0,1,0,0,1,0,1},
                 {1,1,1,1,1,1,1,1,1},};
 
@@ -94,7 +94,7 @@ public class Map {
             for (int column = 0; column < mapTiles[row].length; column++) {
 
                 currentTileValue = mapTiles[row][column];
-                currentNodeTile = new Tile(row, column);
+                currentNodeTile = new Tile(column, row);
 
                 //if the cell doesn't contain a static
                 if (currentTileValue != 1){
@@ -118,10 +118,19 @@ public class Map {
         Log.d("hb::AIGRAPH", aiGraph.toString());
     }
 
+    public Point mapTileToGlobalPoint(Tile tile){
+        Point point = new Point(tile.getX(), tile.getY()).smult(tileSize);
+        return new Point(point.getX()+tileSize/2f, point.getY()+tileSize/2f);
+    }
+
     public Tile mapGlobalPointToTile(Point globalCoordinate){
         int x = (int) Math.floor(globalCoordinate.getX()/tileSize);
         int y = (int) Math.floor(globalCoordinate.getY()/tileSize);
         return new Tile(x,y);
+    }
+
+    public Graph getAiGraph() {
+        return aiGraph;
     }
 
     private void checkAdjacentCell(Node currentNode, int[][] mapTiles, int row, int column){
@@ -131,7 +140,7 @@ public class Map {
         //they aren't already connected
         try {
             int adjacentTileValue = mapTiles[row][column];
-            Tile adjacentNodeTile = new Tile(row, column);
+            Tile adjacentNodeTile = new Tile(column, row);
 
             if (adjacentTileValue != 1){
 

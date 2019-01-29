@@ -10,6 +10,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.input.Button;
@@ -151,7 +152,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         Button[] debugButtons = {
                 new Button("PHYS", new Point(viewWidth-debugButtonRadius, debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderPhysicsGrid()),
                 new Button("ENGRID", new Point(viewWidth-debugButtonRadius, debugButtonDiameter + debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderMapTileGrid()),
-                new Button("NAMES", new Point(viewWidth-debugButtonRadius, 2*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderEntityNames())
+                new Button("NAMES", new Point(viewWidth-debugButtonRadius, 2*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderEntityNames()),
+                new Button("AI", new Point(viewWidth-debugButtonRadius, 3*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> {
+                    AIManager ai = new AIManager(null, levelState);
+                    ai.applyAStar(new Point(650, 650), new Point(1250, 650));
+                })
         };
 
         textPaint.setTextSize(48f);
@@ -292,7 +297,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         for (int i = (int)minimum.getX(); i < maximum.getX()/cellSize; i++){
             for (int j = (int)minimum.getY(); j < maximum.getY()/cellSize; j++){
                 center = new Point(i * cellSize + cellSize/2f, j * cellSize + cellSize/2f).add(renderOffset);
-                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "[" + j + "," + i + "]", center, Color.WHITE, 10);
+                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "[" + i + "," + j + "]", center, Color.WHITE, 10);
             }
         }
     }

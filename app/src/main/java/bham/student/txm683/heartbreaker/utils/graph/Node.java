@@ -7,11 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Node {
-    private Tile coordinates;
+    Tile coordinates;
 
-    private List<Edge> connections;
+    List<Edge> connections;
 
-    Node(Tile coordinates){
+    public Node(){
+
+    }
+
+    public Node(Tile coordinates){
         this.connections = new ArrayList<>();
 
         this.coordinates = coordinates;
@@ -34,12 +38,32 @@ public class Node {
         return neighbours;
     }
 
+    public int costToNeighbour(Node neighbour){
+        for (Edge connection : connections){
+            if (connection.hasNode(neighbour))
+                return connection.getWeight();
+        }
+        return 0;
+    }
+
     public boolean isConnectedToNode(Node node){
         for (Edge connection : connections){
             if (connection.hasNode(node))
                 return true;
         }
         return false;
+    }
+
+    public int getX(){
+        return coordinates.getX();
+    }
+
+    public int getY(){
+        return coordinates.getY();
+    }
+
+    public String getName(){
+        return coordinates.toString();
     }
 
     public Tile getCoordinates() {

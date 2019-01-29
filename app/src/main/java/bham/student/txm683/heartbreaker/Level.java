@@ -1,5 +1,7 @@
 package bham.student.txm683.heartbreaker;
 
+import bham.student.txm683.heartbreaker.ai.AIManager;
+import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
@@ -52,6 +54,9 @@ public class Level implements Runnable {
 
         nextScheduledGameTick = System.currentTimeMillis();
 
+        MoveableEntity aiEntity = levelState.getEnemyEntities().get(0);
+        AIManager aiManager = new AIManager(aiEntity, levelState);
+
         //levelState.setPaused(false);
         while (running){
 
@@ -67,11 +72,10 @@ public class Level implements Runnable {
 
                     levelState.getPlayer().setMovementVector(inputManager.getThumbstick().getMovementVector());
 
-                    //Log.d(TAG, "movement vector set");
-
                     physicsController.update(gameTickTimeStepInMillis / 1000f);
 
-                    //Log.d(TAG, "player updated");
+                    aiManager.update(gameTickTimeStepInMillis / 1000f, levelState.getPlayer().getShape().getCenter());
+
                     collisionManager.checkCollisions();
 
                     levelView.setGrid(collisionManager.getBroadPhaseGrid());

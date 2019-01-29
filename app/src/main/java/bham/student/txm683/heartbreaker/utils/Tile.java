@@ -13,6 +13,12 @@ public class Tile {
         this.y = y;
     }
 
+    public Tile(String tileString){
+        String[] split = tileString.split(",");
+        this.x = Integer.parseInt(split[0]);
+        this.y = Integer.parseInt(split[1]);
+    }
+
     public int getX() {
         return x;
     }
@@ -35,6 +41,6 @@ public class Tile {
     @NonNull
     @Override
     public String toString() {
-        return "["+x+","+y+"]";
+        return x+","+y;
     }
 }
