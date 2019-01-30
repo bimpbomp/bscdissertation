@@ -35,15 +35,28 @@ public class Map {
     private void initTestMap(String name){
         this.name = name;
 
+        //Bitmap mapBitMap = BitmapFactory.decodeFile(R.raw.map1);
+
         //simulating file reading
+        /*
+        {{1,1,1,1,1,1,1,1,1},
+        {1,3,0,0,0,0,0,0,1},
+        {1,2,0,1,0,0,0,0,1},
+        {1,0,1,1,1,1,1,0,1},
+        {1,0,0,0,0,1,0,0,1},
+        {1,0,0,1,0,0,0,0,1},
+        {1,1,1,1,1,1,1,1,1}};
+        * */
         int[][] mapTiles = new int[][]{
-                {1,1,1,1,1,1,1,1,1},
-                {1,3,0,1,0,0,0,0,1},
-                {1,2,0,1,0,0,0,0,1},
-                {1,0,1,1,1,0,1,1,1},
-                {1,0,0,0,0,0,0,0,1},
-                {1,0,0,1,0,0,1,0,1},
-                {1,1,1,1,1,1,1,1,1},};
+                {1,1,1,1,1,1,1,1},
+                {1,2,0,0,0,0,7,1},
+                {1,0,1,1,1,0,0,1},
+                {1,0,1,1,1,0,0,1},
+                {1,0,0,0,0,0,0,1},
+                {1,1,1,1,1,1,1,1}};
+
+
+
 
         for (int row = 0; row < mapTiles.length; row++){
             for (int column = 0; column < mapTiles[row].length; column++){
@@ -74,6 +87,15 @@ public class Map {
                     case (5):
                         Log.d("hb::Map", "enemy circle: " + spawnLocation);
                         enemySpawnLocations.add(new Pair<>(5, spawnLocation));
+                        break;
+                    case (6):
+                        Log.d("hb::Map", "enemy kite: " + spawnLocation);
+                        enemySpawnLocations.add(new Pair<>(6, spawnLocation));
+                        break;
+                    case (7):
+                        Log.d("hb::Map", "enemy Trapezium: " + spawnLocation);
+                        enemySpawnLocations.add(new Pair<>(7, spawnLocation));
+                        break;
                     default:
                         Log.d("hb::Map", "Invalid");
                 }

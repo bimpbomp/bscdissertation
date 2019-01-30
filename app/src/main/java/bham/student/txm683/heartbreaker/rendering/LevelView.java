@@ -10,7 +10,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.input.Button;
@@ -21,6 +20,7 @@ import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.physics.Grid;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
 
 import java.util.ArrayList;
 
@@ -114,7 +114,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         if (this.levelState == null) {
             Map map = new Map();
-            tileSize = 300;
+            tileSize = 200;
             map.loadMap("TestMap", tileSize);
             this.levelState = new LevelState(map);
 
@@ -153,10 +153,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 new Button("PHYS", new Point(viewWidth-debugButtonRadius, debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderPhysicsGrid()),
                 new Button("ENGRID", new Point(viewWidth-debugButtonRadius, debugButtonDiameter + debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderMapTileGrid()),
                 new Button("NAMES", new Point(viewWidth-debugButtonRadius, 2*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderEntityNames()),
-                new Button("AI", new Point(viewWidth-debugButtonRadius, 3*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> {
-                    AIManager ai = new AIManager(null, levelState);
-                    ai.applyAStar(new Point(650, 650), new Point(1250, 650));
-                })
+                new Button("AI", new Point(viewWidth-debugButtonRadius, 3*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertActivateAI())
         };
 
         textPaint.setTextSize(48f);
@@ -249,7 +246,15 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             Point renderOffset = viewWorldOrigin.smult(-1f);
 
             //draw background
-            canvas.drawRGB(255,255,255);
+            canvas.drawRGB(32,32,32);
+
+            //draw floor
+            Point bottomMapCorner = new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()).add(renderOffset);
+
+            int oldColor = textPaint.getColor();
+            textPaint.setColor(Color.WHITE);
+            canvas.drawRect(renderOffset.getX(), renderOffset.getY(), bottomMapCorner.getX(), bottomMapCorner.getY(), textPaint);
+            textPaint.setColor(oldColor);
 
             if (debugInfo.renderPhysicsGrid())
                 drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset, textPaint);
@@ -276,7 +281,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             } else {
                 canvas.drawARGB(200, 0,0,0);
 
-                int oldColor = textPaint.getColor();
+                oldColor = textPaint.getColor();
                 textPaint.setColor(Color.WHITE);
                 RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "Game is Paused", new Point(viewWidth/2f, viewHeight/3f), Color.RED, 50);
                 textPaint.setColor(oldColor);
@@ -297,7 +302,18 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         for (int i = (int)minimum.getX(); i < maximum.getX()/cellSize; i++){
             for (int j = (int)minimum.getY(); j < maximum.getY()/cellSize; j++){
                 center = new Point(i * cellSize + cellSize/2f, j * cellSize + cellSize/2f).add(renderOffset);
-                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "[" + i + "," + j + "]", center, Color.WHITE, 10);
+
+                int tileColor = Color.WHITE;
+
+                if (level.aiManager.path != null) {
+                    for (Tile tile : level.aiManager.path) {
+                        if (tile.equals(new Tile(i, j))) {
+                            tileColor = Color.RED;
+                            break;
+                        }
+                    }
+                }
+                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "[" + i + "," + j + "]", center, tileColor, 10);
             }
         }
     }

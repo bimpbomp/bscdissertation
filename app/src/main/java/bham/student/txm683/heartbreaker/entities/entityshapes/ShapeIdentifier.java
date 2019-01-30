@@ -8,9 +8,11 @@ import java.util.Map;
 public enum ShapeIdentifier {
 
     INVALID(-1),
+    CIRCLE (0),
     ISO_TRIANGLE(1),
     RECT(2),
-    CIRCLE (0);
+    KITE(3),
+    ISO_TRAPEZIUM(4);
     
 
     private final int id;

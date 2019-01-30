@@ -18,6 +18,8 @@ public class Level implements Runnable {
     private PhysicsController physicsController;
     private CollisionManager collisionManager;
 
+    public AIManager aiManager;
+
     private MessageBus messageBus;
 
     private boolean running;
@@ -55,7 +57,8 @@ public class Level implements Runnable {
         nextScheduledGameTick = System.currentTimeMillis();
 
         MoveableEntity aiEntity = levelState.getEnemyEntities().get(0);
-        AIManager aiManager = new AIManager(aiEntity, levelState);
+        aiManager = new AIManager(aiEntity, levelState);
+
 
         //levelState.setPaused(false);
         while (running){

@@ -5,6 +5,7 @@ public class DebugInfo {
     private boolean renderPhysicsGrid = false;
     private boolean renderMapTileGrid = false;
     private boolean renderEntityNames = false;
+    private boolean activateAI = false;
 
     public DebugInfo(){
     }
@@ -32,4 +33,8 @@ public class DebugInfo {
     public void invertRenderEntityNames() {
         this.renderEntityNames = !renderEntityNames;
     }
+
+    public boolean isAIActivated(){return this.activateAI;}
+
+    public void invertActivateAI(){this.activateAI = !this. activateAI;}
 }

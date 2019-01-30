@@ -3,7 +3,6 @@ package bham.student.txm683.heartbreaker.audio;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.SoundPool;
-import bham.student.txm683.heartbreaker.R;
 
 import java.util.HashMap;
 
@@ -25,7 +24,7 @@ public class AudioController {
     }
 
     public void initSounds(Context context){
-        soundMap.put(AudioCode.COLLISION, soundPool.load(context, R.raw.clack, 1));
+        //soundMap.put(AudioCode.COLLISION, soundPool.load(context, , 1));
     }
 
     public void releaseResources(){

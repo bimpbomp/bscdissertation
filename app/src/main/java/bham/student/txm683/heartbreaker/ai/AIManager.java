@@ -24,6 +24,7 @@ public class AIManager {
     private LevelState levelState;
     private Graph aiGraph;
     private Vector movementVector;
+    public Tile[] path;
 
     public AIManager(MoveableEntity controlledEntity, LevelState levelState){
         this.controlledEntity = controlledEntity;
@@ -31,9 +32,13 @@ public class AIManager {
     }
 
     public void update(float secondsSinceLastGameTick, Point playerPosition){
+        if (!levelState.getDebugInfo().isAIActivated()){
+            return;
+        }
+
         Log.d(TAG, "UPDATE");
         Point centerPosition = controlledEntity.getShape().getCenter();
-        Tile[] path = applyAStar(centerPosition, playerPosition);
+        path = applyAStar(centerPosition, playerPosition);
 
         if (path.length > 1){
             Point pathPoint = levelState.getMap().mapTileToGlobalPoint(path[1]);
@@ -49,13 +54,11 @@ public class AIManager {
     public Tile[] applyAStar(Point start, Point target){
         aiGraph = levelState.getMap().getAiGraph();
 
+        //maps the start and target points to integer coordinates relative to the maptiles layout
         Tile startTile = levelState.getMap().mapGlobalPointToTile(start);
         Tile targetTile = levelState.getMap().mapGlobalPointToTile(target);
 
-        /*Tile startTile = new Tile(1,1);
-        Tile targetTile = new Tile(4,1);*/
-
-        //if the graph doesn't contain the start/target nodes, return.
+        //if the graph doesn't contain the start/target nodes, or is already at it's destination, return.
         if (!aiGraph.containsNode(startTile) || !aiGraph.containsNode(targetTile)) {
             Log.d(TAG, "Can't start AStar. Either start or target not in graph. StartNode: " + aiGraph.containsNode(startTile) + ", TargetNode: " + aiGraph.containsNode(targetTile));
             return new Tile[0];
@@ -64,6 +67,7 @@ public class AIManager {
             return new Tile[0];
         }
 
+        //Wrapper class designed to hold movement costs for each node
         NodeWrapper startNode = new NodeWrapper(aiGraph.getNode(startTile));
         NodeWrapper targetNode = new NodeWrapper(aiGraph.getNode(targetTile));
 
@@ -75,14 +79,19 @@ public class AIManager {
                 return 0;
             return 1; });
 
+        //each key is the tile coordinate of a node. It's value is the gcost spent to get to that node from the start
         HashMap<String, Integer> costSoFar = new HashMap<>();
 
+        //each key is the tile coordinate of a node, it's value is the 'parent' of this node.
+        //i.e. the node that comes before the key node in the path
         HashMap<String, String> cameFrom = new HashMap<>();
 
         startNode.setCosts(0,0,0);
 
+        //initialise sets by adding the start node with 0 costs
         openSet.add(startNode);
         costSoFar.put(startNode.getName(), 0);
+        //has a value of start node so the tracePath algorithm knows when to stop backtracking
         cameFrom.put(startNode.getName(), startNode.getName());
 
         while (!openSet.isEmpty()){
@@ -94,6 +103,8 @@ public class AIManager {
 
                 Log.d(TAG, "current: " + current.getName() + " next: " + next.getName());
 
+                //if the next node is the target, add it to the cameFrom map and return the path generated
+                //by tracePath
                 if (targetNode.equals(next)){
                     Log.d(TAG, "Target Reached!");
 
@@ -101,10 +112,13 @@ public class AIManager {
                     return tracePath(cameFrom, targetNode.getName());
                 }
 
+                //the calculated costs for the next node
                 int gCostToNext = current.getgCost() + connection.getWeight();
                 int hCostToNext = calculateEuclideanHeuristic(current, targetNode);
                 int fCostToNext = gCostToNext + hCostToNext;
 
+                //If the node hasn't been visited before, or the cost to get to this node is cheaper than the already stored cost
+                //add it to all tracking sets
                 if (!costSoFar.containsKey(next.getName()) || costSoFar.get(next.getName()) > gCostToNext) {
 
                     next.setCosts(fCostToNext, gCostToNext, hCostToNext);
@@ -118,7 +132,16 @@ public class AIManager {
         return tracePath(cameFrom, targetNode.getName());
     }
 
+    private boolean canSeeTarget(){
+        return false;
+    }
 
+    /**
+     * Constructs a path for the AI to take to get to it's target
+     * @param cameFrom A map containing the visited nodes, and their parents
+     * @param targetNodeName The name of the targeted node (the destination)
+     * @return A Tile array containing the path to take, in order
+     */
     private Tile[] tracePath(HashMap<String, String> cameFrom, String targetNodeName){
 
         if (cameFrom.containsKey(targetNodeName)){

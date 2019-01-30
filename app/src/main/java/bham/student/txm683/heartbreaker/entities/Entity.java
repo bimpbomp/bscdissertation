@@ -41,6 +41,12 @@ public class Entity implements SaveableState {
             case CIRCLE:
                 this.shape = new Circle(spawnCoordinates, width/2f, colorValue);
                 break;
+            case KITE:
+                this.shape = new Kite(spawnCoordinates, width, height* 0.667f, height * 0.333f, colorValue);
+                break;
+            case ISO_TRAPEZIUM:
+                this.shape = new IsoscelesTrapezium(spawnCoordinates, width* 0.667f, width, height, colorValue);
+                break;
         }
         moveable = false;
 
@@ -70,11 +76,20 @@ public class Entity implements SaveableState {
 
         try {
             switch (ShapeIdentifier.fromInt(jsonObject.getInt("shapeidentifier"))) {
+                case CIRCLE:
+                    this.shape = new Circle(jsonObject.getString("shape"));
+                    break;
                 case ISO_TRIANGLE:
                     this.shape = new IsoscelesTriangle((String)jsonObject.get("shape"));
                     break;
                 case RECT:
                     this.shape = new Rectangle(jsonObject.getString("shape"));
+                    break;
+                case KITE:
+                    this.shape = new Kite(jsonObject.getString("shape"));
+                    break;
+                case ISO_TRAPEZIUM:
+                    this.shape = new IsoscelesTrapezium(jsonObject.getString("shape"));
                     break;
                 default:
                     throw new ParseException("Invalid shape identifier", 0);

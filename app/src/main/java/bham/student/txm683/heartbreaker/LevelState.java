@@ -78,11 +78,12 @@ public class LevelState {
     }
 
     private void freshInitFromMap(){
-        this.player = new Player("player", map.getPlayerSpawnLocation(), map.getTileSize()/2, map.getTileSize()*2, Color.rgb(0,0,255));
+        int playerSize = (int) (map.getTileSize() / 1.3f);
+        this.player = new Player("player", map.getPlayerSpawnLocation(), playerSize, map.getTileSize()*2, Color.rgb(0,0,255));
 
         Point[] staticSpawns = map.getStaticSpawns();
         for (Point staticSpawn : staticSpawns){
-            this.staticEntities.add(new Entity("Static-"+uniqueID.id(), staticSpawn, ShapeIdentifier.RECT, map.getTileSize(), map.getTileSize(), Color.rgb(32,32,32)));
+            this.staticEntities.add(new Entity("Static-"+uniqueID.id(), staticSpawn, ShapeIdentifier.RECT, map.getTileSize()+5, map.getTileSize()+5, Color.rgb(32,32,32)));
         }
 
         Pair[] enemySpawns = map.getEnemySpawnLocations();
@@ -92,16 +93,20 @@ public class LevelState {
             ShapeIdentifier shapeIdentifier;
 
             if ((int) pair.first == 3){
-                shapeIdentifier = ShapeIdentifier.RECT;
-            } else if ((int) pair.first == 4) {
                 shapeIdentifier = ShapeIdentifier.ISO_TRIANGLE;
+            } else if ((int) pair.first == 4) {
+                shapeIdentifier = ShapeIdentifier.RECT;
             } else if ((int) pair.first == 5){
                 shapeIdentifier = ShapeIdentifier.CIRCLE;
+            } else if ((int) pair.first == 6){
+                shapeIdentifier = ShapeIdentifier.KITE;
+            } else if ((int) pair.first == 7) {
+                shapeIdentifier = ShapeIdentifier.ISO_TRAPEZIUM;
             } else {
                 shapeIdentifier = ShapeIdentifier.INVALID;
             }
 
-            this.enemyEntities.add(new MoveableEntity("E-" + uniqueID.id(), enemySpawn, shapeIdentifier, map.getTileSize()/2, map.getTileSize()/2, Color.rgb(255, 153, 51), 200f));
+            this.enemyEntities.add(new MoveableEntity("E-" + uniqueID.id(), enemySpawn, shapeIdentifier, map.getTileSize()/2, map.getTileSize()/2, Color.rgb(255, 153, 51), 300f));
         }
     }
 
