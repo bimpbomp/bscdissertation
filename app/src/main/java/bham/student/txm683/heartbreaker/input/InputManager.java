@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.input;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -162,6 +163,7 @@ public class InputManager {
         } else if (thumbstick.hasID(eventID)){
             thumbstick.cancel();
         } else if (meleeButton.hasID(eventID)){
+            Log.d(TAG, "up");
             levelState.getPlayer().meleeAttack();
             meleeButton.cancel();
         }

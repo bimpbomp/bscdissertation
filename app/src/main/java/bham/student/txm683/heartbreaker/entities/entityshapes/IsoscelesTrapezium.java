@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
+import android.util.Log;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -40,9 +41,9 @@ public class IsoscelesTrapezium extends Polygon {
         this.angleBetweenUpAndPrimaryVectors = (float) jsonObject.getDouble("anglebetweenprimaryandup");
     }
 
-    @Override
-    public void contract(float changeInHeightRatio) {
+    public void contractHeight(float changeInHeightRatio) {
         //make sure proportion is positive
+
         changeInHeightRatio = Math.abs(changeInHeightRatio);
 
         Point oldBottomLeftVertex = vertexVectors[3].getHead();
@@ -53,18 +54,44 @@ public class IsoscelesTrapezium extends Polygon {
         translateShape(new Vector(vertexVectors[3].getHead(), oldBottomLeftVertex));
     }
 
+    public void contractWidth(float changeInWidthRatio){
+        changeInWidthRatio = Math.abs(changeInWidthRatio);
+
+        setWidth(contractionWidth * changeInWidthRatio);
+    }
+
     @Override
     public void returnToNormal() {
+        Log.d(TAG, "Returning to normal");
         Point oldBottomLeftVertex = vertexVectors[3].getHead();
+
         setHeight(height);
 
         translateShape(new Vector(vertexVectors[3].getHead(), oldBottomLeftVertex));
+
+        setWidth(width);
 
         resetToDefaultColor();
     }
 
     @Override
+    public void setWidth(float newWidth) {
+        if (Math.abs(newWidth - contractionWidth) < 0.0001)
+            return;
+
+        float changeInWidth = newWidth - contractionWidth;
+
+        Polygon.rectOrTrapeziumChangeWidth(changeInWidth, forwardUnitVector, vertexVectors);
+
+        this.contractionWidth = newWidth;
+        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+    }
+
+    @Override
     public void setHeight(float newHeight) {
+        if (Math.abs(newHeight - contractionHeight) < 0.0001)
+            return;
+
         float changeInHeight = newHeight - contractionHeight;
 
         //same formula as a rectangle for changing height

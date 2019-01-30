@@ -59,13 +59,9 @@ public class Rectangle extends Polygon {
     @Override
     public void setWidth(float newWidth) {
         float changeInWidth = newWidth - width;
-        Vector changeInWidthVectorLeft = forwardUnitVector.rotateAntiClockwise90().sMult(changeInWidth/2);
-        Vector changeInWidthVectorRight = changeInWidthVectorLeft.sMult(-1);
 
-        vertexVectors[0] = vertexVectors[0].vAdd(changeInWidthVectorLeft);
-        vertexVectors[2] = vertexVectors[2].vAdd(changeInWidthVectorRight);
-        vertexVectors[1] = vertexVectors[1].vAdd(changeInWidthVectorRight);
-        vertexVectors[3] = vertexVectors[3].vAdd(changeInWidthVectorLeft);
+        Polygon.rectOrTrapeziumChangeWidth(changeInWidth, forwardUnitVector, vertexVectors);
+
         this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
 
         this.width = newWidth;

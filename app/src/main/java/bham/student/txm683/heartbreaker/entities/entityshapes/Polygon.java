@@ -17,6 +17,7 @@ public abstract class Polygon extends EntityShape {
     float width;
 
     float contractionHeight;
+    float contractionWidth;
 
     public Polygon(Point center, float width, float height, int colorValue, ShapeIdentifier shapeIdentifier){
         super(center, colorValue, shapeIdentifier);
@@ -25,6 +26,7 @@ public abstract class Polygon extends EntityShape {
         this.width = width;
 
         this.contractionHeight = height;
+        this.contractionWidth = width;
     }
 
     public Polygon(String jsonString, ShapeIdentifier shapeIdentifier) throws JSONException {
@@ -45,6 +47,7 @@ public abstract class Polygon extends EntityShape {
         }
 
         this.contractionHeight = height;
+        this.contractionWidth = width;
     }
 
     public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
@@ -223,5 +226,15 @@ public abstract class Polygon extends EntityShape {
         vertexVectors[1] = vertexVectors[1].vAdd(changeInHeightVectorUp);
         vertexVectors[2] = vertexVectors[2].vAdd(changeInHeightVectorDown);
         vertexVectors[3] = vertexVectors[3].vAdd(changeInHeightVectorDown);
+    }
+
+    static void rectOrTrapeziumChangeWidth(float changeInWidth, Vector forwardUnitVector, Vector[] vertexVectors){
+        Vector changeInWidthVectorLeft = forwardUnitVector.rotateAntiClockwise90().sMult(changeInWidth/2);
+        Vector changeInWidthVectorRight = changeInWidthVectorLeft.sMult(-1);
+
+        vertexVectors[0] = vertexVectors[0].vAdd(changeInWidthVectorLeft);
+        vertexVectors[2] = vertexVectors[2].vAdd(changeInWidthVectorRight);
+        vertexVectors[1] = vertexVectors[1].vAdd(changeInWidthVectorRight);
+        vertexVectors[3] = vertexVectors[3].vAdd(changeInWidthVectorLeft);
     }
 }

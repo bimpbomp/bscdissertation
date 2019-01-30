@@ -101,11 +101,11 @@ public abstract class EntityShape implements SaveableState {
 
     public abstract void rotateShape(Vector rotationVector);
 
-    /**
-     * Used to change the height of a shape without moving the base from its coordinates
-     * @param changeInHeightRatio proportion by which to shrink/grow height
-     */
-    public void contract(float changeInHeightRatio){
+    public void contractHeight(float proportionOfHeight){
+
+    }
+
+    public void contractWidth(float proportionOfWidth){
 
     }
 

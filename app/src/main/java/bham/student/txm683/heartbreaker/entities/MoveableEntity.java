@@ -24,6 +24,8 @@ public class MoveableEntity extends Entity {
     private long lastChargeTime;
     private long currentChargeTime;
 
+    private int attackCooldown;
+
     private int damageDealt;
     private int health;
 
@@ -59,6 +61,8 @@ public class MoveableEntity extends Entity {
         health = 5;
 
         damageDealt = 0;
+
+        attackCooldown = 0;
 
         resetMeleeCharges();
     }
@@ -104,14 +108,14 @@ public class MoveableEntity extends Entity {
     public void chargeMelee(){
         currentChargeTime = System.currentTimeMillis();
 
-        if (currentMeleeCharge < maxCharge) {
+        if (currentMeleeCharge < maxCharge && attackCooldown == 0) {
             if (currentChargeTime - lastChargeTime > TIME_BETWEEN_CHARGES) {
                 currentMeleeCharge += 1;
                 lastChargeTime = currentChargeTime;
                 Log.d(TAG, "adding charge, charge now at: " + currentMeleeCharge);
 
-                if (currentMeleeCharge < 1 || currentMeleeCharge % 5 == 0){
-                    shape.contract(0.9f);
+                if (currentMeleeCharge == 1 || currentMeleeCharge == maxCharge){
+                    shape.contractWidth(1.1f);
                 }
             } else {
                 Log.d(TAG, "not enough time passed for charge (" + (currentChargeTime - lastChargeTime) + ")");
@@ -127,23 +131,40 @@ public class MoveableEntity extends Entity {
     public void meleeAttack(){
         Log.d(TAG, "melee attack with charge of " + currentMeleeCharge);
         shape.returnToNormal();
+        shape.contractWidth(0.8f);
+        shape.contractHeight(1.4f);
 
-        if (currentMeleeCharge > 0 && currentMeleeCharge <= 10){
+        if (currentMeleeCharge > 0 && currentMeleeCharge <= maxCharge / 2){
             damageDealt = 1;
         } else if (currentMeleeCharge > 0){
             damageDealt = 3;
         }
         resetMeleeCharges();
 
+        attackCooldown = 5;
         launchedAttack = true;
     }
 
     /**
-     * called by collision manager at end of checks to mark collision as checked
+     * Called by collision manager at end of checks to mark collision as checked
      */
     public void resetAttack(){
         launchedAttack = false;
         damageDealt = 0;
+
+    }
+
+    public int getAttackCooldown() {
+        return attackCooldown;
+    }
+
+    public void tickCooldown(){
+        attackCooldown -= 1;
+
+        if (attackCooldown <= 0){
+            attackCooldown = 0;
+            shape.returnToNormal();
+        }
     }
 
     public int getDamageFromMeleeAttack(){

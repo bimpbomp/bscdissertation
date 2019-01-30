@@ -231,14 +231,24 @@ public class CollisionManager {
             }
         }
 
-        levelState.getPlayer().resetAttack();
+        if (levelState.getPlayer().hasAttacked()) {
+            levelState.getPlayer().resetAttack();
+        }
+        if (levelState.getPlayer().getAttackCooldown() > 0)
+            levelState.getPlayer().tickCooldown();
+
         for (MoveableEntity entity : levelState.getEnemyEntities()){
-            entity.resetAttack();
+            if (entity.hasAttacked())
+                entity.resetAttack();
+
+            if (entity.getAttackCooldown() > 0)
+                entity.tickCooldown();
         }
 
         for (MoveableEntity entity : deadEntities){
             levelState.removeEnemy(entity);
         }
+
         collidedLastTick = currentTickCollidedPairs;
     }
 
