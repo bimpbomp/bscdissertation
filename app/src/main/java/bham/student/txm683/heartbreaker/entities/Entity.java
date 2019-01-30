@@ -22,8 +22,9 @@ public class Entity implements SaveableState {
     Paint textPaint;
 
     boolean moveable;
-
+    boolean launchedAttack;
     boolean collided;
+
     Vector pushVector;
 
     public Entity(String name, Point spawnCoordinates, ShapeIdentifier shapeIdentifier, int width, int height, int colorValue){
@@ -49,6 +50,7 @@ public class Entity implements SaveableState {
                 break;
         }
         moveable = false;
+        launchedAttack = false;
 
         pushVector = new Vector();
 
@@ -62,6 +64,7 @@ public class Entity implements SaveableState {
         this.shape = shape;
 
         moveable = false;
+        launchedAttack = false;
 
         pushVector = new Vector();
 
@@ -99,6 +102,8 @@ public class Entity implements SaveableState {
         }
 
         moveable = false;
+        pushVector = new Vector();
+        launchedAttack = false;
 
         initTextPaint();
     }
@@ -134,6 +139,10 @@ public class Entity implements SaveableState {
             Point center = shape.getCenter().add(renderOffset);
             RenderingTools.renderCenteredText(canvas, textPaint, name, center);
         }
+    }
+
+    public boolean hasAttacked(){
+        return launchedAttack;
     }
 
     public void setPushVector(Vector pushVector) {

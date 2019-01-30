@@ -78,7 +78,7 @@ public class LevelState {
     }
 
     private void freshInitFromMap(){
-        int playerSize = (int) (map.getTileSize() / 1.3f);
+        int playerSize = map.getTileSize();
         this.player = new Player("player", map.getPlayerSpawnLocation(), playerSize, map.getTileSize()*2, Color.rgb(0,0,255));
 
         Point[] staticSpawns = map.getStaticSpawns();
@@ -106,7 +106,7 @@ public class LevelState {
                 shapeIdentifier = ShapeIdentifier.INVALID;
             }
 
-            this.enemyEntities.add(new MoveableEntity("E-" + uniqueID.id(), enemySpawn, shapeIdentifier, map.getTileSize()/2, map.getTileSize()/2, Color.rgb(255, 153, 51), 300f));
+            this.enemyEntities.add(new MoveableEntity("E-" + uniqueID.id(), enemySpawn, shapeIdentifier, map.getTileSize()/2, map.getTileSize()/2, Color.rgb(255, 153, 51), 300f, 25));
         }
     }
 
@@ -125,6 +125,15 @@ public class LevelState {
     public void setScreenDimensions(int screenWidth, int screenHeight){
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+    }
+
+    public void removeEnemy(MoveableEntity entity){
+        for (MoveableEntity enemy : enemyEntities){
+            if (enemy.getName().equals(entity.getName())){
+                enemyEntities.remove(enemy);
+                break;
+            }
+        }
     }
 
     public Player getPlayer(){

@@ -4,6 +4,7 @@ import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -59,12 +60,12 @@ public class CollisionManager {
      * returns the cells containing 2 or more entities for more in depth addToCollidedThisTickSet checks.
      */
     private void applySpatialPartitioning(){
+
         Point gridMaximum = new Point(levelState.getMap().getDimensions().first, levelState.getMap().getDimensions().second);
 
         //initialise empty grid
         int cellSize = levelState.getMap().getTileSize() * 2;
         broadPhaseGrid = new Grid(new Point(levelState.getMap().getTileSize()/-2f,levelState.getMap().getTileSize()/-2f), gridMaximum, cellSize);
-
 
         broadPhaseGrid.addEntityToGrid(levelState.getPlayer());
 
@@ -95,6 +96,8 @@ public class CollisionManager {
         //Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
         checkedPairNames = new HashSet<>();
         currentTickCollidedPairs = new HashSet<>();
+
+        ArrayList<MoveableEntity> deadEntities = new ArrayList<>();
 
         for (Pair<ArrayList<Entity>, Pair<Integer, Integer>> binPair : bins){
             ArrayList<Entity> bin = binPair.first;
@@ -136,10 +139,6 @@ public class CollisionManager {
 
                             //at least one entity can move, as we ignored any pairs of static entities earlier on
 
-                            //TODO: (not todo) Uncomment to highlight entities that collide
-                            /*firstEntity.setCollided(true);
-                            secondEntity.setCollided(true);*/
-
                             //true if the entity doesnt collide with any statics after applying
                             //pushVector.
                             boolean firstAbleToMove;
@@ -153,6 +152,23 @@ public class CollisionManager {
 
                             if (firstEntity.canMove() && secondEntity.canMove()) {
 
+                                if (firstEntity.hasAttacked()){
+                                    Log.d(TAG, firstEntity.getName() + " has attacked");
+
+                                    Vector firstForwardVector = firstEntity.getShape().getForwardUnitVector();
+
+                                    float dotProduct = firstForwardVector.dot(pushVector.getUnitVector().sMult(-1f));
+
+                                    Log.d(TAG, firstEntity.getName() + "'s forward vector has a dot product of " + dotProduct + " with the push vector");
+
+                                    //if the second entity is within a 45 degree sector either side of the forward vector,
+                                    //the attack is classed as a hit.
+                                    if (dotProduct - 0.001f < 1f && dotProduct >= 0.7f){
+                                        Log.d(TAG, secondEntity.getName() + " damaged by " + firstEntity.getName() + " with damage " + ((MoveableEntity) firstEntity).getDamageFromMeleeAttack());
+                                         if (((MoveableEntity) secondEntity).damage(((MoveableEntity) firstEntity).getDamageFromMeleeAttack()))
+                                             deadEntities.add((MoveableEntity)secondEntity);
+                                    }
+                                }
                                 //resolve collisions with any statics that share a cell with either entity
                                 isEntityAbleToBePushed(firstEntity, binGridReference, true);
                                 isEntityAbleToBePushed(secondEntity, binGridReference, true);
@@ -205,12 +221,23 @@ public class CollisionManager {
                                 secondEntity.getShape().setCenter(newCenter);
                             }
                             addToCollidedThisTickSet(firstEntity, secondEntity);
+
+                            //handle attacks
                         }
                         //add entity names to the checked names set so that they aren't checked twice
                         addCheckedPairNames(firstEntity, secondEntity);
                     }
                 }
             }
+        }
+
+        levelState.getPlayer().resetAttack();
+        for (MoveableEntity entity : levelState.getEnemyEntities()){
+            entity.resetAttack();
+        }
+
+        for (MoveableEntity entity : deadEntities){
+            levelState.removeEnemy(entity);
         }
         collidedLastTick = currentTickCollidedPairs;
     }

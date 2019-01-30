@@ -145,6 +145,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         Click pauseButtonFunction = () -> levelState.setPaused(!levelState.isPaused());
         this.inputManager.setPauseButton(new Button("PAUSE", new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, Color.LTGRAY, pauseButtonFunction));
 
+        int meleeButtonRadius = 100;
+        this.inputManager.setMeleeButton(new Button("THUMP", new Point(viewWidth-meleeButtonRadius, viewHeight-meleeButtonRadius), meleeButtonRadius, Color.LTGRAY, null));
+
         textPaint.setTextSize(36f);
         //gives space for 8 debug buttons
         int debugButtonDiameter = viewHeight/6;
@@ -273,7 +276,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             if (debugInfo.renderMapTileGrid()){
-                drawGridLabels(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset, textPaint);
+                drawGridLabels(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset);
             }
 
             if (!levelState.isPaused()) {
@@ -297,7 +300,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    private void drawGridLabels(Canvas canvas, Point minimum, Point maximum, int cellSize, Point renderOffset, Paint gridPaint){
+    private void drawGridLabels(Canvas canvas, Point minimum, Point maximum, int cellSize, Point renderOffset){
         Point center;
         for (int i = (int)minimum.getX(); i < maximum.getX()/cellSize; i++){
             for (int j = (int)minimum.getY(); j < maximum.getY()/cellSize; j++){

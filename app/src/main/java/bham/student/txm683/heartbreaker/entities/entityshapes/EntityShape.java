@@ -32,7 +32,7 @@ public abstract class EntityShape implements SaveableState {
      * @param colorValue Color.constant for shape color.
      */
     EntityShape(Point geometricCenter, int colorValue, ShapeIdentifier shapeIdentifier){
-        TAG = "hb::" + this.getClass().getName();
+        TAG = "hb::" + this.getClass().getSimpleName();
 
         this.geometricCenter = geometricCenter;
 
@@ -52,7 +52,7 @@ public abstract class EntityShape implements SaveableState {
      * @throws JSONException Thrown if the required members cannot be extracted from the jsonString
      */
     EntityShape(String jsonString, ShapeIdentifier shapeIdentifier) throws JSONException {
-        TAG = "hb::" + this.getClass().getName();
+        TAG = "hb::" + this.getClass().getSimpleName();
 
         JSONObject jsonObject = new JSONObject(jsonString);
 
@@ -82,6 +82,10 @@ public abstract class EntityShape implements SaveableState {
 
     public abstract void setForwardUnitVector();
 
+    public Vector getForwardUnitVector() {
+        return forwardUnitVector;
+    }
+
     public abstract Point[] getCollisionVertices();
 
     /**
@@ -96,6 +100,18 @@ public abstract class EntityShape implements SaveableState {
     public abstract void translateShape(Vector translationVector);
 
     public abstract void rotateShape(Vector rotationVector);
+
+    /**
+     * Used to change the height of a shape without moving the base from its coordinates
+     * @param changeInHeightRatio proportion by which to shrink/grow height
+     */
+    public void contract(float changeInHeightRatio){
+
+    }
+
+    public void returnToNormal(){
+
+    }
 
     public void setCenter(Point geometricCenter){
         translateShape(new Vector(this.geometricCenter, geometricCenter));

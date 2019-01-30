@@ -12,6 +12,8 @@ public class InputManager {
     private Thumbstick thumbstick;
     private Button pauseButton;
 
+    private Button meleeButton;
+
     private Button[] debugButtons;
 
     private LevelState levelState;
@@ -51,7 +53,7 @@ public class InputManager {
                 break;
 
             case MotionEvent.ACTION_UP:
-                handleUp(eventID);
+                handleUpPaused(eventID);
                 break;
 
             case MotionEvent.ACTION_POINTER_DOWN:
@@ -63,7 +65,7 @@ public class InputManager {
                 break;
 
             case MotionEvent.ACTION_POINTER_UP:
-                handleUp(eventID);
+                handleUpPaused(eventID);
                 break;
             default:
                 return false;
@@ -76,32 +78,33 @@ public class InputManager {
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
 
-                if (thumbstick.containsPoint(coordinatesPressed)){
-                    thumbstick.setActivePosition(coordinatesPressed);
-                    thumbstick.setPointerID(eventID);
-
-                } else if (pauseButton.containsPoint(coordinatesPressed)){
-                    pauseButton.setPointerID(eventID);
-                }
+                handleDownResumed(eventID, coordinatesPressed);
                 break;
 
             case MotionEvent.ACTION_UP:
-                handleUp(eventID);
+                handleUpResumed(eventID);
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                if (thumbstick.hasID(eventID))
-                    thumbstick.setActivePosition(coordinatesPressed);
+
+                int pointerCount = event.getPointerCount();
+                for(int i = 0; i < pointerCount; ++i) {
+                    eventIndex = i;
+                    eventID = event.getPointerId(eventIndex);
+
+                    if (thumbstick.hasID(eventID))
+                        thumbstick.setActivePosition(coordinatesPressed);
+                    else if (meleeButton.hasID(eventID))
+                        levelState.getPlayer().chargeMelee();
+                }
                 break;
 
             case MotionEvent.ACTION_POINTER_DOWN:
-                if (pauseButton.containsPoint(coordinatesPressed))
-                    pauseButton.setPointerID(eventID);
-
+                handleDownResumed(eventID, coordinatesPressed);
                 break;
 
             case MotionEvent.ACTION_POINTER_UP:
-                handleUp(eventID);
+                handleUpResumed(eventID);
                 break;
             default:
                 return false;
@@ -116,26 +119,60 @@ public class InputManager {
         }
     }
 
-    private void handleUp(int eventID){
-        if (pauseButton.hasID(eventID)) {
-            pauseButton.onClick();
-        }
+    private void handleDownResumed(int eventID, Point coordinatesPressed){
+        if (thumbstick.containsPoint(coordinatesPressed)){
+            thumbstick.setActivePosition(coordinatesPressed);
+            thumbstick.setPointerID(eventID);
 
-        if (levelState.isPaused()){
+        } else if (meleeButton.containsPoint(coordinatesPressed)){
+            meleeButton.setPointerID(eventID);
+        } else if (pauseButton.containsPoint(coordinatesPressed)){
+            pauseButton.setPointerID(eventID);
+        }
+    }
+
+    private void handleUpPaused(int eventID){
+
+        if (pauseButton.hasID(eventID)) {
+            //if game is to be resumed, cancel any buttons currently pressed
+            pauseButton.onClick();
+
+            for (Button button : debugButtons){
+                if (!button.hasID(MotionEvent.INVALID_POINTER_ID)){
+                    button.cancel();
+                }
+            }
+        } else {
             for (Button button : debugButtons) {
                 if (button.hasID(eventID))
                     button.onClick();
             }
-        } else {
-            if (thumbstick.hasID(eventID)){
-                thumbstick.deactivate();
-            }
         }
+    }
+
+    private void handleUpResumed(int eventID){
+
+        if (pauseButton.hasID(eventID)) {
+            //cancel any outstanding pressed buttons
+            meleeButton.cancel();
+            thumbstick.cancel();
+
+            pauseButton.onClick();
+
+        } else if (thumbstick.hasID(eventID)){
+            thumbstick.cancel();
+        } else if (meleeButton.hasID(eventID)){
+            levelState.getPlayer().meleeAttack();
+            meleeButton.cancel();
+        }
+
     }
 
     public void draw(Canvas canvas, Paint textPaint){
         if (!levelState.isPaused()) {
             thumbstick.draw(canvas);
+
+            meleeButton.draw(canvas, textPaint);
         } else {
             if (debugButtons != null) {
                 for (Button button : debugButtons) {
@@ -161,6 +198,10 @@ public class InputManager {
 
     public void setPauseButton(Button pauseButton) {
         this.pauseButton = pauseButton;
+    }
+
+    public void setMeleeButton(Button meleeButton) {
+        this.meleeButton = meleeButton;
     }
 
     public void setDebugButtons(Button[] buttons){

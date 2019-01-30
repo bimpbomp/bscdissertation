@@ -51,7 +51,8 @@ public class Button implements InputUIElement {
         this.pointerID = MotionEvent.INVALID_POINTER_ID;
         this.paint.setColor(defaultColor);
 
-        this.buttonFunction.click();
+        if (this.buttonFunction != null)
+            this.buttonFunction.click();
     }
 
     @Override
@@ -66,6 +67,12 @@ public class Button implements InputUIElement {
 
     public boolean containsPoint(Point touchEventPosition){
         return new Vector(center, touchEventPosition).getLength() <= radius;
+    }
+
+    @Override
+    public void cancel() {
+        this.pointerID = MotionEvent.INVALID_POINTER_ID;
+        this.paint.setColor(defaultColor);
     }
 
     @Override

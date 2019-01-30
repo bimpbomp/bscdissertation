@@ -16,11 +16,15 @@ public abstract class Polygon extends EntityShape {
     float height;
     float width;
 
+    float contractionHeight;
+
     public Polygon(Point center, float width, float height, int colorValue, ShapeIdentifier shapeIdentifier){
         super(center, colorValue, shapeIdentifier);
 
         this.height = height;
         this.width = width;
+
+        this.contractionHeight = height;
     }
 
     public Polygon(String jsonString, ShapeIdentifier shapeIdentifier) throws JSONException {
@@ -39,6 +43,8 @@ public abstract class Polygon extends EntityShape {
         for (int i = 0; i < verticesArray.length(); i++){
             this.vertexVectors[i] = new Vector(geometricCenter, new Point(verticesArray.getJSONObject(i)));
         }
+
+        this.contractionHeight = height;
     }
 
     public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
@@ -63,6 +69,16 @@ public abstract class Polygon extends EntityShape {
     @Override
     public float getWidth() {
         return width;
+    }
+
+    @Override
+    public void setHeight(float newHeight) {
+        this.height = newHeight;
+    }
+
+    @Override
+    public void setWidth(float newWidth) {
+        this.width = newWidth;
     }
 
     @Override
@@ -197,5 +213,15 @@ public abstract class Polygon extends EntityShape {
         jsonObject.put("width",width);
 
         return jsonObject;
+    }
+
+    static void rectOrTrapeziumChangeHeight(float changeInHeight, Vector forwardUnitVector, Vector[] vertexVectors){
+        Vector changeInHeightVectorUp = forwardUnitVector.sMult(changeInHeight/2);
+        Vector changeInHeightVectorDown = changeInHeightVectorUp.sMult(-1);
+
+        vertexVectors[0] = vertexVectors[0].vAdd(changeInHeightVectorUp);
+        vertexVectors[1] = vertexVectors[1].vAdd(changeInHeightVectorUp);
+        vertexVectors[2] = vertexVectors[2].vAdd(changeInHeightVectorDown);
+        vertexVectors[3] = vertexVectors[3].vAdd(changeInHeightVectorDown);
     }
 }

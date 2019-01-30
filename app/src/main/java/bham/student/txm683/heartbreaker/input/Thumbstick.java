@@ -57,14 +57,15 @@ public class Thumbstick implements InputUIElement{
     }
 
     @Override
+    public void cancel() {
+        this.pointerID = MotionEvent.INVALID_POINTER_ID;
+        returnToNeutral();
+    }
+
+    @Override
     public void setPointerID(int id) {
         if (id >= 0)
             this.pointerID = id;
-    }
-
-    public void deactivate() {
-        this.pointerID = MotionEvent.INVALID_POINTER_ID;
-        returnToNeutral();
     }
 
     @Override

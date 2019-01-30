@@ -10,4 +10,6 @@ public interface InputUIElement {
     boolean hasID(int id);
 
     int getID();
+
+    void cancel();
 }

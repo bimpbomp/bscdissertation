@@ -47,16 +47,12 @@ public class Rectangle extends Polygon {
     //explanation in notebook [2]
     @Override
     public void setHeight(float newHeight) {
+
         float changeInHeight = newHeight - height;
-        Vector changeInHeightVectorUp = forwardUnitVector.sMult(changeInHeight/2);
-        Vector changeInHeightVectorDown = changeInHeightVectorUp.sMult(-1);
-
-        vertexVectors[0] = vertexVectors[0].vAdd(changeInHeightVectorUp);
-        vertexVectors[1] = vertexVectors[1].vAdd(changeInHeightVectorUp);
-        vertexVectors[2] = vertexVectors[2].vAdd(changeInHeightVectorDown);
-        vertexVectors[3] = vertexVectors[3].vAdd(changeInHeightVectorDown);
-
         this.height = newHeight;
+
+        rectOrTrapeziumChangeHeight(changeInHeight, forwardUnitVector, vertexVectors);
+        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
     }
 
     //explanation in notebook [2]
@@ -70,6 +66,7 @@ public class Rectangle extends Polygon {
         vertexVectors[2] = vertexVectors[2].vAdd(changeInWidthVectorRight);
         vertexVectors[1] = vertexVectors[1].vAdd(changeInWidthVectorRight);
         vertexVectors[3] = vertexVectors[3].vAdd(changeInWidthVectorLeft);
+        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
 
         this.width = newWidth;
     }

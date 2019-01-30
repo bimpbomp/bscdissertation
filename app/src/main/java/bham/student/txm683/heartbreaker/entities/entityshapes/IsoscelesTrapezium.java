@@ -41,18 +41,41 @@ public class IsoscelesTrapezium extends Polygon {
     }
 
     @Override
-    public void setHeight(float newHeight) {
+    public void contract(float changeInHeightRatio) {
+        //make sure proportion is positive
+        changeInHeightRatio = Math.abs(changeInHeightRatio);
 
+        Point oldBottomLeftVertex = vertexVectors[3].getHead();
+
+        setHeight(contractionHeight * changeInHeightRatio);
+
+        //moves the shape back to the same base position as before height changed
+        translateShape(new Vector(vertexVectors[3].getHead(), oldBottomLeftVertex));
     }
 
     @Override
-    public void setWidth(float newWidth) {
+    public void returnToNormal() {
+        Point oldBottomLeftVertex = vertexVectors[3].getHead();
+        setHeight(height);
 
+        translateShape(new Vector(vertexVectors[3].getHead(), oldBottomLeftVertex));
+
+        resetToDefaultColor();
+    }
+
+    @Override
+    public void setHeight(float newHeight) {
+        float changeInHeight = newHeight - contractionHeight;
+
+        //same formula as a rectangle for changing height
+        Rectangle.rectOrTrapeziumChangeHeight(changeInHeight, forwardUnitVector, vertexVectors);
+        this.contractionHeight = newHeight;
+        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
     }
 
     @Override
     public void setForwardUnitVector() {
-        this.forwardUnitVector = rotateVertexVector(vertexVectors[0], (float) Math.cos(angleBetweenUpAndPrimaryVectors), (float) Math.sin(angleBetweenUpAndPrimaryVectors));
+        this.forwardUnitVector = rotateVertexVector(vertexVectors[0], (float) Math.cos(angleBetweenUpAndPrimaryVectors), (float) Math.sin(angleBetweenUpAndPrimaryVectors)).getUnitVector();
     }
 
     @Override
