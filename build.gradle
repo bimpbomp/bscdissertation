@@ -23,4 +23,8 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+
+    delete fileTree("${project.buildDir}/generated") {
+        include 'mockable-android*.jar'
+    }
 }
