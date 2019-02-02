@@ -6,6 +6,7 @@ import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -131,7 +132,7 @@ public class CollisionManager {
                             continue;
                         }
                         
-                        Vector pushVector = getPushVectorBetweenTwoEntities(firstEntity, secondEntity);
+                        Vector pushVector = getPushVectorBetweenTwoShapes(firstEntity.getShape(), secondEntity.getShape());
 
 
                         //if a collision has occurred (zero vector says a collision hasn't occurred)
@@ -252,32 +253,30 @@ public class CollisionManager {
         collidedLastTick = currentTickCollidedPairs;
     }
 
-    private void moveEntityCenter(Entity entity, Point amountToMove){
+    private static void moveEntityCenter(Entity entity, Point amountToMove){
         Point newCenter = entity.getShape().getCenter().add(amountToMove);
         entity.getShape().setCenter(newCenter);
     }
 
-    private Vector getPushVectorBetweenTwoEntities(Entity firstEntity, Entity secondEntity){
+    public static Vector getPushVectorBetweenTwoShapes(EntityShape shape1, EntityShape shape2){
         Vector pushVector;
 
-        ShapeIdentifier firstEntityIdentifier = firstEntity.getShape().getShapeIdentifier();
-        ShapeIdentifier secondEntityIdentifier = secondEntity.getShape().getShapeIdentifier();
-
-        //Log.d(TAG, "first entity: " + firstEntity.getName() + ", second entity: " + secondEntity.getName());
+        ShapeIdentifier firstEntityIdentifier = shape1.getShapeIdentifier();
+        ShapeIdentifier secondEntityIdentifier = shape2.getShapeIdentifier();
 
         //collision detection method varies depending on shape combination
         if (firstEntityIdentifier == ShapeIdentifier.CIRCLE && secondEntityIdentifier == ShapeIdentifier.CIRCLE){
-            pushVector = collisionCheckTwoCircles((Circle) firstEntity.getShape(), (Circle) secondEntity.getShape());
+            pushVector = collisionCheckTwoCircles((Circle) shape1, (Circle) shape2);
 
         } else if (firstEntityIdentifier == ShapeIdentifier.CIRCLE){
-            pushVector = collisionCheckCircleAndPolygon((Circle) firstEntity.getShape(), (Polygon) secondEntity.getShape());
+            pushVector = collisionCheckCircleAndPolygon((Circle) shape1, (Polygon) shape2);
 
         } else if (secondEntityIdentifier == ShapeIdentifier.CIRCLE){
             //inverted so that first entity is always the one pushed away
-            pushVector = collisionCheckCircleAndPolygon((Circle) secondEntity.getShape(), (Polygon) firstEntity.getShape());
+            pushVector = collisionCheckCircleAndPolygon((Circle) shape2, (Polygon) shape1);
             pushVector = pushVector.sMult(-1f);
         } else {
-            pushVector = collisionCheckTwoPolygons((Polygon) firstEntity.getShape(), (Polygon) secondEntity.getShape());
+            pushVector = collisionCheckTwoPolygons((Polygon) shape1, (Polygon) shape2);
         }
         return pushVector;
     }
@@ -313,7 +312,7 @@ public class CollisionManager {
         for (Entity entityInBin : bin) {
             if (!entityInBin.canMove()) {
                 //check if the two entities collide
-                Vector pushVector = getPushVectorBetweenTwoEntities(entity, entityInBin);
+                Vector pushVector = getPushVectorBetweenTwoShapes(entity.getShape(), entityInBin.getShape());
                 collided = !(pushVector.equals(new Vector()));
 
                 if (collided) {
@@ -333,7 +332,7 @@ public class CollisionManager {
         return false;
     }
 
-    private Vector getMinimumPushVector(ArrayList<Vector> pushVectors){
+    private static Vector getMinimumPushVector(ArrayList<Vector> pushVectors){
         Vector minPushVector = new Vector();
         if (pushVectors.size() > 0) {
             minPushVector = pushVectors.get(0);
@@ -345,7 +344,7 @@ public class CollisionManager {
         return minPushVector;
     }
 
-    private Vector[] convertToVectorsFromOrigin(Point[] vertices){
+    private static Vector[] convertToVectorsFromOrigin(Point[] vertices){
         Vector[] verticesVectors = new Vector[vertices.length];
         for (int i = 0; i < vertices.length; i++){
             verticesVectors[i] = new Vector(vertices[i]);
@@ -355,7 +354,7 @@ public class CollisionManager {
 
     //checks if the max and min points on the given direction axis overlap, returns the overlap
     //this function is the variation for checking TWO polygons
-    private Vector isSeparatingAxis(Vector axis, Vector[] firstEntityVertices, Vector[] secondEntityVertices){
+    private static Vector isSeparatingAxis(Vector axis, Vector[] firstEntityVertices, Vector[] secondEntityVertices){
         float firstEntityMinLength = Float.POSITIVE_INFINITY;
         float firstEntityMaxLength = Float.NEGATIVE_INFINITY;
 
@@ -393,7 +392,7 @@ public class CollisionManager {
     //circle's nearest point to the circle is in nearSidePoint
     //checks if the max point on the second entity and the point on the circle closest to
     //the polygon overlap, returns the overlap
-    private Vector isSeparatingAxis(Vector axis, Vector nearSidePoint, Vector[] secondEntityVertices){
+    private static Vector isSeparatingAxis(Vector axis, Vector nearSidePoint, Vector[] secondEntityVertices){
         float firstEntityMaxLength = Float.NEGATIVE_INFINITY;
 
         float projection;
@@ -417,7 +416,7 @@ public class CollisionManager {
 
     //Returns the unit normals for the given edges.
     //Rotated anticlockwise, so assumes the edges given cycle clockwise around a shape
-    private Vector[] getEdgeNormals(ArrayList<Vector> edges){
+    private static Vector[] getEdgeNormals(ArrayList<Vector> edges){
         Vector[] orthogonals = new Vector[edges.size()];
 
         for (int i = 0; i < edges.size(); i++){
@@ -429,7 +428,7 @@ public class CollisionManager {
     //joins the vertices together to form edge vectors.
     //joins the last and the first vertex to form a closed shape
     //if the shape is a rectangle, only the orthogonal edges are returned
-    private ArrayList<Vector> getEdges(ShapeIdentifier shapeIdentifier, Point[] vertices){
+    private static ArrayList<Vector> getEdges(ShapeIdentifier shapeIdentifier, Point[] vertices){
         ArrayList<Vector> edges = new ArrayList<>();
 
         if (shapeIdentifier != ShapeIdentifier.RECT) {
@@ -448,7 +447,7 @@ public class CollisionManager {
 
     //Separating axis theorem for two polygons
     //returns the overlap or the empty vector
-    private Vector collisionCheckTwoPolygons(Polygon polygon1, Polygon polygon2){
+    public static Vector collisionCheckTwoPolygons(Polygon polygon1, Polygon polygon2){
         Point[] firstEntityVertices = polygon1.getVertices();
         Point[] secondEntityVertices = polygon2.getVertices();
 
@@ -484,7 +483,7 @@ public class CollisionManager {
 
     //checks that two circles are not intersecting by checking the distance between radii,
     //returns the overlap or the empty vector (if they dont overlap)
-    private Vector collisionCheckTwoCircles(Circle circle1, Circle circle2){
+    public static Vector collisionCheckTwoCircles(Circle circle1, Circle circle2){
         Vector center2ToCenter1 = new Vector(circle2.getCenter(), circle1.getCenter());
         float distanceBetweenCenters = center2ToCenter1.getLength();
         float radiiSum = circle1.getRadius() + circle2.getRadius();
@@ -497,7 +496,7 @@ public class CollisionManager {
     //checks if a collision has occurred between a circle and a polygon.
     //not too accurate but functional.
     //returns the overlap or the empty vector (if there is no overlap)
-    private Vector collisionCheckCircleAndPolygon(Circle circle, Polygon polygon){
+    public static Vector collisionCheckCircleAndPolygon(Circle circle, Polygon polygon){
         //vector from circle center to polygon center
         Vector vectorBetweenCenters = new Vector(circle.getCenter(), polygon.getCenter());
         //Point on circle circumference closest to polygon

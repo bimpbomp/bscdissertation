@@ -71,14 +71,14 @@ public class Grid {
     private void insertEntityAtGridPosition(int column, int row, Entity entity){
         //if grid column hasn't been accessed before, initialise it before adding entity
         if (!grid.containsKey(column)){
-            grid.put(column, new TreeMap<Integer, ArrayList<Entity>>());
+            grid.put(column, new TreeMap<>());
         }
 
         TreeMap<Integer, ArrayList<Entity>> rowMap = grid.get(column);
 
         //if grid row at the given column hasn't been accessed before, initialise it before adding entity
         if (!rowMap.containsKey(row)){
-            rowMap.put(row, new ArrayList<Entity>());
+            rowMap.put(row, new ArrayList<>());
         }
 
         //add entity to bin

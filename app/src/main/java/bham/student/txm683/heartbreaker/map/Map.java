@@ -19,7 +19,7 @@ public class Map {
     private Point playerSpawnLocation;
     private ArrayList<Point> staticSpawns;
 
-    private Graph aiGraph;
+    private Graph<Tile> aiGraph;
 
     private int tileSize;
 
@@ -29,7 +29,7 @@ public class Map {
         staticSpawns = new ArrayList<>();
         this.tileSize = 0;
 
-        this.aiGraph = new Graph();
+        this.aiGraph = new Graph<>();
     }
 
     private void initTestMap(String name){
@@ -151,7 +151,7 @@ public class Map {
         return new Tile(x,y);
     }
 
-    public Graph getAiGraph() {
+    public Graph<Tile> getAiGraph() {
         return aiGraph;
     }
 

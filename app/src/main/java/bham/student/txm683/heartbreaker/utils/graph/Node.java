@@ -1,77 +1,60 @@
 package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.Nullable;
-import bham.student.txm683.heartbreaker.utils.Tile;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Node {
-    Tile coordinates;
+public class Node<T> {
+    T nodeID;
 
-    List<Edge> connections;
+    List<Edge<T>> connections;
 
-    public Node(){
-
-    }
-
-    public Node(Tile coordinates){
+    public Node(T nodeID){
         this.connections = new ArrayList<>();
 
-        this.coordinates = coordinates;
+        this.nodeID = nodeID;
     }
 
-    void addConnection(Edge newConnection){
+    void addConnection(Edge<T> newConnection){
         this.connections.add(newConnection);
     }
 
-    public List<Edge> getConnections() {
+    public List<Edge<T>> getConnections() {
         return connections;
     }
 
     public List<Node> getNeighbours(){
         ArrayList<Node> neighbours = new ArrayList<>();
 
-        for (Edge connection : connections){
+        for (Edge<T> connection : connections){
             neighbours.add(connection.traverse(this));
         }
         return neighbours;
     }
 
-    public int costToNeighbour(Node neighbour){
-        for (Edge connection : connections){
+    public int costToNeighbour(Node<T> neighbour){
+        for (Edge<T> connection : connections){
             if (connection.hasNode(neighbour))
                 return connection.getWeight();
         }
         return 0;
     }
 
-    public boolean isConnectedToNode(Node node){
-        for (Edge connection : connections){
+    public boolean isConnectedToNode(Node<T> node){
+        for (Edge<T> connection : connections){
             if (connection.hasNode(node))
                 return true;
         }
         return false;
     }
 
-    public int getX(){
-        return coordinates.getX();
+    public T getNodeID() {
+        return nodeID;
     }
 
-    public int getY(){
-        return coordinates.getY();
-    }
-
-    public String getName(){
-        return coordinates.toString();
-    }
-
-    public Tile getCoordinates() {
-        return coordinates;
-    }
-
-    public void setCoordinates(Tile coordinates) {
-        this.coordinates = coordinates;
+    public void setNodeID(T nodeID) {
+        this.nodeID = nodeID;
     }
 
     @Override
@@ -82,6 +65,6 @@ public class Node {
         if (!(obj instanceof Node))
             return false;
 
-        return ((Node) obj).coordinates.equals(this.coordinates);
+        return ((Node) obj).nodeID.equals(this.nodeID);
     }
 }

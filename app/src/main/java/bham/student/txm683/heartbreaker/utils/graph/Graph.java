@@ -1,61 +1,49 @@
 package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.NonNull;
-import bham.student.txm683.heartbreaker.utils.Tile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Graph {
-    private Map<String, Node> nodes;
+public class Graph <T> {
+    private Map<T, Node<T>> nodes;
 
     public Graph(){
         this.nodes = new HashMap<>();
     }
 
-    public Node addNode(Tile coordinates){
-        Node newNode;
-        if (!nodes.containsKey(coordinates.toString())){
-            newNode = new Node(coordinates);
-            nodes.put(coordinates.toString(), newNode);
+    public Node<T> addNode(T id){
+        Node<T> newNode;
+        if (!nodes.containsKey(id)){
+            newNode = new Node<>(id);
+
+            nodes.put(id, newNode);
             return newNode;
         }
 
         return null;
     }
 
-    public Edge addConnection(Node first, Node second, int weight){
-        Edge connection = new Edge(first, second, weight);
+    public Edge<T> addConnection(Node<T> first, Node<T> second, int weight){
+        Edge<T> connection = new Edge<>(first, second, weight);
 
         first.addConnection(connection);
         second.addConnection(connection);
 
-        /*if (nodes.containsKey(first.getCoordinates()) && nodes.containsKey(second.getCoordinates())) {
-            Log.d("hb::Graph", "adding edge between " + first.getCoordinates().toString() + " and " + second.getCoordinates().toString());
-            first = nodes.get(first.getCoordinates());
-            second = nodes.get(second.getCoordinates());
-
-            Edge connection = new Edge(first, second, weight);
-
-            first.addConnection(connection);
-            second.addConnection(connection);
-
-            return connection;
-        }*/
-        return null;
+        return connection;
     }
 
-    public Node getNode(Tile coordinates){
-        return this.nodes.containsKey(coordinates.toString()) ? nodes.get(coordinates.toString()) : null;
+    public Node<T> getNode(T requestedID){
+        return this.nodes.containsKey(requestedID) ? nodes.get(requestedID) : null;
     }
 
-    public ArrayList<Node> getNodes(){
+    public ArrayList<Node<T>> getNodes(){
         return new ArrayList<>(this.nodes.values());
     }
 
-    public boolean containsNode(Tile coordinates){
-        return nodes.containsKey(coordinates.toString());
+    public boolean containsNode(T id){
+        return nodes.containsKey(id);
     }
 
     @NonNull
@@ -64,14 +52,14 @@ public class Graph {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Graph\n");
 
-        for (Node node : nodes.values()){
+        for (Node<T> node : nodes.values()){
             stringBuilder.append("Node ");
-            stringBuilder.append(node.getCoordinates().toString());
+            stringBuilder.append(node.getNodeID().toString());
 
             if (node.getConnections().size() > 0){
                 stringBuilder.append(" has neighbours: ");
-                for (Edge connection : node.getConnections()){
-                    stringBuilder.append(connection.traverse(node).getCoordinates().toString());
+                for (Edge<T> connection : node.getConnections()){
+                    stringBuilder.append(connection.traverse(node).getNodeID().toString());
                     stringBuilder.append(" (");
                     stringBuilder.append(connection.getWeight());
                     stringBuilder.append("), ");

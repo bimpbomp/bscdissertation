@@ -22,7 +22,7 @@ public class AIManager {
 
     private MoveableEntity controlledEntity;
     private LevelState levelState;
-    private Graph aiGraph;
+    private Graph<Tile> aiGraph;
     private Vector movementVector;
     public Tile[] path;
 
@@ -80,36 +80,36 @@ public class AIManager {
             return 1; });
 
         //each key is the tile coordinate of a node. It's value is the gcost spent to get to that node from the start
-        HashMap<String, Integer> costSoFar = new HashMap<>();
+        HashMap<Tile, Integer> costSoFar = new HashMap<>();
 
         //each key is the tile coordinate of a node, it's value is the 'parent' of this node.
         //i.e. the node that comes before the key node in the path
-        HashMap<String, String> cameFrom = new HashMap<>();
+        HashMap<Tile, Tile> cameFrom = new HashMap<>();
 
         startNode.setCosts(0,0,0);
 
         //initialise sets by adding the start node with 0 costs
         openSet.add(startNode);
-        costSoFar.put(startNode.getName(), 0);
+        costSoFar.put(startNode.getNodeID(), 0);
         //has a value of start node so the tracePath algorithm knows when to stop backtracking
-        cameFrom.put(startNode.getName(), startNode.getName());
+        cameFrom.put(startNode.getNodeID(), startNode.getNodeID());
 
         while (!openSet.isEmpty()){
 
             NodeWrapper current = openSet.poll();
 
-            for (Edge connection : current.getConnections()){
+            for (Edge<Tile> connection : current.getConnections()){
                 NodeWrapper next = new NodeWrapper(connection.traverse(current));
 
-                Log.d(TAG, "current: " + current.getName() + " next: " + next.getName());
+                Log.d(TAG, "current: " + current.getNodeID() + " next: " + next.getNodeID());
 
                 //if the next node is the target, add it to the cameFrom map and return the path generated
                 //by tracePath
                 if (targetNode.equals(next)){
                     Log.d(TAG, "Target Reached!");
 
-                    cameFrom.put(next.getName(), current.getName());
-                    return tracePath(cameFrom, targetNode.getName());
+                    cameFrom.put(next.getNodeID(), current.getNodeID());
+                    return tracePath(cameFrom, targetNode.getNodeID());
                 }
 
                 //the calculated costs for the next node
@@ -119,17 +119,17 @@ public class AIManager {
 
                 //If the node hasn't been visited before, or the cost to get to this node is cheaper than the already stored cost
                 //add it to all tracking sets
-                if (!costSoFar.containsKey(next.getName()) || costSoFar.get(next.getName()) > gCostToNext) {
+                if (!costSoFar.containsKey(next.getNodeID()) || costSoFar.get(next.getNodeID()) > gCostToNext) {
 
                     next.setCosts(fCostToNext, gCostToNext, hCostToNext);
 
-                    costSoFar.put(next.getName(), gCostToNext);
+                    costSoFar.put(next.getNodeID(), gCostToNext);
                     openSet.add(next);
-                    cameFrom.put(next.getName(), current.getName());
+                    cameFrom.put(next.getNodeID(), current.getNodeID());
                 }
             }
         }
-        return tracePath(cameFrom, targetNode.getName());
+        return tracePath(cameFrom, targetNode.getNodeID());
     }
 
     private boolean canSeeTarget(){
@@ -142,13 +142,13 @@ public class AIManager {
      * @param targetNodeName The name of the targeted node (the destination)
      * @return A Tile array containing the path to take, in order
      */
-    private Tile[] tracePath(HashMap<String, String> cameFrom, String targetNodeName){
+    private Tile[] tracePath(HashMap<Tile, Tile> cameFrom, Tile targetNodeName){
 
         if (cameFrom.containsKey(targetNodeName)){
-            Stack<String> path = new Stack<>();
+            Stack<Tile> path = new Stack<>();
 
-            String previous = targetNodeName;
-            String current = cameFrom.get(previous);
+            Tile previous = targetNodeName;
+            Tile current = cameFrom.get(previous);
 
             path.push(previous);
 
@@ -163,20 +163,13 @@ public class AIManager {
                 }
             }
 
-            StringBuilder pathString = new StringBuilder();
             ArrayList<Tile> pathArray = new ArrayList<>();
 
             while (!path.empty()){
-                String nextStep = path.pop();
-                pathString.append(nextStep);
-                pathString.append(" -> ");
+                Tile nextStep = path.pop();
 
-                pathArray.add(new Tile(nextStep));
+                pathArray.add(nextStep);
             }
-            int i = pathString.lastIndexOf(" -> ");
-            pathString.setLength(pathString.length()- (pathString.length()- i));
-
-            Log.d(TAG, "PATH: " + pathString.toString());
             return pathArray.toArray(new Tile[0]);
 
         } else {
@@ -185,10 +178,10 @@ public class AIManager {
         }
     }
 
-    private int calculateEuclideanHeuristic(Node currentNode, Node targetNode){
+    private int calculateEuclideanHeuristic(Node<Tile> currentNode, Node<Tile> targetNode){
         return (int) Math.sqrt(
-                Math.pow(targetNode.getX() - currentNode.getX(), 2) +
-                Math.pow(targetNode.getY() - currentNode.getY(), 2)
+                Math.pow(targetNode.getNodeID().getX() - currentNode.getNodeID().getX(), 2) +
+                Math.pow(targetNode.getNodeID().getY() - currentNode.getNodeID().getY(), 2)
         );
     }
 }

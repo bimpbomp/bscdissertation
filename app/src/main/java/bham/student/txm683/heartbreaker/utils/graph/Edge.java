@@ -2,13 +2,13 @@ package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.NonNull;
 
-public class Edge {
-    private Node firstNode;
-    private Node secondNode;
+public class Edge <T>{
+    private Node<T> firstNode;
+    private Node<T> secondNode;
 
     private int weight;
 
-    Edge(Node firstNode, Node secondNode, int weight){
+    public Edge(Node<T> firstNode, Node<T> secondNode, int weight){
         this.firstNode = firstNode;
         this.secondNode = secondNode;
 
@@ -20,7 +20,7 @@ public class Edge {
      * @param startNode Node at one end of edge.
      * @return Node at other end of edge, or null if startNode isn't one of the connectedNodes
      */
-    public Node traverse(Node startNode){
+    public Node<T> traverse(Node<T> startNode){
         if (startNode.equals(firstNode))
             return secondNode;
         else if (startNode.equals(secondNode))
@@ -29,7 +29,7 @@ public class Edge {
         return null;
     }
 
-    public boolean hasNode(Node node){
+    public boolean hasNode(Node<T> node){
         return (node.equals(firstNode) || node.equals(secondNode));
     }
 
@@ -41,8 +41,8 @@ public class Edge {
     @Override
     public String toString() {
         return "Edge{" +
-                "firstNode=" + firstNode.getCoordinates().toString() +
-                ", secondNode=" + secondNode.getCoordinates().toString() +
+                "firstNode=" + firstNode.getNodeID().toString() +
+                ", secondNode=" + secondNode.getNodeID().toString() +
                 ", weight=" + weight +
                 '}';
     }

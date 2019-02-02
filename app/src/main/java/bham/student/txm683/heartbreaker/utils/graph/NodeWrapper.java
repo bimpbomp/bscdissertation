@@ -1,13 +1,14 @@
 package bham.student.txm683.heartbreaker.utils.graph;
 
-public class NodeWrapper extends Node{
-    private NodeWrapper parent;
+import bham.student.txm683.heartbreaker.utils.Tile;
+
+public class NodeWrapper extends Node<Tile>{
     private int fCost;
     private int gCost;
     private int hCost;
 
-    public NodeWrapper(Node node){
-        super(node.coordinates);
+    public NodeWrapper(Node<Tile> node){
+        super(node.nodeID);
         this.connections = node.connections;
     }
 
@@ -15,18 +16,6 @@ public class NodeWrapper extends Node{
         this.fCost = f;
         this.gCost = g;
         this.hCost = h;
-    }
-
-    public NodeWrapper getParent() {
-        return parent;
-    }
-
-    public boolean hasParent(){
-        return parent != null;
-    }
-
-    public void setParent(NodeWrapper parent) {
-        this.parent = parent;
     }
 
     public int getfCost() {
