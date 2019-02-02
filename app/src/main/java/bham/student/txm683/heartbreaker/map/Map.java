@@ -109,7 +109,7 @@ public class Map {
     private void initAIGraph(int[][] mapTiles){
         int currentTileValue;
         Tile currentNodeTile;
-        Node currentNode;
+        Node<Tile> currentNode;
 
         //iterate over each cell
         for (int row = 0; row < mapTiles.length; row++) {
@@ -155,7 +155,7 @@ public class Map {
         return aiGraph;
     }
 
-    private void checkAdjacentCell(Node currentNode, int[][] mapTiles, int row, int column){
+    private void checkAdjacentCell(Node<Tile> currentNode, int[][] mapTiles, int row, int column){
         //if the adjacent cell exists, and isn't a static
         //create a node for it if one doesn't already exist
         //and connect that adjacent node to the current node if
@@ -169,7 +169,7 @@ public class Map {
                 /*Node adjacentNode = aiGraph.containsNode(adjacentNodeTile) ? aiGraph.getNode(adjacentNodeTile)
                         : aiGraph.addNode(adjacentNodeTile);*/
 
-                Node adjacentNode;
+                Node<Tile> adjacentNode;
                 if (aiGraph.containsNode(adjacentNodeTile)){
                     adjacentNode = aiGraph.getNode(adjacentNodeTile);
                 } else {

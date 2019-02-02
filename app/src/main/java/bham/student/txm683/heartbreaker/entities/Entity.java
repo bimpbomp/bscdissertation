@@ -8,6 +8,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.*;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -177,5 +178,18 @@ public class Entity implements SaveableState {
 
     public EntityShape getShape(){
         return this.shape;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Entity entity = (Entity) o;
+        return name.equals(entity.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(13, 43).append(name).toHashCode();
     }
 }

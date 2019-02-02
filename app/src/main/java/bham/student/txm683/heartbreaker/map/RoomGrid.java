@@ -6,16 +6,24 @@ import bham.student.txm683.heartbreaker.utils.Tile;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 public class RoomGrid {
-    private Tile[][] defaultTileSet;
+    //tiles in the grid, relative to global tile grid so not guaranteed to start at 0,0
+    private HashSet<Tile> tileSet;
     private int tileSize;
-    private HashMap<Tile, Entity> entitiesInGrid;
 
-    public RoomGrid(Tile[][] defaultTileSet, int tileSize){
-        this.defaultTileSet = defaultTileSet;
+    //entities that wont move or be destroyed
+    private HashMap<Tile, HashSet<Entity>> permanentEntities;
+    //each tile has a bucket for unique entities
+    private HashMap<Tile, HashSet<Entity>> entitiesInGrid;
+
+    public RoomGrid(List<Tile> tileSet, int tileSize){
+        this.tileSet = new HashSet<>(tileSet);
         this.tileSize = tileSize;
+
+        this.permanentEntities = new HashMap<>();
+
         this.entitiesInGrid = new HashMap<>();
     }
 
@@ -26,17 +34,23 @@ public class RoomGrid {
     public void addEntity(Entity entity){
         Point[] vertices = entity.getShape().getCollisionVertices();
 
-        //contains unique grid references
-        Set<Tile> addedGridReferences = new HashSet<>();
-
-        //adds entities vertices to grid
+        //adds entities vertices to tiles that it's vertices exist in
         for (Point point : vertices){
-
+            Tile mappedPoint = mapGlobalPointToTile(point);
+            if (tileSet.contains(mappedPoint)){
+                if (entitiesInGrid.get(mappedPoint) != null)
+                    entitiesInGrid.get(mappedPoint).add(entity);
+                else {
+                    HashSet<Entity> set = new HashSet<>();
+                    set.add(entity);
+                    entitiesInGrid.put(mappedPoint, set);
+                }
+            }
         }
+    }
 
-
-        for (Tile gridReference : addedGridReferences){
-            if (gridReference)
-        }
+    public Tile mapGlobalPointToTile(Point globalCoordinate){
+        return new Tile((int) Math.floor(globalCoordinate.getX()/tileSize),
+                (int) Math.floor(globalCoordinate.getY()/tileSize));
     }
 }

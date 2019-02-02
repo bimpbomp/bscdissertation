@@ -36,6 +36,10 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.8'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.8'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+
+    // https://mvnrepository.com/artifact/commons-lang/commons-lang
+    implementation group: 'commons-lang', name: 'commons-lang', version: '2.6'
+
     implementation 'org.json:json:20180813'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

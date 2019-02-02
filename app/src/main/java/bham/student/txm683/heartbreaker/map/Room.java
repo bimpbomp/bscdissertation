@@ -11,8 +11,8 @@ public class Room {
     private Perimeter perimeter;
     private RoomGrid roomGrid;
 
-    public Room(){
-
+    public Room(int id){
+        this.id = id;
     }
 
     /**

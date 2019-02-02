@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class Tile {
 
@@ -36,6 +37,11 @@ public class Tile {
             return false;
 
         return (x == ((Tile) obj).x) && (y == ((Tile) obj).y);
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(7, 41).append(x).append(y).toHashCode();
     }
 
     @NonNull
