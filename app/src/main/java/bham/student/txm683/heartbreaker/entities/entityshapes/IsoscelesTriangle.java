@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
+import bham.student.txm683.heartbreaker.physics.CollisionOutline;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -25,6 +26,7 @@ public class IsoscelesTriangle extends Polygon {
         this.vertexVectors[2] = new Vector(geometricCenter, new Point(geometricCenter.getX() - (width / 2), baseY));
 
         setForwardUnitVector();
+        this.collisionOutline = new CollisionOutline(vertexVectors);
     }
 
     public IsoscelesTriangle(String jsonString) throws JSONException {
@@ -65,7 +67,7 @@ public class IsoscelesTriangle extends Polygon {
 
     @Override
     public Point[] getCollisionVertices() {
-        return getVertices();
+        return getRenderVertices();
     }
 
     @Override

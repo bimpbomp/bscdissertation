@@ -1,34 +1,42 @@
 package bham.student.txm683.heartbreaker.ai;
 
-import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.entities.MoveableEntity;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
-import bham.student.txm683.heartbreaker.utils.Vector;
-import bham.student.txm683.heartbreaker.utils.graph.Graph;
-import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Stack;
+import java.util.List;
 
 
 public class AIManager {
     private static final String TAG = "hb::AIManager";
-
-    private MoveableEntity controlledEntity;
     private LevelState levelState;
-    private Graph<Tile> aiGraph;
-    private Vector movementVector;
-    public Tile[] path;
 
-    public AIManager(MoveableEntity controlledEntity, LevelState levelState){
-        this.controlledEntity = controlledEntity;
+    private List<AIEntity> controlledAI;
+
+    public AIManager(LevelState levelState, ArrayList<AIEntity> ais){
         this.levelState = levelState;
+        this.controlledAI = new ArrayList<>();
+
+        for (AIEntity ai : ais){
+            addAI(ai);
+        }
     }
 
-    public void update(float secondsSinceLastGameTick, Point playerPosition){
+    public void addAI(AIEntity newAI){
+        if (!controlledAI.contains(newAI)) {
+            newAI.chase(levelState.getPlayer());
+            this.controlledAI.add(newAI);
+        }
+    }
+
+    public void update(float secondsSinceLastGameTick){
+        if (!levelState.getDebugInfo().isAIActivated())
+            return;
+
+        for (AIEntity aiEntity : controlledAI){
+            aiEntity.update();
+            aiEntity.move(secondsSinceLastGameTick);
+        }
+
         /*if (!levelState.getDebugInfo().isAIActivated()){
             return;
         }
@@ -133,52 +141,5 @@ public class AIManager {
         return false;
     }
 
-    /**
-     * Constructs a path for the AI to take to get to it's target
-     * @param cameFrom A map containing the visited nodes, and their parents
-     * @param targetNodeName The name of the targeted node (the destination)
-     * @return A Tile array containing the path to take, in order
-     */
-    private Tile[] tracePath(HashMap<Tile, Tile> cameFrom, Tile targetNodeName){
 
-        if (cameFrom.containsKey(targetNodeName)){
-            Stack<Tile> path = new Stack<>();
-
-            Tile previous = targetNodeName;
-            Tile current = cameFrom.get(previous);
-
-            path.push(previous);
-
-            while (!current.equals(previous)){
-
-                path.push(current);
-                previous = current;
-                try {
-                    current = cameFrom.get(previous);
-                } catch (NullPointerException e){
-                    return new Tile[0];
-                }
-            }
-
-            ArrayList<Tile> pathArray = new ArrayList<>();
-
-            while (!path.empty()){
-                Tile nextStep = path.pop();
-
-                pathArray.add(nextStep);
-            }
-            return pathArray.toArray(new Tile[0]);
-
-        } else {
-            Log.d(TAG, "target node " + targetNodeName + " not in provided map in tracePath");
-            return new Tile[0];
-        }
-    }
-
-    private int calculateEuclideanHeuristic(Node<Tile> currentNode, Node<Tile> targetNode){
-        return (int) Math.sqrt(
-                Math.pow(targetNode.getNodeID().getX() - currentNode.getNodeID().getX(), 2) +
-                Math.pow(targetNode.getNodeID().getY() - currentNode.getNodeID().getY(), 2)
-        );
-    }
 }

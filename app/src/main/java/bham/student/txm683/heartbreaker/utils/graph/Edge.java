@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.NonNull;
+import android.util.Pair;
 
 public class Edge <T>{
     private Node<T> firstNode;
@@ -27,6 +28,10 @@ public class Edge <T>{
             return firstNode;
 
         return null;
+    }
+
+    public Pair<Node<T>, Node<T>> getConnectedNodes(){
+        return new Pair<>(firstNode, secondNode);
     }
 
     public boolean hasNode(Node<T> node){

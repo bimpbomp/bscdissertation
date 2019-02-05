@@ -3,7 +3,6 @@ package bham.student.txm683.heartbreaker.map;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.EnemyType;
 import bham.student.txm683.heartbreaker.entities.Door;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
@@ -23,10 +22,12 @@ public class Map {
     private List<Point> staticEntities;
     private List<Pair<EnemyType, Point>> enemies;
 
-    private HashMap<Integer, Perimeter> roomPerimeters;
+    private HashMap<Integer, Room> rooms;
 
     private RoomGraph roomGraph;
     private List<Door> doors;
+
+    private HashMap<Integer, RoomGrid> roomGrids;
 
     public Map(String name, int tileSize){
         this.name = name;
@@ -70,8 +71,8 @@ public class Map {
         this.enemies = enemies;
     }
 
-    public void setRoomPerimeters(HashMap<Integer, Perimeter> roomPerimeters) {
-        this.roomPerimeters = roomPerimeters;
+    public void setRooms(HashMap<Integer, Room> rooms) {
+        this.rooms = rooms;
     }
 
     public void setRoomGraph(RoomGraph roomGraph) {
@@ -94,8 +95,8 @@ public class Map {
         return enemies;
     }
 
-    public HashMap<Integer, Perimeter> getRoomPerimeters() {
-        return roomPerimeters;
+    public HashMap<Integer, Room> getRoomPerimeters() {
+        return rooms;
     }
 
     public RoomGraph getRoomGraph() {
@@ -120,5 +121,17 @@ public class Map {
 
     public void setHeightInTiles(int heightInTiles) {
         this.heightInTiles = heightInTiles;
+    }
+
+    public HashMap<Integer, Room> getRooms() {
+        return rooms;
+    }
+
+    public HashMap<Integer, RoomGrid> getRoomGrids() {
+        return roomGrids;
+    }
+
+    public void setRoomGrids(HashMap<Integer, RoomGrid> roomGrids) {
+        this.roomGrids = roomGrids;
     }
 }

@@ -171,16 +171,6 @@ public abstract class EntityShape implements SaveableState {
         return (float) Math.atan2(det, dot);
     }
 
-    Vector rotateVertexVector(Vector vectorToRotate, float cosAngle, float sinAngle){
-        if (!vectorToRotate.isFromOrigin()){
-            vectorToRotate = vectorToRotate.translate(geometricCenter.smult(-1));
-            vectorToRotate = vectorToRotate.rotate(cosAngle, sinAngle);
-            return vectorToRotate.translate(geometricCenter);
-        } else {
-            return vectorToRotate.rotate(cosAngle, sinAngle);
-        }
-    }
-
     public Point getCenter(){
         return geometricCenter;
     }

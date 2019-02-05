@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
+import bham.student.txm683.heartbreaker.physics.CollisionOutline;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -23,6 +24,7 @@ public class Kite extends Polygon {
         vertexVectors[3] = new Vector(geometricCenter, new Point(geometricCenter.getX()-halfWidth, geometricCenter.getY()));
 
         this.forwardUnitVector = new Vector(geometricCenter, new Point(geometricCenter.getX(), geometricCenter.getY()-1));
+        this.collisionOutline = new CollisionOutline(vertexVectors);
     }
 
     public Kite(String stateString) throws JSONException{

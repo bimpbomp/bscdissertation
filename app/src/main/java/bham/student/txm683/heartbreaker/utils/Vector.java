@@ -62,6 +62,10 @@ public class Vector implements SaveableState {
         yRelativeToTail = head.getY() - tail.getY();
     }
 
+    public Vector(Tile tail, Tile head){
+        this(new Point(tail), new Point(head));
+    }
+
     public Vector(JSONObject jsonObject) throws JSONException{
         this(new Point((JSONObject)jsonObject.get("tail")), new Point((JSONObject)jsonObject.get("head")));
     }
@@ -268,5 +272,13 @@ public class Vector implements SaveableState {
         jsonObject.put("head", head.getStateObject());
         jsonObject.put("tail", tail.getStateObject());
         return jsonObject;
+    }
+
+    public static Point[] getVertices(Vector[] vertexVectors) {
+        Point[] vertices = new Point[vertexVectors.length];
+        for (int i = 0; i < vertexVectors.length; i++){
+            vertices[i] = vertexVectors[i].getHead();
+        }
+        return vertices;
     }
 }

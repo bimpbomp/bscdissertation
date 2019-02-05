@@ -5,6 +5,7 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
+import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.EntityShape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
@@ -74,7 +75,7 @@ public class CollisionManager {
             broadPhaseGrid.addEntityToGrid(entity);
         }
 
-        for (Entity entity : levelState.getStaticEntities()){
+        for (Entity entity : levelState.getStaticEntities().values()){
             broadPhaseGrid.addEntityToGrid(entity);
         }
 
@@ -153,7 +154,7 @@ public class CollisionManager {
 
                             if (firstEntity.canMove() && secondEntity.canMove()) {
 
-                                if (firstEntity.hasAttacked()){
+                                if (firstEntity.hasAttacked() && firstEntity instanceof Player){
                                     Log.d(TAG, firstEntity.getName() + " has attacked");
 
                                     Vector firstForwardVector = firstEntity.getShape().getForwardUnitVector();
@@ -162,13 +163,13 @@ public class CollisionManager {
 
                                     Log.d(TAG, firstEntity.getName() + "'s forward vector has a dot product of " + dotProduct + " with the push vector");
 
-                                    //if the second entity is within a 45 degree sector either side of the forward vector,
+                                    /*//if the second entity is within a 45 degree sector either side of the forward vector,
                                     //the attack is classed as a hit.
                                     if (dotProduct - 0.001f < 1f && dotProduct >= 0.7f){
-                                        Log.d(TAG, secondEntity.getName() + " damaged by " + firstEntity.getName() + " with damage " + ((MoveableEntity) firstEntity).getDamageFromMeleeAttack());
-                                         if (((MoveableEntity) secondEntity).damage(((MoveableEntity) firstEntity).getDamageFromMeleeAttack()))
+                                        Log.d(TAG, secondEntity.getName() + " damaged by " + firstEntity.getName() + " with damage " + ((Player) firstEntity).getDamageFromMeleeAttack());
+                                         if (((MoveableEntity) secondEntity).damage(((Player) firstEntity).getDamageFromMeleeAttack()))
                                              deadEntities.add((MoveableEntity)secondEntity);
-                                    }
+                                    }*/
                                 }
                                 //resolve collisions with any statics that share a cell with either entity
                                 isEntityAbleToBePushed(firstEntity, binGridReference, true);
@@ -232,23 +233,26 @@ public class CollisionManager {
             }
         }
 
-        if (levelState.getPlayer().hasAttacked()) {
+        /*if (levelState.getPlayer().hasAttacked()) {
             levelState.getPlayer().resetAttack();
         }
         if (levelState.getPlayer().getAttackCooldown() > 0)
             levelState.getPlayer().tickCooldown();
 
         for (MoveableEntity entity : levelState.getEnemyEntities()){
-            if (entity.hasAttacked())
-                entity.resetAttack();
+            if (entity instanceof Player) {
+                Player player = (Player) entity;
+                if (player.hasAttacked())
+                    player.resetAttack();
 
-            if (entity.getAttackCooldown() > 0)
-                entity.tickCooldown();
-        }
+                if (player.getAttackCooldown() > 0)
+                    player.tickCooldown();
+            }
+        }*/
 
-        for (MoveableEntity entity : deadEntities){
+        /*for (MoveableEntity entity : deadEntities){
             levelState.removeEnemy(entity);
-        }
+        }*/
 
         collidedLastTick = currentTickCollidedPairs;
     }
@@ -448,8 +452,8 @@ public class CollisionManager {
     //Separating axis theorem for two polygons
     //returns the overlap or the empty vector
     public static Vector collisionCheckTwoPolygons(Polygon polygon1, Polygon polygon2){
-        Point[] firstEntityVertices = polygon1.getVertices();
-        Point[] secondEntityVertices = polygon2.getVertices();
+        Point[] firstEntityVertices = polygon1.getRenderVertices();
+        Point[] secondEntityVertices = polygon2.getRenderVertices();
 
         ArrayList<Vector> edges = new ArrayList<>(getEdges(polygon1.getShapeIdentifier(), firstEntityVertices));
         edges.addAll(getEdges(polygon2.getShapeIdentifier(), secondEntityVertices));

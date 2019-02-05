@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Path;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import bham.student.txm683.heartbreaker.physics.CollisionOutline;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONArray;
@@ -19,6 +20,9 @@ public abstract class Polygon extends EntityShape {
     float contractionHeight;
     float contractionWidth;
 
+    CollisionOutline collisionOutline;
+    //boolean shapeDifference;
+
     public Polygon(Point center, float width, float height, int colorValue, ShapeIdentifier shapeIdentifier){
         super(center, colorValue, shapeIdentifier);
 
@@ -27,6 +31,8 @@ public abstract class Polygon extends EntityShape {
 
         this.contractionHeight = height;
         this.contractionWidth = width;
+
+        //this.shapeDifference = false;
     }
 
     public Polygon(String jsonString, ShapeIdentifier shapeIdentifier) throws JSONException {
@@ -55,7 +61,7 @@ public abstract class Polygon extends EntityShape {
 
         if (interpolationVector.equals(new Vector())) {
             //Log.d(TAG+":draw", "zero interpol vector");
-            path = getPathWithPoints(getVertices(renderOffset));
+            path = getPathWithPoints(getRenderVertices(renderOffset));
         } else {
             //Log.d(TAG+":draw", interpolationVector.toString());
             path = getPathWithPoints(getInterpolatedVertices(interpolationVector, renderOffset));
@@ -86,7 +92,8 @@ public abstract class Polygon extends EntityShape {
 
     @Override
     public Point[] getCollisionVertices() {
-        return getVertices();
+        //return collisionOutline.getCollisionVertices();
+        return getRenderVertices();
     }
 
     private static Path getPathWithPoints(Point[] points){
@@ -103,25 +110,24 @@ public abstract class Polygon extends EntityShape {
         return path;
     }
 
-    public void scaleKeepingRatios(float scaleByProportion){
-        scaleByProportion = Math.abs(scaleByProportion);
+    /*public void resetCollisionOutline(){
+        this.collisionOutline.setVertexVectors(vertexVectors);
+    }*/
 
-        float heightChange = height*scaleByProportion;
-        float widthChange = width*scaleByProportion;
-
-        this.setHeight(heightChange);
-        this.setWidth(widthChange);
+    /**
+     *
+     * @return The vertices of the visible shape in global coordinates
+     */
+    public Point[] getRenderVertices() {
+        return Vector.getVertices(vertexVectors);
     }
 
-    public Point[] getVertices() {
-        Point[] vertices = new Point[vertexVectors.length];
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertices[i] = vertexVectors[i].getHead();
-        }
-        return vertices;
-    }
-
-    public Point[] getVertices(Point renderOffset) {
+    /**
+     *
+     * @param renderOffset Amount to offset the shape's vertices
+     * @return The vertices of the visible shape offset by the given value
+     */
+    public Point[] getRenderVertices(Point renderOffset) {
         Point[] vertices = new Point[vertexVectors.length];
         for (int i = 0; i < vertexVectors.length; i++){
             vertices[i] = vertexVectors[i].getHead().add(renderOffset);
@@ -146,13 +152,17 @@ public abstract class Polygon extends EntityShape {
 
             Point[] interpolatedVertices = new Point[vertexVectors.length];
             for (int i = 0; i < vertexVectors.length; i++){
-                interpolatedVertices[i] = rotateVertexVector(vertexVectors[i], cosAngle, sinAngle).translate(amountToAdd).getHead().add(renderOffset);
+                interpolatedVertices[i] = vertexVectors[i].rotate(cosAngle, sinAngle).translate(amountToAdd).getHead().add(renderOffset);
             }
             return interpolatedVertices;
         }
-        return getVertices(renderOffset);
+        return getRenderVertices(renderOffset);
     }
 
+    /**
+     * Rotates the shape to the direction of the given vector
+     * @param movementVector Vector to align direction with
+     */
     @Override
     public void rotateShape(Vector movementVector){
 
@@ -161,11 +171,11 @@ public abstract class Polygon extends EntityShape {
         float cosAngle = (float) Math.cos(angle);
         float sinAngle = (float) Math.sin(angle);
 
-
         if (!(Math.abs(cosAngle - 1f) < 0.0001f)) {
 
             for (int i = 0; i < vertexVectors.length; i++){
-                vertexVectors[i] = rotateVertexVector(vertexVectors[i], cosAngle, sinAngle);
+                vertexVectors[i] = vertexVectors[i].rotate(cosAngle, sinAngle);
+                //collisionOutline.setVertexVector(collisionOutline.getVertexVector(i).rotate(cosAngle, sinAngle), i);
             }
         }
 
@@ -184,6 +194,7 @@ public abstract class Polygon extends EntityShape {
 
         for (int i = 0; i < vertexVectors.length; i++){
             vertexVectors[i] = vertexVectors[i].translate(amountToTranslate);
+            //collisionOutline.setVertexVector(collisionOutline.getVertexVector(i).translate(amountToTranslate), i);
         }
 
         setForwardUnitVector();
@@ -193,7 +204,7 @@ public abstract class Polygon extends EntityShape {
     @Override
     public String toString() {
         StringBuilder vertices = new StringBuilder();
-        for (Point vertex : getVertices()){
+        for (Point vertex : getRenderVertices()){
             vertices.append(vertex.toString());
             vertices.append(", ");
         }

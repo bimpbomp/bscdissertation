@@ -14,6 +14,7 @@ public class InputManager {
     private Button pauseButton;
 
     private Button meleeButton;
+    private Button rangedButton;
 
     private Button[] debugButtons;
 
@@ -95,8 +96,8 @@ public class InputManager {
 
                     if (thumbstick.hasID(eventID))
                         thumbstick.setActivePosition(coordinatesPressed);
-                    else if (meleeButton.hasID(eventID))
-                        levelState.getPlayer().chargeMelee();
+                    /*else if (meleeButton.hasID(eventID))
+                        levelState.getPlayer().chargeMelee();*/
                 }
                 break;
 
@@ -129,6 +130,8 @@ public class InputManager {
             meleeButton.setPointerID(eventID);
         } else if (pauseButton.containsPoint(coordinatesPressed)){
             pauseButton.setPointerID(eventID);
+        } else if (rangedButton.containsPoint(coordinatesPressed)){
+            rangedButton.setPointerID(eventID);
         }
     }
 
@@ -164,8 +167,11 @@ public class InputManager {
             thumbstick.cancel();
         } else if (meleeButton.hasID(eventID)){
             Log.d(TAG, "up");
-            levelState.getPlayer().meleeAttack();
+            //levelState.getPlayer().meleeAttack();
             meleeButton.cancel();
+        } else if (rangedButton.hasID(eventID)){
+            //levelState.getPlayer(). ;
+            rangedButton.cancel();
         }
 
     }
@@ -174,6 +180,7 @@ public class InputManager {
         if (!levelState.isPaused()) {
             thumbstick.draw(canvas);
 
+            rangedButton.draw(canvas, textPaint);
             meleeButton.draw(canvas, textPaint);
         } else {
             if (debugButtons != null) {
@@ -209,4 +216,6 @@ public class InputManager {
     public void setDebugButtons(Button[] buttons){
         this.debugButtons = buttons;
     }
+
+    public void setRangedButton(Button rangedButton){this.rangedButton = rangedButton;}
 }

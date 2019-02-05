@@ -1,8 +1,9 @@
 package bham.student.txm683.heartbreaker;
 
+import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
-import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.input.InputManager;
+import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.PhysicsController;
@@ -17,8 +18,6 @@ public class Level implements Runnable {
     private InputManager inputManager;
     private PhysicsController physicsController;
     private CollisionManager collisionManager;
-
-    public AIManager aiManager;
 
     private MessageBus messageBus;
 
@@ -56,9 +55,7 @@ public class Level implements Runnable {
 
         nextScheduledGameTick = System.currentTimeMillis();
 
-        MoveableEntity aiEntity = levelState.getEnemyEntities().get(0);
-        aiManager = new AIManager(aiEntity, levelState);
-
+        levelState.setAiManager(new AIManager(levelState, levelState.getEnemyEntities()));
 
         //levelState.setPaused(false);
         while (running){
@@ -73,9 +70,25 @@ public class Level implements Runnable {
 
                     levelState.getPlayer().setMovementVector(inputManager.getThumbstick().getMovementVector());
 
+                    for (Room room : levelState.getMap().getRooms().values()){
+                        if (room.isEntityInRoom(levelState.getPlayer())) {
+                            levelState.getPlayer().setRoomID(room.getId());
+                            break;
+                        }
+                    }
+
+                    for (AIEntity aiEntity : levelState.getEnemyEntities()){
+                        for (Room room : levelState.getMap().getRooms().values()){
+                            if (room.isEntityInRoom(aiEntity)){
+                                aiEntity.setRoomID(room.getId());
+                                break;
+                            }
+                        }
+                    }
+
                     physicsController.update(gameTickTimeStepInMillis / 1000f);
 
-                    aiManager.update(gameTickTimeStepInMillis / 1000f, levelState.getPlayer().getShape().getCenter());
+                    levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
 
                     collisionManager.checkCollisions();
 

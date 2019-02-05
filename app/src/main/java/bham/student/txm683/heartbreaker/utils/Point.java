@@ -24,6 +24,11 @@ public class Point implements SaveableState {
         this.y = y;
     }
 
+    public Point(Tile tile){
+        this.x = tile.getX();
+        this.y = tile.getY();
+    }
+
     public Point(JSONObject jsonObject) throws JSONException{
         this.x = (float) jsonObject.getDouble("x");
         this.y = (float) jsonObject.getDouble("y");

@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 
 
 import android.graphics.Canvas;
+import bham.student.txm683.heartbreaker.physics.CollisionOutline;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 public class Circle extends EntityShape {
 
     private float radius;
+    private CollisionOutline collisionOutline;
 
     public Circle(Point center, float radius, int colorValue){
         super(center, colorValue, ShapeIdentifier.CIRCLE);
@@ -84,7 +86,7 @@ public class Circle extends EntityShape {
     @Override
     public void rotateShape(Vector rotationVector) {
         float angle = calculateAngleBetweenVectors(forwardUnitVector, rotationVector);
-        forwardUnitVector = rotateVertexVector(forwardUnitVector, (float) Math.cos(angle), (float) Math.sin(angle));
+        forwardUnitVector = forwardUnitVector.rotate((float) Math.cos(angle), (float) Math.sin(angle));
     }
 
     @Override

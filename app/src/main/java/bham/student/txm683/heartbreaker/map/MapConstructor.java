@@ -2,18 +2,19 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.EnemyType;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
+import bham.student.txm683.heartbreaker.map.roomGraph.RoomEdge;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.TileBFS;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class MapConstructor {
     private static final String TAG = "hb::MapConstructor";
@@ -37,61 +38,103 @@ public class MapConstructor {
 
     @SuppressLint("UseSparseArrays")
     private void loadTestMap(){
-        RoomGraph roomGraph = new RoomGraph();
-        //initiate room graph
-        roomGraph.addNode(0);
-        roomGraph.addNode(1);
-        roomGraph.addNode(2);
-        roomGraph.addNode(3);
 
-        roomGraph.addConnection(0,1, 0);
-        roomGraph.addConnection(1,2, 1);
-        roomGraph.addConnection(1,3, 2);
+        ArrayList<Perimeter> perimeters = new ArrayList<>();
 
-        HashMap<Integer, Perimeter> roomPerimeters = new HashMap<>();
-        roomPerimeters.put(0, new Perimeter(new Point[]{
+        perimeters.add(new Perimeter(new Point[]{
                 new Point(0,0),
-                new Point(5*tileSize,0),
-                new Point(5*tileSize, 5*tileSize),
-                new Point(0, 5*tileSize)
+                new Point(5,0),
+                new Point(5, 5),
+                new Point(0, 5)
         }, Color.rgb(102, 255, 0)));
 
-        roomPerimeters.put(1, new Perimeter(new Point[]{
-                new Point(4*tileSize,tileSize),
-                new Point(8*tileSize,tileSize),
-                new Point(8*tileSize,11*tileSize),
-                new Point(4*tileSize,11*tileSize)
+        perimeters.add(new Perimeter(new Point[]{
+                new Point(4,1),
+                new Point(8,1),
+                new Point(8,11),
+                new Point(4,11)
         }, Color.rgb(79, 255, 176)));
 
-        roomPerimeters.put(2, new Perimeter(new Point[]{
-                new Point(7*tileSize,0),
-                new Point(12*tileSize,0),
-                new Point(12*tileSize,6*tileSize),
-                new Point(7*tileSize,6*tileSize)
+        perimeters.add(new Perimeter(new Point[]{
+                new Point(7,0),
+                new Point(12,0),
+                new Point(12,6),
+                new Point(7,6)
         }, Color.rgb(173, 255, 47)));
 
-        roomPerimeters.put(3, new Perimeter(new Point[]{
-                new Point(tileSize,7*tileSize),
-                new Point(5*tileSize,7*tileSize),
-                new Point(5*tileSize,13*tileSize),
-                new Point(tileSize,13*tileSize)
+        perimeters.add(new Perimeter(new Point[]{
+                new Point(1,7),
+                new Point(5,7),
+                new Point(5,13),
+                new Point(1,13)
         }, Color.rgb(80, 200, 120)));
+
+        ArrayList<RoomGrid> roomGrids = new ArrayList<>();
+        for (Perimeter perimeter : perimeters){
+            roomGrids.add(new RoomGrid(populateGrid(perimeter), tileSize));
+        }
+
+        HashMap<Integer, Room> rooms = new HashMap<>();
+        int count = 0;
+        for (Perimeter perimeter : perimeters){
+            perimeter.convertToGlobal(tileSize);
+            rooms.put(count, new Room(count, perimeter));
+            count++;
+        }
+
+        RoomGraph roomGraph = new RoomGraph();
+
+        //initiate room graph and grids
+        for (Room room : rooms.values()){
+            roomGraph.addNode(room);
+        }
+
+        ArrayList<Door> doors = new ArrayList<>();
+
+        doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
+                tileSize/2, tileSize, false, Color.BLUE));
+        doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset),
+                tileSize/2, tileSize, false, Color.BLUE));
+        doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset),
+                tileSize/2, tileSize, false, Color.BLUE));
+
+        RoomEdge door0 = roomGraph.addConnection(0,1, doors.get(0));
+        RoomEdge door1 = roomGraph.addConnection(1,2, doors.get(1));
+        RoomEdge door2 = roomGraph.addConnection(1,3,  doors.get(2));
+
+        //add doors to roomgrid's tilesets
+        roomGrids.get(0).addToTileSet(doors.get(0).getSpawnCoordinates());
+        roomGrids.get(1).addToTileSet(doors.get(0).getSpawnCoordinates());
+
+        roomGrids.get(1).addToTileSet(doors.get(1).getSpawnCoordinates());
+        roomGrids.get(2).addToTileSet(doors.get(1).getSpawnCoordinates());
+
+        roomGrids.get(1).addToTileSet(doors.get(2).getSpawnCoordinates());
+        roomGrids.get(3).addToTileSet(doors.get(2).getSpawnCoordinates());
+
+        door0.getDoor().setTileBackground(tileSize, generateDoorTileColor(door0));
+        door1.getDoor().setTileBackground(tileSize, generateDoorTileColor(door1));
+        door2.getDoor().setTileBackground(tileSize, generateDoorTileColor(door2));
 
         //generate all boundary locations
         HashSet<Point> staticEntities = new HashSet<>();
-        staticEntities.addAll(generateBoundaries(roomPerimeters.get(0)));
-        staticEntities.addAll(generateBoundaries(roomPerimeters.get(1)));
-        staticEntities.addAll(generateBoundaries(roomPerimeters.get(2)));
-        staticEntities.addAll(generateBoundaries(roomPerimeters.get(3)));
-
-        ArrayList<Door> doors = new ArrayList<>();
-        doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset), tileSize/2, tileSize, false, Color.BLUE));
-        doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset), tileSize/2, tileSize, false, Color.BLUE));
-        doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset), tileSize/2, tileSize, false, Color.BLUE));
+        staticEntities.addAll(generateBoundaries(rooms.get(0).getPerimeter()));
+        staticEntities.addAll(generateBoundaries(rooms.get(1).getPerimeter()));
+        staticEntities.addAll(generateBoundaries(rooms.get(2).getPerimeter()));
+        staticEntities.addAll(generateBoundaries(rooms.get(3).getPerimeter()));
 
         //remove any boundary walls on same tile as doors
         for (Door door : doors){
             staticEntities.remove(door.getSpawnCoordinates());
+        }
+
+        for (RoomGrid roomGrid : roomGrids){
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Tile tile : roomGrid.getTileSet()){
+                stringBuilder.append(tile.toString());
+                stringBuilder.append(", ");
+            }
+            Log.d("hb::GRIDS", stringBuilder.toString());
         }
 
         ArrayList<Pair<EnemyType, Point>> enemies = new ArrayList<>();
@@ -101,11 +144,23 @@ public class MapConstructor {
         map.setWidthInTiles(12);
         map.setHeightInTiles(13);
         map.setRoomGraph(roomGraph);
-        map.setRoomPerimeters(roomPerimeters);
+        map.setRooms(rooms);
         map.setDoors(doors);
         map.setPlayerSpawn(new Point(tileSize, tileSize).add(centerOffset));
         map.setStaticEntities(new ArrayList<>(staticEntities));
         map.setEnemies(enemies);
+    }
+
+    private int generateDoorTileColor(RoomEdge edge){
+
+        int firstColor = edge.getConnectedRoomNodes().first.getRoom().getPerimeter().getDefaultColor();
+        int secondColor = edge.getConnectedRoomNodes().second.getRoom().getPerimeter().getDefaultColor();
+
+        int red = (Color.red(firstColor)+Color.red(secondColor))/2;
+        int green = (Color.green(firstColor)+Color.green(secondColor))/2;
+        int blue = (Color.blue(firstColor)+Color.blue(secondColor))/2;
+
+        return Color.rgb(red, green, blue);
     }
 
     private List<Point> generateBoundaries(Perimeter perimeter){
@@ -140,6 +195,70 @@ public class MapConstructor {
         }
 
         return boundary;
+    }
+
+    public static ArrayList<Tile> populateGrid(Perimeter perimeter) {
+        ArrayList<Tile> tileSet = new ArrayList<>();
+
+        //visited tiles are added here
+        HashSet<Tile> closedSet = new HashSet<>();
+
+        Tile startingPosition = new Tile((int)perimeter.getCollisionVertices()[0].getX(),(int)perimeter.getCollisionVertices()[0].getY());
+
+        //contains tiles that are valid and have been seen (as a neighbour) but not visited.
+        //ordered by the integer cost to get to that tile from the starting position
+        PriorityQueue<Pair<Tile, Integer>> openSet = new PriorityQueue<>(10, (a, b) -> {
+            if (a.second < b.second)
+                return -1;
+            else if (a.second.equals(b.second))
+                return 0;
+            return 1; });
+        openSet.add(new Pair<>(startingPosition, 0));
+
+        //initialise variables needed in loop
+        Pair<Tile, Integer> tileAndCost;
+        Tile currentTile;
+        int currentCost;
+        while (!openSet.isEmpty()) {
+
+            //get the tile with the lowest cost
+            tileAndCost = openSet.poll();
+            currentTile = tileAndCost.first;
+            currentCost = tileAndCost.second;
+
+            //add it to the closed set so it isn't inspected again
+            closedSet.add(currentTile);
+
+            ArrayList<Tile> neighbours = TileBFS.getNeighbours(currentTile);
+
+            for (Tile neighbour : neighbours) {
+
+                if (closedSet.contains(neighbour) || !tileIsInPerimeter(perimeter, neighbour)) {
+                    //if the tile is out of bounds, or has already been inspected, move on
+                    continue;
+                }
+
+                //neighbour is a valid tile but not target, calc it's cost and add to openset
+                int neighbourCost = currentCost + 1;
+                openSet.add(new Pair<>(neighbour, neighbourCost));
+
+                tileSet.add(neighbour);
+            }
+        }
+
+        return tileSet;
+    }
+
+    private static boolean tileIsInPerimeter(Perimeter perimeter, Tile tile){
+
+        if (perimeter.getCollisionVertices().length > 3) {
+            Point topLeft = perimeter.getCollisionVertices()[0].add(new Point(1,1));
+            Point bottomRight = perimeter.getCollisionVertices()[2].add(new Point(-1,-1));
+
+            return (tile.getX() >= topLeft.getX()) && (tile.getY() >= topLeft.getY())
+                    && (tile.getX() < bottomRight.getX()) && (tile.getY() < bottomRight.getY());
+        }
+        return false;
     }
 
     /*private Tile searchForTileType(Tile startingPosition, int desiredTileType) throws MapConversionException {

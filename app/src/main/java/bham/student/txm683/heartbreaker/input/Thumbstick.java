@@ -51,7 +51,7 @@ public class Thumbstick implements InputUIElement{
         this.maxPaint.setColor(Color.LTGRAY);
         this.maxPaint.setStrokeWidth(10);
 
-        this.maxInputLengthRequirement = maxRadius * 0.9f;
+        this.maxInputLengthRequirement = maxRadius * 0.7f;
 
         this.pointerID = MotionEvent.INVALID_POINTER_ID;
     }
@@ -90,10 +90,18 @@ public class Thumbstick implements InputUIElement{
         if (inputVector.getTail().equals(inputVector.getHead())){
             return new Vector();
         } else {
-            return inputVector.sMult(1/maxInputLengthRequirement).translate(neutralPosition.smult(-1f));
+            if (inputVector.getLength() > maxInputLengthRequirement){
+                return inputVector.getUnitVector();
+            }
+            return inputVector.sMult(1/maxRadius);
         }
     }
 
+    /**
+     * Sets the active position for the thumbstick. If the new position exceeds the max radius,
+     * it will be set to an equivalent direction but with magnitude of maxradius
+     * @param newActivePosition the position to set active position as
+     */
     void setActivePosition(Point newActivePosition) {
 
         if (receivingInput){
@@ -102,6 +110,7 @@ public class Thumbstick implements InputUIElement{
             float proportionOfLengths = newInputVector.getLength() / maxRadius;
 
             if (Float.compare(proportionOfLengths, 1f) > 0){
+                //shrink input vector to length of max radius if too long
                 newInputVector = newInputVector.sMult(1f / proportionOfLengths);
             }
             this.inputVector = newInputVector;

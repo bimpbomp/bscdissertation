@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
 import android.util.Log;
+import bham.student.txm683.heartbreaker.physics.CollisionOutline;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -28,6 +29,7 @@ public class IsoscelesTrapezium extends Polygon {
         vertexVectors[3] = new Vector(geometricCenter, new Point(geometricCenter.getX()-bottomWidth/2f, geometricCenter.getY() + halfHeight));
 
         this.forwardUnitVector = new Vector(geometricCenter, new Point(geometricCenter.getX(), geometricCenter.getY()-1));
+        this.collisionOutline = new CollisionOutline(vertexVectors);
 
         this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
     }
@@ -102,7 +104,7 @@ public class IsoscelesTrapezium extends Polygon {
 
     @Override
     public void setForwardUnitVector() {
-        this.forwardUnitVector = rotateVertexVector(vertexVectors[0], (float) Math.cos(angleBetweenUpAndPrimaryVectors), (float) Math.sin(angleBetweenUpAndPrimaryVectors)).getUnitVector();
+        this.forwardUnitVector = vertexVectors[0].rotate((float) Math.cos(angleBetweenUpAndPrimaryVectors), (float) Math.sin(angleBetweenUpAndPrimaryVectors)).getUnitVector();
     }
 
     @Override

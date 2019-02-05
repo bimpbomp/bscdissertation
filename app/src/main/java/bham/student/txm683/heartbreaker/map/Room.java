@@ -9,7 +9,6 @@ public class Room {
 
     private int id;
     private Perimeter perimeter;
-    private RoomGrid roomGrid;
     private int tileSize;
 
     public Room(int id, Perimeter perimeter){
@@ -30,5 +29,13 @@ public class Room {
      */
     public boolean isEntityInRoom(Entity entity){
         return !CollisionManager.getPushVectorBetweenTwoShapes(perimeter, entity.getShape()).equals(new Vector());
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public Perimeter getPerimeter() {
+        return perimeter;
     }
 }

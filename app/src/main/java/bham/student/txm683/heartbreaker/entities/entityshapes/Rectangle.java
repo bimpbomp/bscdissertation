@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
+import bham.student.txm683.heartbreaker.physics.CollisionOutline;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -24,6 +25,7 @@ public class Rectangle extends Polygon {
         this.forwardUnitVector = new Vector(geometricCenter, new Point(geometricCenter.getX(), geometricCenter.getY()-1));
 
         this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+        this.collisionOutline = new CollisionOutline(vertexVectors);
     }
 
     public Rectangle(String stateString) throws JSONException {
@@ -37,7 +39,7 @@ public class Rectangle extends Polygon {
     @Override
     public void setForwardUnitVector() {
 
-        this.forwardUnitVector = rotateVertexVector(vertexVectors[0], (float) Math.cos(angleBetweenUpAndPrimaryVectors), (float) Math.sin(angleBetweenUpAndPrimaryVectors));
+        this.forwardUnitVector = vertexVectors[0].rotate((float) Math.cos(angleBetweenUpAndPrimaryVectors), (float) Math.sin(angleBetweenUpAndPrimaryVectors));
     }
 
     /**
@@ -69,7 +71,7 @@ public class Rectangle extends Polygon {
 
     @Override
     public Point[] getCollisionVertices() {
-        return getVertices();
+        return getRenderVertices();
     }
 
     @Override

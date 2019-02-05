@@ -18,7 +18,7 @@ public class Entity implements SaveableState {
     String TAG;
 
     String name;
-    EntityShape shape;
+    Polygon shape;
 
     Point spawnCoordinates;
 
@@ -44,9 +44,6 @@ public class Entity implements SaveableState {
             case RECT:
                 this.shape = new Rectangle(spawnCoordinates, width, height, colorValue);
                 break;
-            case CIRCLE:
-                this.shape = new Circle(spawnCoordinates, width/2f, colorValue);
-                break;
             case KITE:
                 this.shape = new Kite(spawnCoordinates, width, height* 0.667f, height * 0.333f, colorValue);
                 break;
@@ -62,7 +59,7 @@ public class Entity implements SaveableState {
         initTextPaint();
     }
 
-    public Entity(String name, EntityShape shape){
+    public Entity(String name, Polygon shape){
         this.name = name;
         this.TAG = "hb::" + this.getClass().getSimpleName() + ":" + name;
 
@@ -84,9 +81,6 @@ public class Entity implements SaveableState {
 
         try {
             switch (ShapeIdentifier.fromInt(jsonObject.getInt("shapeidentifier"))) {
-                case CIRCLE:
-                    this.shape = new Circle(jsonObject.getString("shape"));
-                    break;
                 case ISO_TRIANGLE:
                     this.shape = new IsoscelesTriangle((String)jsonObject.get("shape"));
                     break;
@@ -133,7 +127,7 @@ public class Entity implements SaveableState {
     * Draws the entity to the given canvas
     * @param canvas Canvas to draw to.
     */
-    public void draw(Canvas canvas, Point renderOffset, boolean renderName){
+    public void draw(Canvas canvas, Point renderOffset, boolean renderEntityName){
 
         if (collided){
             shape.setColor(Color.RED);
@@ -144,7 +138,7 @@ public class Entity implements SaveableState {
 
         shape.draw(canvas, renderOffset, new Vector());
 
-        if (renderName) {
+        if (renderEntityName) {
             Point center = shape.getCenter().add(renderOffset);
             RenderingTools.renderCenteredText(canvas, textPaint, name, center);
         }
@@ -184,7 +178,7 @@ public class Entity implements SaveableState {
         this.collided = collided;
     }
 
-    public EntityShape getShape(){
+    public Polygon getShape(){
         return this.shape;
     }
 

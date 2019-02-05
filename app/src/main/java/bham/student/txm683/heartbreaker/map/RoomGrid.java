@@ -31,6 +31,10 @@ public class RoomGrid {
         this.entitiesInGrid.clear();
     }
 
+    public void addToTileSet(Point globalCoordinate){
+        tileSet.add(mapGlobalPointToTile(globalCoordinate));
+    }
+
     public void addEntity(Entity entity){
         Point[] vertices = entity.getShape().getCollisionVertices();
 
@@ -52,5 +56,9 @@ public class RoomGrid {
     public Tile mapGlobalPointToTile(Point globalCoordinate){
         return new Tile((int) Math.floor(globalCoordinate.getX()/tileSize),
                 (int) Math.floor(globalCoordinate.getY()/tileSize));
+    }
+
+    public HashSet<Tile> getTileSet() {
+        return tileSet;
     }
 }

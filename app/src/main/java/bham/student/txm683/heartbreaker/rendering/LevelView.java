@@ -10,14 +10,16 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.map.MapConstructor;
+import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.Grid;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -74,13 +76,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
      * @param stateString String containing state LevelState in JSON format
      */
     public void loadSaveFromStateString(String stateString){
-        Log.d(TAG, "stateStringLengthInBytes: " + stateString.getBytes().length + ", stateString: " + stateString);
+        /*Log.d(TAG, "stateStringLengthInBytes: " + stateString.getBytes().length + ", stateString: " + stateString);
         try {
             this.levelState = new LevelState(stateString);
         } catch (Exception e){
             Log.d(TAG,"Parsing error: " + e.getMessage());
             this.levelState = null;
-        }
+        }*/
     }
 
     public void setLevelState(LevelState levelState){
@@ -141,25 +143,29 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
      * Will dynamically create the positions and sizes based on available space.
      */
     private void initInGameUI(){
+        int buttonColor = Color.LTGRAY;
+
         float thumbstickMaxRadius = 150f;
         this.inputManager.setThumbstick(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), thumbstickMaxRadius/3f, thumbstickMaxRadius));
 
         int pauseButtonRadius = 75;
         Click pauseButtonFunction = () -> levelState.setPaused(!levelState.isPaused());
-        this.inputManager.setPauseButton(new Button("PAUSE", new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, Color.LTGRAY, pauseButtonFunction));
+        this.inputManager.setPauseButton(new Button("PAUSE", new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, buttonColor, pauseButtonFunction));
 
-        int meleeButtonRadius = 100;
-        this.inputManager.setMeleeButton(new Button("THUMP", new Point(viewWidth-meleeButtonRadius, viewHeight-meleeButtonRadius), meleeButtonRadius, Color.LTGRAY, null));
+        int attackButtonRadius = 100;
+        this.inputManager.setMeleeButton(new Button("THUMP", new Point(viewWidth-(attackButtonRadius*3) - 20, viewHeight-attackButtonRadius -10), attackButtonRadius, buttonColor, null));
+
+        this.inputManager.setRangedButton(new Button("PEW", new Point(viewWidth-attackButtonRadius -10, viewHeight-attackButtonRadius-10), attackButtonRadius, buttonColor, null));
 
         textPaint.setTextSize(36f);
         //gives space for 8 debug buttons
         int debugButtonDiameter = viewHeight/6;
         int debugButtonRadius = debugButtonDiameter / 2;
         Button[] debugButtons = {
-                new Button("PHYS", new Point(viewWidth-debugButtonRadius, debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderPhysicsGrid()),
-                new Button("ENGRID", new Point(viewWidth-debugButtonRadius, debugButtonDiameter + debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderMapTileGrid()),
-                new Button("NAMES", new Point(viewWidth-debugButtonRadius, 2*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertRenderEntityNames()),
-                new Button("AI", new Point(viewWidth-debugButtonRadius, 3*debugButtonDiameter +debugButtonRadius), debugButtonRadius, Color.LTGRAY, () -> debugInfo.invertActivateAI())
+                new Button("PHYS", new Point(viewWidth-debugButtonRadius, debugButtonRadius), debugButtonRadius, buttonColor, () -> debugInfo.invertRenderPhysicsGrid()),
+                new Button("ENGRID", new Point(viewWidth-debugButtonRadius, debugButtonDiameter + debugButtonRadius), debugButtonRadius, buttonColor, () -> debugInfo.invertRenderMapTileGrid()),
+                new Button("NAMES", new Point(viewWidth-debugButtonRadius, 2*debugButtonDiameter +debugButtonRadius), debugButtonRadius, buttonColor, () -> debugInfo.invertRenderEntityNames()),
+                new Button("AI", new Point(viewWidth-debugButtonRadius, 3*debugButtonDiameter +debugButtonRadius), debugButtonRadius, buttonColor, () -> debugInfo.invertActivateAI())
         };
 
         textPaint.setTextSize(48f);
@@ -226,16 +232,16 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         //Calculate what entities are in view of the player on screen
         ArrayList<Entity> staticEntitiesToRender = new ArrayList<>();
 
-        for (Entity staticEntity: levelState.getStaticEntities()){
-            if (isOnScreen(staticEntity.getShape().getCollisionVertices())){
+        for (Entity staticEntity: levelState.getStaticEntities().values()){
+            if (isOnScreen(staticEntity.getShape().getRenderVertices())){
                 staticEntitiesToRender.add(staticEntity);
             }
         }
 
-        ArrayList<Entity> enemiesToRender = new ArrayList<>();
+        ArrayList<AIEntity> enemiesToRender = new ArrayList<>();
 
-        for (Entity enemy: levelState.getEnemyEntities()){
-            if (isOnScreen(enemy.getShape().getCollisionVertices())){
+        for (AIEntity enemy: levelState.getEnemyEntities()){
+            if (isOnScreen(enemy.getShape().getRenderVertices())){
                 enemiesToRender.add(enemy);
             }
         }
@@ -254,16 +260,23 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw background
             canvas.drawRGB(32,32,32);
 
-            for (Perimeter perimeter : levelState.getMap().getRoomPerimeters().values()){
-                perimeter.draw(canvas, renderOffset, new Vector());
+            //draw room backgrounds
+            for (Room room : levelState.getMap().getRoomPerimeters().values()){
+                room.getPerimeter().draw(canvas, renderOffset, new Vector());
             }
 
+            //draw grids
             if (debugInfo.renderPhysicsGrid())
                 drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset, textPaint);
 
             if (debugInfo.renderMapTileGrid())
                 drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset, tilePaint);
 
+            for (Door door : levelState.getMap().getDoors()){
+                door.draw(canvas, renderOffset, debugInfo.renderEntityNames());
+            }
+
+            //draw player and entities
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
 
             for (Entity entity : enemiesToRender){
@@ -274,10 +287,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 entity.draw(canvas, renderOffset, debugInfo.renderEntityNames());
             }
 
+            //draw grid labels
             if (debugInfo.renderMapTileGrid()){
                 drawGridLabels(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset);
             }
 
+            //draw ui
             if (!levelState.isPaused()) {
                 RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "RenderFPS: " + renderFPS + ". GameTickFPS: " + gameTickFPS + ". Collisions: " + level.getCollisionManager().collisionCount, new Point(viewWidth/2f, 50), Color.WHITE, 10);
             } else {
@@ -307,11 +322,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
                 int tileColor = Color.WHITE;
 
-                if (level.aiManager.path != null) {
-                    for (Tile tile : level.aiManager.path) {
-                        if (tile.equals(new Tile(i, j))) {
-                            tileColor = Color.RED;
-                            break;
+                for (AIEntity entity : levelState.getEnemyEntities()){
+                    if (entity.getPath() != null) {
+                        for (Tile tile : entity.getPath()) {
+                            if (tile.equals(new Tile(i, j))) {
+                                tileColor = Color.RED;
+                                break;
+                            }
                         }
                     }
                 }
