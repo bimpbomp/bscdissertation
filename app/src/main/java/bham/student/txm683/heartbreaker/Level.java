@@ -65,8 +65,6 @@ public class Level implements Runnable {
 
             loops = 0;
 
-
-
             if (!levelState.isPaused()) {
 
                 currentGameTick = System.currentTimeMillis();

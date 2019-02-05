@@ -62,7 +62,7 @@ public class CollisionManager {
      */
     private void applySpatialPartitioning(){
 
-        Point gridMaximum = new Point(levelState.getMap().getDimensions().first, levelState.getMap().getDimensions().second);
+        Point gridMaximum = new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight());
 
         //initialise empty grid
         int cellSize = levelState.getMap().getTileSize() * 2;

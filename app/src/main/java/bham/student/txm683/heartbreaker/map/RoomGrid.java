@@ -15,7 +15,7 @@ public class RoomGrid {
 
     //entities that wont move or be destroyed
     private HashMap<Tile, HashSet<Entity>> permanentEntities;
-    //each tile has a bucket for unique entities
+    //each tile has a bucket for holding entities
     private HashMap<Tile, HashSet<Entity>> entitiesInGrid;
 
     public RoomGrid(List<Tile> tileSet, int tileSize){

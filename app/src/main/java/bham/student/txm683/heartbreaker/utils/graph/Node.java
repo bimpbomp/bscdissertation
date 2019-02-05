@@ -16,7 +16,7 @@ public class Node<T> {
         this.nodeID = nodeID;
     }
 
-    void addConnection(Edge<T> newConnection){
+    public void addConnection(Edge<T> newConnection){
         this.connections.add(newConnection);
     }
 

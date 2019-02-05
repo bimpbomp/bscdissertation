@@ -20,6 +20,8 @@ public class Entity implements SaveableState {
     String name;
     EntityShape shape;
 
+    Point spawnCoordinates;
+
     Paint textPaint;
 
     boolean moveable;
@@ -31,6 +33,8 @@ public class Entity implements SaveableState {
     public Entity(String name, Point spawnCoordinates, ShapeIdentifier shapeIdentifier, int width, int height, int colorValue){
         this.name = name;
         this.TAG = "hb::" + this.getClass().getSimpleName() + ":" + name;
+
+        this.spawnCoordinates = spawnCoordinates;
 
         switch (shapeIdentifier){
 
@@ -107,6 +111,10 @@ public class Entity implements SaveableState {
         launchedAttack = false;
 
         initTextPaint();
+    }
+
+    public Point getSpawnCoordinates() {
+        return spawnCoordinates;
     }
 
     public boolean canMove() {

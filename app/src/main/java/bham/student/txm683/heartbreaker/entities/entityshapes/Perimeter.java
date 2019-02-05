@@ -1,6 +1,5 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
-import android.graphics.Color;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -15,14 +14,18 @@ public class Perimeter extends Polygon {
      *
      * @param vertices Vertices of perimeter defined in a clockwise manner, starting at the top left vertex
      */
-    public Perimeter(Point[] vertices){
-        super(vertices[0], 0, 0, Color.WHITE, ShapeIdentifier.INVALID);
+    public Perimeter(Point[] vertices, int colorValue){
+        super(vertices[0], 0, 0, colorValue, ShapeIdentifier.INVALID);
 
         this.vertexVectors = new Vector[vertices.length];
 
         for (int i = 0; i < vertices.length; i++){
             this.vertexVectors[i] = new Vector(geometricCenter, vertices[i]);
         }
+    }
+
+    public Point getTopLeftCorner(){
+        return this.geometricCenter;
     }
 
     /**

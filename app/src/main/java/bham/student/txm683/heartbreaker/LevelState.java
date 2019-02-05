@@ -2,6 +2,8 @@ package bham.student.txm683.heartbreaker;
 
 import android.graphics.Color;
 import android.util.Pair;
+import bham.student.txm683.heartbreaker.ai.EnemyType;
+import bham.student.txm683.heartbreaker.entities.Boundary;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Player;
@@ -16,13 +18,14 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class LevelState {
     private static final String TAG = "hb::LevelState";
 
     private UniqueID uniqueID;
 
-    private final Map map;
+    private Map map;
 
     private Player player;
     private ArrayList<Entity> staticEntities;
@@ -54,8 +57,6 @@ public class LevelState {
     public LevelState(String stateString) throws ParseException, JSONException {
         JSONObject jsonObject = new JSONObject(stateString);
 
-        this.map = new Map();
-        this.map.loadMap("TestMap", 50);
         this.uniqueID = new UniqueID(jsonObject.getInt("uniqueidcounter"));
 
         this.player = new Player(jsonObject.getString("player"));
@@ -79,31 +80,29 @@ public class LevelState {
 
     private void freshInitFromMap(){
         int playerSize = map.getTileSize();
-        this.player = new Player("player", map.getPlayerSpawnLocation(), playerSize, map.getTileSize()*2, Color.rgb(0,0,255));
+        this.player = new Player("player", map.getPlayerSpawn(), playerSize, map.getTileSize()*2, Color.rgb(0,0,255));
 
-        Point[] staticSpawns = map.getStaticSpawns();
+        List<Point> staticSpawns = map.getStaticEntities();
         for (Point staticSpawn : staticSpawns){
-            this.staticEntities.add(new Entity("Static-"+uniqueID.id(), staticSpawn, ShapeIdentifier.RECT, map.getTileSize()+5, map.getTileSize()+5, Color.rgb(32,32,32)));
+            this.staticEntities.add(new Boundary("B:"+uniqueID.id(), staticSpawn, map.getTileSize()+5, Color.rgb(32,32,32)));
         }
 
-        Pair[] enemySpawns = map.getEnemySpawnLocations();
+        List<Pair<EnemyType, Point>> enemySpawns = map.getEnemies();
+        Point enemySpawn;
+        EnemyType enemyType;
         for (Pair pair : enemySpawns){
-            Point enemySpawn = (Point)pair.second;
+            enemySpawn = (Point)pair.second;
+            enemyType = (EnemyType)pair.first;
 
             ShapeIdentifier shapeIdentifier;
 
-            if ((int) pair.first == 3){
-                shapeIdentifier = ShapeIdentifier.ISO_TRIANGLE;
-            } else if ((int) pair.first == 4) {
-                shapeIdentifier = ShapeIdentifier.RECT;
-            } else if ((int) pair.first == 5){
-                shapeIdentifier = ShapeIdentifier.CIRCLE;
-            } else if ((int) pair.first == 6){
-                shapeIdentifier = ShapeIdentifier.KITE;
-            } else if ((int) pair.first == 7) {
-                shapeIdentifier = ShapeIdentifier.ISO_TRAPEZIUM;
-            } else {
-                shapeIdentifier = ShapeIdentifier.INVALID;
+            switch (enemyType){
+                case CHASER:
+                    shapeIdentifier = ShapeIdentifier.KITE;
+                    break;
+                default:
+                    shapeIdentifier = ShapeIdentifier.RECT;
+                    break;
             }
 
             this.enemyEntities.add(new MoveableEntity("E-" + uniqueID.id(), enemySpawn, shapeIdentifier, map.getTileSize()/2, map.getTileSize()/2, Color.rgb(255, 153, 51), 300f, 25));

@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.utils;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import bham.student.txm683.heartbreaker.SaveableState;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -66,12 +67,16 @@ public class Point implements SaveableState {
     }
 
     @Override
+    public int hashCode() {
+        return new HashCodeBuilder(13,31).append(x).append(y).toHashCode();
+    }
+
+    @Override
     @NonNull
     public String toString() {
-        return "Point{" +
-                "x=" + x +
-                ", y=" + y +
-                '}';
+        return "P(" + x +
+                "," + y +
+                ')';
     }
 
     /*public static Path getPathWithPoints(Point[] points){

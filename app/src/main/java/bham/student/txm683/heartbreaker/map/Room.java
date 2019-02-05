@@ -10,9 +10,17 @@ public class Room {
     private int id;
     private Perimeter perimeter;
     private RoomGrid roomGrid;
+    private int tileSize;
 
-    public Room(int id){
+    public Room(int id, Perimeter perimeter){
         this.id = id;
+        this.perimeter = perimeter;
+    }
+
+    public Room(int id, Perimeter perimeter, int tileSize){
+        this.id = id;
+        this.perimeter = perimeter;
+        this.tileSize = tileSize;
     }
 
     /**

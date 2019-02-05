@@ -12,15 +12,17 @@ import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
-import bham.student.txm683.heartbreaker.map.Map;
+import bham.student.txm683.heartbreaker.map.MapConstructor;
 import bham.student.txm683.heartbreaker.physics.Grid;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
 
@@ -113,10 +115,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         Log.d(TAG, "surfaceCreated");
 
         if (this.levelState == null) {
-            Map map = new Map();
+
             tileSize = 200;
-            map.loadMap("TestMap", tileSize);
-            this.levelState = new LevelState(map);
+            MapConstructor mapConstructor = new MapConstructor();
+
+            this.levelState = new LevelState(mapConstructor.loadMap("Map2", tileSize));
 
             this.levelState.setScreenDimensions(viewWidth, viewHeight);
 
@@ -251,13 +254,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw background
             canvas.drawRGB(32,32,32);
 
-            //draw floor
-            Point bottomMapCorner = new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()).add(renderOffset);
-
-            int oldColor = textPaint.getColor();
-            textPaint.setColor(Color.WHITE);
-            canvas.drawRect(renderOffset.getX(), renderOffset.getY(), bottomMapCorner.getX(), bottomMapCorner.getY(), textPaint);
-            textPaint.setColor(oldColor);
+            for (Perimeter perimeter : levelState.getMap().getRoomPerimeters().values()){
+                perimeter.draw(canvas, renderOffset, new Vector());
+            }
 
             if (debugInfo.renderPhysicsGrid())
                 drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset, textPaint);
@@ -284,7 +283,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             } else {
                 canvas.drawARGB(200, 0,0,0);
 
-                oldColor = textPaint.getColor();
+                int oldColor = textPaint.getColor();
                 textPaint.setColor(Color.WHITE);
                 RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "Game is Paused", new Point(viewWidth/2f, viewHeight/3f), Color.RED, 50);
                 textPaint.setColor(oldColor);

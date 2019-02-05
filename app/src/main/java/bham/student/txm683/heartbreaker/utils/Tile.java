@@ -28,6 +28,10 @@ public class Tile {
         return y;
     }
 
+    public Tile add(int xToAdd, int yToAdd){
+        return new Tile(x+xToAdd, y + yToAdd);
+    }
+
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj == this)

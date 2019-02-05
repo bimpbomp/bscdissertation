@@ -6,14 +6,11 @@ import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import bham.student.txm683.heartbreaker.utils.graph.Edge;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
-import bham.student.txm683.heartbreaker.utils.graph.NodeWrapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.PriorityQueue;
 import java.util.Stack;
 
 
@@ -32,7 +29,7 @@ public class AIManager {
     }
 
     public void update(float secondsSinceLastGameTick, Point playerPosition){
-        if (!levelState.getDebugInfo().isAIActivated()){
+        /*if (!levelState.getDebugInfo().isAIActivated()){
             return;
         }
 
@@ -48,10 +45,10 @@ public class AIManager {
             Log.d(TAG, "Moving in direction: " + movementVector.relativeToString());
         } else {
             Log.d(TAG, "Path has length less than 1, won't move");
-        }
+        }*/
     }
 
-    public Tile[] applyAStar(Point start, Point target){
+    /*public Tile[] applyAStar(Point start, Point target){
         aiGraph = levelState.getMap().getAiGraph();
 
         //maps the start and target points to integer coordinates relative to the maptiles layout
@@ -130,7 +127,7 @@ public class AIManager {
             }
         }
         return tracePath(cameFrom, targetNode.getNodeID());
-    }
+    }*/
 
     private boolean canSeeTarget(){
         return false;
