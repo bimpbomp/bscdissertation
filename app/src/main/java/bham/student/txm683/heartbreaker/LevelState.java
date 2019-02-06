@@ -1,15 +1,16 @@
 package bham.student.txm683.heartbreaker;
 
 import android.graphics.Color;
+import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.Chaser;
 import bham.student.txm683.heartbreaker.ai.EnemyType;
-import bham.student.txm683.heartbreaker.entities.Boundary;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Player;
+import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.Room;
@@ -88,9 +89,29 @@ public class LevelState {
         int playerSize = map.getTileSize();
         this.player = new Player("player", map.getPlayerSpawn(), playerSize, map.getTileSize()*3, Color.rgb(0,0,255));
 
-        List<Point> staticSpawns = map.getStaticEntities();
+        /*List<Point> staticSpawns = map.getStaticEntities();
         for (Point staticSpawn : staticSpawns){
             this.staticEntities.put(map.mapGlobalPointToTile(staticSpawn) , (new Boundary("B:"+uniqueID.id(), staticSpawn, map.getTileSize()+5, Color.rgb(32,32,32))));
+        }*/
+
+        for (Wall wall : map.getWalls()){
+            wall.setName("W:"+uniqueID.id());
+
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Point point : wall.getCollisionVertices()){
+                stringBuilder.append(point.smult(1f/map.getTileSize()).toString());
+                stringBuilder.append(" - ");
+            }
+            stringBuilder.append("END");
+            Log.d(TAG, wall.getName() + " collision: " + stringBuilder.toString());
+
+            stringBuilder = new StringBuilder();
+            for (Point point : wall.getRenderableShape().getRenderVertices()){
+                stringBuilder.append(point.smult(1f/map.getTileSize()).toString());
+                stringBuilder.append(" - ");
+            }
+            stringBuilder.append("END");
+            Log.d(TAG, wall.getName() + " render: " + stringBuilder.toString());
         }
 
         List<Pair<EnemyType, Point>> enemySpawns = map.getEnemies();

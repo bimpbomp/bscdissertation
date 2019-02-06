@@ -6,6 +6,7 @@ import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.EnemyType;
 import bham.student.txm683.heartbreaker.entities.Door;
+import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomEdge;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
@@ -22,12 +23,17 @@ public class MapConstructor {
     private int tileSize;
     private Point centerOffset;
 
+    //spacing between sets of collision points added to wall
+    private int gapBetweenPoints;
+
     public MapConstructor(){
     }
 
     public Map loadMap(String name, int tileSize){
         map = new Map(name, tileSize);
         this.tileSize = tileSize;
+
+        this.gapBetweenPoints = tileSize*2;
 
         this.centerOffset = new Point(tileSize/2f, tileSize/2f);
 
@@ -116,39 +122,359 @@ public class MapConstructor {
         door1.getDoor().setTileBackground(tileSize, generateDoorTileColor(door1));
         door2.getDoor().setTileBackground(tileSize, generateDoorTileColor(door2));
 
-        //generate all boundary locations
-        HashSet<Point> staticEntities = new HashSet<>();
-        staticEntities.addAll(generateBoundaries(rooms.get(0).getPerimeter()));
-        staticEntities.addAll(generateBoundaries(rooms.get(1).getPerimeter()));
-        staticEntities.addAll(generateBoundaries(rooms.get(2).getPerimeter()));
-        staticEntities.addAll(generateBoundaries(rooms.get(3).getPerimeter()));
+        List<List<Point>> boundaries = new ArrayList<>();
 
-        //remove any boundary walls on same tile as doors
-        for (Door door : doors){
-            staticEntities.remove(door.getSpawnCoordinates());
+        boolean add;
+        for (Room room : rooms.values()){
+            //generate the boundaries for each room
+            List<List<Point>> newBoundaries = generateBoundaries(room.getPerimeter());
+
+
+            //iterates through the new boundaries and only adds points to boundaries that
+            //arent already in it
+            for (List<Point> newBoundary : newBoundaries){
+                List<Point> newPointsInBoundaryToAdd = new ArrayList<>();
+
+                for (Point newBoundaryPoint : newBoundary){
+                    add = true;
+
+                    for (List<Point> existingBoundary : boundaries){
+                        if (existingBoundary.contains(newBoundaryPoint))
+                            add = false;
+                    }
+
+                    //if this tile isn't in any existing boundaries
+                    if (add)
+                        newPointsInBoundaryToAdd.add(newBoundaryPoint);
+                }
+
+                //add all points in the new boundary that aren't already in a boundary, to boundaries
+                if (newPointsInBoundaryToAdd.size() > 0)
+                    boundaries.add(newPointsInBoundaryToAdd);
+            }
         }
 
-        for (RoomGrid roomGrid : roomGrids){
-            StringBuilder stringBuilder = new StringBuilder();
-            for (Tile tile : roomGrid.getTileSet()){
-                stringBuilder.append(tile.toString());
-                stringBuilder.append(", ");
+        //remove any boundary walls on same tile as doors
+        //split that wall into two separate walls
+        int doorPositionIndex;
+        for (Door door : doors){
+            boolean removedTile = true;
+
+            while (removedTile) {
+
+                ArrayList<Integer> removedTileIndexes = new ArrayList<>();
+                ArrayList<List<Point>> sublistsToAdd = new ArrayList<>();
+                removedTile = false;
+
+                //for each boundary in the current room
+                for (List<Point> wallPoints : boundaries) {
+                    doorPositionIndex = wallPoints.indexOf(door.getSpawnCoordinates().add(centerOffset.smult(-1)));
+                    if (doorPositionIndex >= 0) {
+
+                        if (doorPositionIndex == 0) {
+                            //door is at start of wall, and so there will only be one new wall
+                            sublistsToAdd.add(wallPoints.subList(doorPositionIndex + 1, wallPoints.size()));
+
+                        } else if (doorPositionIndex == wallPoints.size() - 1) {
+                            //door is at end of wall, and so there will only be one new wall
+                            sublistsToAdd.add(wallPoints.subList(0, doorPositionIndex));
+
+                        } else {
+                            //get wall on one side of door, wall on other
+                            //add each new wall to the list, remove the old wall
+                            sublistsToAdd.add(wallPoints.subList(0, doorPositionIndex));
+                            sublistsToAdd.add(wallPoints.subList(doorPositionIndex + 1, wallPoints.size()));
+                        }
+
+                        removedTileIndexes.add(boundaries.indexOf(wallPoints));
+                        removedTile = true;
+                    }
+                }
+
+                //remove any tiles that lie on the same space as a door
+                if (removedTile) {
+                    for (int index : removedTileIndexes) {
+                        boundaries.remove(index);
+                    }
+
+                    boundaries.addAll(sublistsToAdd);
+                }
             }
-            Log.d("hb::GRIDS", stringBuilder.toString());
+        }
+
+        //generate wall objects
+        ArrayList<Wall> walls = new ArrayList<>();
+        //at this point, each list in boundaries should be a continuous vertical/horizontal wall
+        for (List<Point> boundary : boundaries){
+            //stores the unique points as an outline for the wall in collisions
+            List<Point> collisionPoints = new ArrayList<>();
+
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Point point : boundary) {
+                stringBuilder.append(point.toString());
+                stringBuilder.append(" - ");
+            }
+            stringBuilder.append("END\n");
+            Log.d(TAG + "BOUNDARY: ", stringBuilder.toString());
+
+            //bounds of the wall (used for rendering)
+            if (boundary.size() > 1){
+                //more than one block in wall
+
+                Point firstPoint = boundary.get(0);
+                Point lastPoint = boundary.get(boundary.size()-1);
+
+                Point directionOfWall = new Vector(firstPoint, lastPoint).getUnitVector().getRelativeToTailPoint();
+                int directionModifier;
+
+                boolean addPointsAtEnd;
+                float length;
+                int numberOfEntitiesInWall;
+
+                if (Math.abs(lastPoint.getX() - firstPoint.getX()) > 0.001){
+                    //horizontal wall, as no change in y
+                    Log.d(TAG+"DIRECTION", "HORIZONTALWALL");
+
+                    Queue<Point> pointQueue = new LinkedList<>();
+                    Stack<Point> pointStack = new Stack<>();
+
+                    if (directionOfWall.getX() > 0){
+                        //first point is at left of wall
+                        pointQueue.add(firstPoint);
+                        pointStack.add(firstPoint.add(new Point(0, tileSize)));
+                        directionModifier = 1;
+                    } else {
+                        //first point is at right of wall
+                        pointStack.add(firstPoint.add(new Point(tileSize, 0)));
+                        pointQueue.add(firstPoint.add(new Point(tileSize, tileSize)));
+                        directionModifier = -1;
+                    }
+
+                    length = Math.abs(firstPoint.getX()-lastPoint.getX());
+
+                    numberOfEntitiesInWall = (int) length / gapBetweenPoints;
+
+                    Log.d(TAG+"NUMOFENTITIESINWALL", numberOfEntitiesInWall+"");
+
+                    addPointsAtEnd = (length % gapBetweenPoints != 0 || numberOfEntitiesInWall < 1);
+
+                    Point lastTopLeftPoint = firstPoint;
+
+                    while (numberOfEntitiesInWall > 0){
+                        lastTopLeftPoint = lastTopLeftPoint.add(new Point(gapBetweenPoints * directionModifier, 0));
+
+                        if (directionModifier > 0){
+                            pointQueue.add(lastTopLeftPoint);
+
+                            //gets point on other side of wall at same x value
+                            pointStack.add(lastTopLeftPoint.add(new Point(0, tileSize)));
+                        } else {
+                            pointStack.add(lastTopLeftPoint);
+
+                            //gets point on other side of wall at same x value
+                            pointQueue.add(lastTopLeftPoint.add(new Point(0, tileSize)));
+                        }
+
+                        Log.d(TAG+"ADDED POINTS", lastTopLeftPoint.toString() + ", " + lastTopLeftPoint.add(new Point(0, tileSize)));
+
+                        numberOfEntitiesInWall--;
+                    }
+
+                    if (addPointsAtEnd){
+                        if (directionModifier > 0) {
+                            //if wall grows right, add the rightmost two vertices
+                            pointQueue.add(lastPoint.add(new Point(tileSize, 0)));
+                            pointStack.add(lastPoint.add(new Point(tileSize, tileSize)));
+
+                            Log.d(TAG+"ADDED POINTS AT END (RIGHTMOST)", lastPoint.add(new Point(tileSize, 0)).toString() + ", " + lastPoint.add(new Point(tileSize, tileSize)));
+                        } else {
+                            //if the wall grows left, add the leftmost two vertices
+                            pointStack.add(lastPoint);
+                            pointQueue.add(lastPoint.add(new Point(0, tileSize)));
+
+                            Log.d(TAG+"ADDED POINTS AT END (LEFTMOST)", lastPoint.toString() + ", " + lastPoint.add(new Point(0, tileSize)));
+                        }
+                    }
+
+                    /*stringBuilder = new StringBuilder();
+                    while (!pointStack.isEmpty()) {
+                        Point point = pointStack.pop();
+                        stringBuilder.append(point.toString());
+                        stringBuilder.append(" - ");
+                    }
+                    stringBuilder.append("END\n");
+                    Log.d(TAG + "STACKCONTENTS: ", stringBuilder.toString());
+
+                    stringBuilder = new StringBuilder();
+                    while (!pointQueue.isEmpty()) {
+                        Point point = pointQueue.poll();
+                        stringBuilder.append(point.toString());
+                        stringBuilder.append(" - ");
+                    }
+                    stringBuilder.append("END\n");
+                    Log.d(TAG + "QUEUECONTENTS: ", stringBuilder.toString());*/
+
+                    if (directionModifier > 0){
+
+                        collisionPoints.addAll(pointQueue);
+
+                        stringBuilder = new StringBuilder();
+                        for (Point point : collisionPoints) {
+                            stringBuilder.append(point.toString());
+                            stringBuilder.append(" - ");
+                        }
+                        stringBuilder.append("END\n");
+                        Log.d(TAG + "VERTICESAFTER QUEUE: ", stringBuilder.toString());
+
+                        while(!pointStack.isEmpty()){
+                            collisionPoints.add(pointStack.pop());
+                        }
+
+                        stringBuilder = new StringBuilder();
+                        for (Point point : collisionPoints) {
+                            stringBuilder.append(point.toString());
+                            stringBuilder.append(" - ");
+                        }
+                        stringBuilder.append("END\n");
+                        Log.d(TAG + "VERTICESAFTER STACK: ", stringBuilder.toString());
+                    } else {
+                        while(!pointStack.isEmpty()){
+                            collisionPoints.add(pointStack.pop());
+                        }
+                        collisionPoints.addAll(pointQueue);
+                    }
+
+                } else {
+                    //vertical wall, as no change in x
+                    Log.d(TAG+"DIRECTION", "VERTICALWALL");
+
+                    LinkedList<Point> pointQueue = new LinkedList<>();
+                    Stack<Point> pointStack = new Stack<>();
+
+                    if (directionOfWall.getY() > 0){
+
+                        //first point is at top of wall
+                        pointQueue.add(firstPoint);
+                        pointQueue.add(firstPoint.add(new Point(tileSize, 0)));
+                        directionModifier = 1;
+                    } else {
+                        //first point is at bottom of wall
+                        pointQueue.add(firstPoint.add(new Point(0, tileSize)));
+                        pointStack.add(firstPoint.add(new Point(tileSize, tileSize)));
+
+                        directionModifier = -1;
+                    }
+
+                    length = Math.abs(firstPoint.getY()-lastPoint.getY());
+
+                    numberOfEntitiesInWall = (int) length / gapBetweenPoints;
+
+                    Log.d(TAG+"NUMOFENTITIESINWALL", numberOfEntitiesInWall+"");
+
+                    addPointsAtEnd = (length % gapBetweenPoints != 0 || numberOfEntitiesInWall < 1);
+
+                    Point lastTopLeftPoint = firstPoint;
+
+                    while (numberOfEntitiesInWall > 0){
+                        lastTopLeftPoint = lastTopLeftPoint.add(new Point(0, gapBetweenPoints * directionModifier));
+
+                        if (directionModifier > 0){
+                            pointStack.add(lastTopLeftPoint);
+
+                            //gets point on other side of wall at same y value
+                            pointQueue.add(lastTopLeftPoint.add(new Point(tileSize, 0)));
+                        } else {
+                            pointQueue.add(lastTopLeftPoint);
+
+                            //gets point on other side of wall at same y value
+                            pointStack.add(lastTopLeftPoint.add(new Point(tileSize, 0)));
+                        }
+
+                        Log.d(TAG+"ADDED POINTS", lastTopLeftPoint.toString() + ", " + lastTopLeftPoint.add(new Point(tileSize, 0)));
+
+                        numberOfEntitiesInWall--;
+                    }
+
+                    if (addPointsAtEnd){
+                        if (directionModifier > 0) {
+                            //if wall grows down, add the bottom two vertices
+                            pointStack.add(lastPoint.add(new Point(0, tileSize)));
+                            pointQueue.add(lastPoint.add(new Point(tileSize, tileSize)));
+                            Log.d(TAG+"ADDED POINTS AT END (BOTTOM)", lastPoint.add(new Point(0, tileSize)).toString() + ", " + lastPoint.add(new Point(tileSize, tileSize)));
+                        } else {
+                            //if the wall grows up, add the top two vertices
+                            pointQueue.add(lastPoint);
+                            pointStack.add(lastPoint.add(new Point(tileSize, 0)));
+
+                            Log.d(TAG+"ADDED POINTS AT END (TOP)", lastPoint.toString() + ", " + lastPoint.add(new Point(tileSize, 0)));
+                        }
+                    }
+
+                    if (directionModifier > 0){
+                        collisionPoints.addAll(pointQueue);
+
+                        while(!pointStack.isEmpty()){
+                            collisionPoints.add(pointStack.pop());
+                        }
+                    } else {
+                        collisionPoints.add(pointQueue.pollLast());
+
+                        while(!pointStack.isEmpty()){
+                            collisionPoints.add(pointStack.pop());
+                        }
+
+                        collisionPoints.addAll(pointQueue);
+                    }
+                }
+            } else if (boundary.size() == 1){
+                //wall is one block
+                Log.d(TAG+"WALL ONE BLOCK", boundary.get(0).toString());
+                Point wallPoint = boundary.get(0);
+                collisionPoints.add(wallPoint);
+                collisionPoints.add(wallPoint.add(new Point(tileSize, 0)));
+                collisionPoints.add(wallPoint.add(new Point(tileSize, tileSize)));
+                collisionPoints.add(wallPoint.add(new Point(0, tileSize)));
+
+            } else {
+                //wall doesn't exist (size of 0)
+            }
+
+            if (collisionPoints.size() > 0){
+
+                stringBuilder = new StringBuilder();
+                for (Point point : collisionPoints) {
+                    stringBuilder.append(point.toString());
+                    stringBuilder.append(" - ");
+                }
+                stringBuilder.append("END\n");
+                Log.d(TAG + "COLLISIONVERTICES: ", stringBuilder.toString());
+
+                walls.add(new Wall(collisionPoints.toArray(new Point[0]), Color.rgb(32,32,32)));
+            }
         }
 
         ArrayList<Pair<EnemyType, Point>> enemies = new ArrayList<>();
-        enemies.add(new Pair<>(EnemyType.CHASER, new Point(10*tileSize,tileSize)));
+        enemies.add(new Pair<>(EnemyType.CHASER, new Point(10*tileSize,tileSize).add(centerOffset)));
 
         //initialise map with generated contents
+        map.setWalls(walls);
         map.setWidthInTiles(12);
         map.setHeightInTiles(13);
         map.setRoomGraph(roomGraph);
         map.setRooms(rooms);
         map.setDoors(doors);
         map.setPlayerSpawn(new Point(tileSize, tileSize).add(centerOffset));
-        map.setStaticEntities(new ArrayList<>(staticEntities));
+        //map.setStaticEntities(new ArrayList<>(staticEntities));
         map.setEnemies(enemies);
+    }
+
+    private Point[] generateVerticesFromCenter(Point center){
+        return new Point[]{
+                center.add(center.smult(-1)),
+                new Point(center.getX()+centerOffset.getX(), center.getY()-centerOffset.getY()),
+                center.add(centerOffset),
+                new Point(center.getX()-centerOffset.getX(), center.getY()+centerOffset.getY())
+        };
     }
 
     private int generateDoorTileColor(RoomEdge edge){
@@ -163,18 +489,21 @@ public class MapConstructor {
         return Color.rgb(red, green, blue);
     }
 
-    private List<Point> generateBoundaries(Perimeter perimeter){
-        ArrayList<Point> boundaries = new ArrayList<>();
+    private List<List<Point>> generateBoundaries(Perimeter perimeter){
+        List<List<Point>> boundaries = new ArrayList<>();
 
         Point[] vertices = perimeter.getCollisionVertices();
 
+        List<Point> boundary;
         Point lastBoundaryTile = vertices[0];
         for (int i = 0; i < vertices.length - 1; i++){
             //generates the boundaries between the current two vertices
-            boundaries.addAll(generateBoundary(vertices[i], vertices[i+1], lastBoundaryTile));
-            lastBoundaryTile = boundaries.get(boundaries.size()-1).add(centerOffset.smult(-1));
+            boundary = generateBoundary(vertices[i], vertices[i+1], lastBoundaryTile);
+            boundaries.add(boundary);
+
+            lastBoundaryTile = boundary.get(boundary.size()-1);
         }
-        boundaries.addAll(generateBoundary(vertices[vertices.length-1], vertices[0], lastBoundaryTile));
+        boundaries.add(generateBoundary(vertices[vertices.length-1], vertices[0], lastBoundaryTile));
 
         return boundaries;
     }
@@ -188,7 +517,7 @@ public class MapConstructor {
         Point currentPoint = lastPlacedTile;
 
         while (tilesToAdd > 0){
-            boundary.add(currentPoint.add(centerOffset));
+            boundary.add(currentPoint);
 
             currentPoint = currentPoint.add(directionToNextVertex.getUnitVector().getRelativeToTailPoint().smult(tileSize));
             tilesToAdd--;

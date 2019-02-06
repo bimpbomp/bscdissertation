@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.map;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.EnemyType;
 import bham.student.txm683.heartbreaker.entities.Door;
+import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
@@ -21,6 +22,7 @@ public class Map {
 
     private List<Point> staticEntities;
     private List<Pair<EnemyType, Point>> enemies;
+    private List<Wall> walls;
 
     private HashMap<Integer, Room> rooms;
 
@@ -133,5 +135,13 @@ public class Map {
 
     public void setRoomGrids(HashMap<Integer, RoomGrid> roomGrids) {
         this.roomGrids = roomGrids;
+    }
+
+    public List<Wall> getWalls() {
+        return walls;
+    }
+
+    public void setWalls(List<Wall> walls) {
+        this.walls = walls;
     }
 }

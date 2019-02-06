@@ -14,6 +14,7 @@ import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
+import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
@@ -118,7 +119,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         if (this.levelState == null) {
 
-            tileSize = 200;
+            tileSize = 100;
             MapConstructor mapConstructor = new MapConstructor();
 
             this.levelState = new LevelState(mapConstructor.loadMap("Map2", tileSize));
@@ -230,11 +231,20 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         viewWorldMax = viewWorldOrigin.add(new Point(viewWidth, viewHeight));
 
         //Calculate what entities are in view of the player on screen
-        ArrayList<Entity> staticEntitiesToRender = new ArrayList<>();
 
-        for (Entity staticEntity: levelState.getStaticEntities().values()){
+
+        //ArrayList<Entity> staticEntitiesToRender = new ArrayList<>();
+
+        /*for (Entity staticEntity: levelState.getStaticEntities().values()){
             if (isOnScreen(staticEntity.getShape().getRenderVertices())){
                 staticEntitiesToRender.add(staticEntity);
+            }
+        }*/
+
+        ArrayList<Wall> wallsToRender = new ArrayList<>();
+        for (Wall wall: levelState.getMap().getWalls()){
+            if (isOnScreen(wall.getCollisionVertices())){
+                wallsToRender.add(wall);
             }
         }
 
@@ -283,7 +293,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 ((MoveableEntity)entity).draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
-            for (Entity entity : staticEntitiesToRender){
+            for (Wall entity : wallsToRender){
                 entity.draw(canvas, renderOffset, debugInfo.renderEntityNames());
             }
 

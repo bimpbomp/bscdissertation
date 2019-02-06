@@ -116,11 +116,12 @@ public class Entity implements SaveableState {
     }
 
     private void initTextPaint(){
-        textPaint = new Paint();
+        /*textPaint = new Paint();
         textPaint.setColor(Color.GRAY);
         textPaint.setStrokeWidth(15f);
         textPaint.setTextSize(28f);
-        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setTextAlign(Paint.Align.CENTER);*/
+        textPaint = RenderingTools.initPaintForText(Color.GRAY, 28f, Paint.Align.CENTER);
     }
 
     /**

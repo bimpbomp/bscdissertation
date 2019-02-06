@@ -59,7 +59,7 @@ public abstract class Polygon extends EntityShape {
     public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
         Path path;
 
-        if (interpolationVector.equals(new Vector())) {
+        if (interpolationVector == null || interpolationVector.equals(new Vector())) {
             //Log.d(TAG+":draw", "zero interpol vector");
             path = getPathWithPoints(getRenderVertices(renderOffset));
         } else {
