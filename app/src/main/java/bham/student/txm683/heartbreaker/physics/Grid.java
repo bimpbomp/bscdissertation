@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.physics;
 
 import android.util.Pair;
-import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.utils.Point;
 
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import java.util.TreeMap;
 public class Grid {
     private static final String TAG = "hb::Grid";
 
-    private TreeMap<Integer, TreeMap<Integer, ArrayList<Entity>>> grid;
+    private TreeMap<Integer, TreeMap<Integer, ArrayList<Collidable>>> grid;
 
     private Point gridMinimum;
     private Point gridMaximum;
@@ -36,10 +35,10 @@ public class Grid {
     }
 
 
-    void addEntityToGrid(Entity entity){
+    void addEntityToGrid(Collidable entity){
         //Initial method: add entity to the cell that each of it's AABB vertices exist in.
 
-        Point[] vertices = entity.getShape().getCollisionVertices();
+        Point[] vertices = entity.getCollisionVertices();
 
         //contains unique grid references
         Set<Pair<Integer, Integer>> addedGridReferences = new HashSet<>();
@@ -68,13 +67,13 @@ public class Grid {
         return new Pair<>(column, row);
     }
 
-    private void insertEntityAtGridPosition(int column, int row, Entity entity){
+    private void insertEntityAtGridPosition(int column, int row, Collidable entity){
         //if grid column hasn't been accessed before, initialise it before adding entity
         if (!grid.containsKey(column)){
             grid.put(column, new TreeMap<>());
         }
 
-        TreeMap<Integer, ArrayList<Entity>> rowMap = grid.get(column);
+        TreeMap<Integer, ArrayList<Collidable>> rowMap = grid.get(column);
 
         //if grid row at the given column hasn't been accessed before, initialise it before adding entity
         if (!rowMap.containsKey(row)){
@@ -85,7 +84,7 @@ public class Grid {
         rowMap.get(row).add(entity);
     }
 
-    ArrayList<Entity> getBin(int column, int row){
+    ArrayList<Collidable> getBin(int column, int row){
         if (grid.containsKey(column)) {
             if (grid.get(column).containsKey(row))
                 return grid.get(column).get(row);

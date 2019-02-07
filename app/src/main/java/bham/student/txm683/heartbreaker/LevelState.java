@@ -99,15 +99,15 @@ public class LevelState {
 
             StringBuilder stringBuilder = new StringBuilder();
             for (Point point : wall.getCollisionVertices()){
-                stringBuilder.append(point.smult(1f/map.getTileSize()).toString());
+                stringBuilder.append(point.toString());
                 stringBuilder.append(" - ");
             }
             stringBuilder.append("END");
             Log.d(TAG, wall.getName() + " collision: " + stringBuilder.toString());
 
             stringBuilder = new StringBuilder();
-            for (Point point : wall.getRenderableShape().getRenderVertices()){
-                stringBuilder.append(point.smult(1f/map.getTileSize()).toString());
+            for (Point point : wall.getRenderableVertices()){
+                stringBuilder.append(point.toString());
                 stringBuilder.append(" - ");
             }
             stringBuilder.append("END");

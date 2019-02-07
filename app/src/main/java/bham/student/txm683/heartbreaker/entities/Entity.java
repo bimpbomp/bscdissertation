@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.SaveableState;
 import bham.student.txm683.heartbreaker.entities.entityshapes.*;
+import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -14,7 +15,7 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 
-public class Entity implements SaveableState {
+public class Entity implements SaveableState, Collidable {
     String TAG;
 
     String name;
@@ -105,6 +106,16 @@ public class Entity implements SaveableState {
         launchedAttack = false;
 
         initTextPaint();
+    }
+
+    @Override
+    public ShapeIdentifier getShapeIdentifier() {
+        return shape.getShapeIdentifier();
+    }
+
+    @Override
+    public Point[] getCollisionVertices() {
+        return shape.getCollisionVertices();
     }
 
     public Point getSpawnCoordinates() {

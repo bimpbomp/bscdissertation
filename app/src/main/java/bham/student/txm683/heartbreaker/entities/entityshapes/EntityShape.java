@@ -101,18 +101,6 @@ public abstract class EntityShape implements SaveableState {
 
     public abstract void rotateShape(Vector rotationVector);
 
-    public void contractHeight(float proportionOfHeight){
-
-    }
-
-    public void contractWidth(float proportionOfWidth){
-
-    }
-
-    public void returnToNormal(){
-
-    }
-
     public void setCenter(Point geometricCenter){
         translateShape(new Vector(this.geometricCenter, geometricCenter));
     }

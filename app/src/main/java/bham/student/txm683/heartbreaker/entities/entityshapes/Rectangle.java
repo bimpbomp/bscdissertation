@@ -28,6 +28,23 @@ public class Rectangle extends Polygon {
         this.collisionOutline = new CollisionOutline(vertexVectors);
     }
 
+    public Rectangle(Point center, Point topLeft, Point bottomRight, int colorValue){
+        super(center, bottomRight.getX()-topLeft.getX(), bottomRight.getY()-topLeft.getY(),
+                colorValue, ShapeIdentifier.RECT);
+
+        this.vertexVectors = new Vector[4];
+
+        vertexVectors[0] = new Vector(geometricCenter, topLeft);
+        vertexVectors[1] = new Vector(geometricCenter, new Point(bottomRight.getX(), topLeft.getY()));
+        vertexVectors[2] = new Vector(geometricCenter, bottomRight);
+        vertexVectors[3] = new Vector(geometricCenter, new Point(topLeft.getX(), bottomRight.getY()));
+
+        this.forwardUnitVector = new Vector(geometricCenter, new Point(geometricCenter.getX(), geometricCenter.getY()-1));
+
+        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+        this.collisionOutline = new CollisionOutline(vertexVectors);
+    }
+
     public Rectangle(String stateString) throws JSONException {
         super(stateString, ShapeIdentifier.RECT);
 

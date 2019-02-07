@@ -33,7 +33,7 @@ public class CollisionManager {
     public int collisionCount;
     private String TAG = "hb::CollisionManager";
 
-    private ArrayList<Pair<ArrayList<Entity>, Pair<Integer,Integer>>> bins;
+    private ArrayList<Pair<ArrayList<Collidable>, Pair<Integer,Integer>>> bins;
 
     public CollisionManager(LevelState levelState){
         this.levelState = levelState;
@@ -85,7 +85,7 @@ public class CollisionManager {
         //fetch the bins that have more than one entity in them for the next stage of collision detection
         for (Integer column : broadPhaseGrid.getColumnKeySet()){
             for (Integer row : broadPhaseGrid.getRowKeySet(column)){
-                Pair<ArrayList<Entity>, Pair<Integer, Integer>> bin = new Pair<>(broadPhaseGrid.getBin(column, row), new Pair<>(column, row));
+                Pair<ArrayList<Collidable>, Pair<Integer, Integer>> bin = new Pair<>(broadPhaseGrid.getBin(column, row), new Pair<>(column, row));
 
                 if (bin.first.size() > 1){
                     bins.add(bin);
@@ -94,21 +94,21 @@ public class CollisionManager {
         }
     }
 
-    private void fineGrainCollisionDetection(ArrayList<Pair<ArrayList<Entity>, Pair<Integer, Integer>>> bins){
+    private void fineGrainCollisionDetection(ArrayList<Pair<ArrayList<Collidable>, Pair<Integer, Integer>>> bins){
         //Log.d(TAG+collisionCount, "STARTING SEP AXIS THM");
         checkedPairNames = new HashSet<>();
         currentTickCollidedPairs = new HashSet<>();
 
         ArrayList<MoveableEntity> deadEntities = new ArrayList<>();
 
-        for (Pair<ArrayList<Entity>, Pair<Integer, Integer>> binPair : bins){
-            ArrayList<Entity> bin = binPair.first;
+        for (Pair<ArrayList<Collidable>, Pair<Integer, Integer>> binPair : bins){
+            ArrayList<Collidable> bin = binPair.first;
             Pair<Integer, Integer> binGridReference = binPair.second;
 
             if (bin.size() > 1){
 
                 StringBuilder sb = new StringBuilder();
-                for (Entity e : bin){
+                for (Collidable e : bin){
                     sb.append(e.getName());
                     sb.append(", ");
                 }
@@ -118,8 +118,8 @@ public class CollisionManager {
                 for (int i = 0; i < bin.size() - 1; i++){
                     for (int j = i+1; j < bin.size(); j++){
 
-                        Entity firstEntity = bin.get(i);
-                        Entity secondEntity = bin.get(j);
+                        Collidable firstEntity = bin.get(i);
+                        Collidable secondEntity = bin.get(j);
 
                         //if both entities are static, skip
                         if (!firstEntity.canMove() && !secondEntity.canMove()){
@@ -285,7 +285,7 @@ public class CollisionManager {
         return pushVector;
     }
 
-    private void addCheckedPairNames(Entity entity1, Entity entity2){
+    private void addCheckedPairNames(Collidable entity1, Collidable entity2){
         checkedPairNames.add(entity1.getName() + entity2.getName());
         checkedPairNames.add(entity2.getName() + entity1.getName());
     }
@@ -296,7 +296,7 @@ public class CollisionManager {
         for (int i = binReference.first - 1; i < binReference.first + 2; i++){
             for (int j = binReference.second - 1; j < binReference.second + 2; j++){
 
-                ArrayList<Entity> bin = broadPhaseGrid.getBin(i, j);
+                ArrayList<Collidable> bin = broadPhaseGrid.getBin(i, j);
                 //only check the grid references that the entity exists in
                 if (bin != null && bin.contains(entity)){
                     //check if the entity collides with any statics in this cell
@@ -311,9 +311,9 @@ public class CollisionManager {
 
     //checks if the given entity collides with any statics in the given bin.
     //resolveCollision  determines if a collision is resolved should one be detected or not
-    private boolean isStaticCollision(Entity entity, ArrayList<Entity> bin, boolean resolveCollision){
+    private boolean isStaticCollision(Collidable entity, ArrayList<Collidable> bin, boolean resolveCollision){
         boolean collided;
-        for (Entity entityInBin : bin) {
+        for (Collidable entityInBin : bin) {
             if (!entityInBin.canMove()) {
                 //check if the two entities collide
                 Vector pushVector = getPushVectorBetweenTwoShapes(entity.getShape(), entityInBin.getShape());

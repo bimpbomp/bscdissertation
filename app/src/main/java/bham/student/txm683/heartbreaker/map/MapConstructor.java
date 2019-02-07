@@ -208,6 +208,8 @@ public class MapConstructor {
         for (List<Point> boundary : boundaries){
             //stores the unique points as an outline for the wall in collisions
             List<Point> collisionPoints = new ArrayList<>();
+            //stores the outline for rendering (topleft, bottom right
+            List<Point> renderingPoints = new ArrayList<>();
 
             StringBuilder stringBuilder = new StringBuilder();
             for (Point point : boundary) {
@@ -231,17 +233,18 @@ public class MapConstructor {
                 float length;
                 int numberOfEntitiesInWall;
 
+                LinkedList<Point> pointQueue = new LinkedList<>();
+                Stack<Point> pointStack = new Stack<>();
+
                 if (Math.abs(lastPoint.getX() - firstPoint.getX()) > 0.001){
                     //horizontal wall, as no change in y
                     Log.d(TAG+"DIRECTION", "HORIZONTALWALL");
-
-                    Queue<Point> pointQueue = new LinkedList<>();
-                    Stack<Point> pointStack = new Stack<>();
 
                     if (directionOfWall.getX() > 0){
                         //first point is at left of wall
                         pointQueue.add(firstPoint);
                         pointStack.add(firstPoint.add(new Point(0, tileSize)));
+
                         directionModifier = 1;
                     } else {
                         //first point is at right of wall
@@ -253,8 +256,6 @@ public class MapConstructor {
                     length = Math.abs(firstPoint.getX()-lastPoint.getX());
 
                     numberOfEntitiesInWall = (int) length / gapBetweenPoints;
-
-                    Log.d(TAG+"NUMOFENTITIESINWALL", numberOfEntitiesInWall+"");
 
                     addPointsAtEnd = (length % gapBetweenPoints != 0 || numberOfEntitiesInWall < 1);
 
@@ -296,48 +297,27 @@ public class MapConstructor {
                         }
                     }
 
-                    /*stringBuilder = new StringBuilder();
-                    while (!pointStack.isEmpty()) {
-                        Point point = pointStack.pop();
-                        stringBuilder.append(point.toString());
-                        stringBuilder.append(" - ");
-                    }
-                    stringBuilder.append("END\n");
-                    Log.d(TAG + "STACKCONTENTS: ", stringBuilder.toString());
-
-                    stringBuilder = new StringBuilder();
-                    while (!pointQueue.isEmpty()) {
-                        Point point = pointQueue.poll();
-                        stringBuilder.append(point.toString());
-                        stringBuilder.append(" - ");
-                    }
-                    stringBuilder.append("END\n");
-                    Log.d(TAG + "QUEUECONTENTS: ", stringBuilder.toString());*/
-
                     if (directionModifier > 0){
+                        /*
+                        Since the wall is growing to the right, the last point describes the
+                        start of the last tile in the wall, so another tile needs to be added on
+                         */
+                        pointQueue.add(lastPoint.add(new Point(tileSize, 0)));
+                        pointStack.push(lastPoint.add(new Point(tileSize, tileSize)));
+
+                        renderingPoints.add(pointQueue.peek());
+                        renderingPoints.add(pointStack.peek());
 
                         collisionPoints.addAll(pointQueue);
-
-                        stringBuilder = new StringBuilder();
-                        for (Point point : collisionPoints) {
-                            stringBuilder.append(point.toString());
-                            stringBuilder.append(" - ");
-                        }
-                        stringBuilder.append("END\n");
-                        Log.d(TAG + "VERTICESAFTER QUEUE: ", stringBuilder.toString());
 
                         while(!pointStack.isEmpty()){
                             collisionPoints.add(pointStack.pop());
                         }
-
-                        stringBuilder = new StringBuilder();
-                        for (Point point : collisionPoints) {
-                            stringBuilder.append(point.toString());
-                            stringBuilder.append(" - ");
-                        }
-                        stringBuilder.append("END\n");
-                        Log.d(TAG + "VERTICESAFTER STACK: ", stringBuilder.toString());
                     } else {
+
+                        renderingPoints.add(pointStack.peek());
+                        renderingPoints.add(pointQueue.peek());
+
                         while(!pointStack.isEmpty()){
                             collisionPoints.add(pointStack.pop());
                         }
@@ -348,14 +328,12 @@ public class MapConstructor {
                     //vertical wall, as no change in x
                     Log.d(TAG+"DIRECTION", "VERTICALWALL");
 
-                    LinkedList<Point> pointQueue = new LinkedList<>();
-                    Stack<Point> pointStack = new Stack<>();
-
                     if (directionOfWall.getY() > 0){
 
                         //first point is at top of wall
                         pointQueue.add(firstPoint);
                         pointQueue.add(firstPoint.add(new Point(tileSize, 0)));
+
                         directionModifier = 1;
                     } else {
                         //first point is at bottom of wall
@@ -368,8 +346,6 @@ public class MapConstructor {
                     length = Math.abs(firstPoint.getY()-lastPoint.getY());
 
                     numberOfEntitiesInWall = (int) length / gapBetweenPoints;
-
-                    Log.d(TAG+"NUMOFENTITIESINWALL", numberOfEntitiesInWall+"");
 
                     addPointsAtEnd = (length % gapBetweenPoints != 0 || numberOfEntitiesInWall < 1);
 
@@ -411,12 +387,27 @@ public class MapConstructor {
                     }
 
                     if (directionModifier > 0){
+
+                        /*
+                        Since the wall is growing to down, the last point describes the
+                        start of the last tile in the wall, so another tile needs to be added on
+                         */
+                        pointStack.push(lastPoint.add(new Point(0, tileSize)));
+                        pointQueue.add(lastPoint.add(new Point(tileSize, tileSize)));
+
+                        renderingPoints.add(pointQueue.peek());
+                        renderingPoints.add(pointQueue.peekLast());
+
                         collisionPoints.addAll(pointQueue);
 
                         while(!pointStack.isEmpty()){
                             collisionPoints.add(pointStack.pop());
                         }
                     } else {
+
+                        renderingPoints.add(pointQueue.peekLast());
+                        renderingPoints.add(pointStack.firstElement());
+
                         collisionPoints.add(pointQueue.pollLast());
 
                         while(!pointStack.isEmpty()){
@@ -435,8 +426,9 @@ public class MapConstructor {
                 collisionPoints.add(wallPoint.add(new Point(tileSize, tileSize)));
                 collisionPoints.add(wallPoint.add(new Point(0, tileSize)));
 
-            } else {
-                //wall doesn't exist (size of 0)
+                renderingPoints.add(wallPoint);
+                renderingPoints.add(wallPoint.add(new Point(tileSize, tileSize)));
+
             }
 
             if (collisionPoints.size() > 0){
@@ -449,7 +441,7 @@ public class MapConstructor {
                 stringBuilder.append("END\n");
                 Log.d(TAG + "COLLISIONVERTICES: ", stringBuilder.toString());
 
-                walls.add(new Wall(collisionPoints.toArray(new Point[0]), Color.rgb(32,32,32)));
+                walls.add(new Wall(collisionPoints.toArray(new Point[0]), renderingPoints.toArray(new Point[0]), Color.rgb(32,32,32)));
             }
         }
 
@@ -466,15 +458,6 @@ public class MapConstructor {
         map.setPlayerSpawn(new Point(tileSize, tileSize).add(centerOffset));
         //map.setStaticEntities(new ArrayList<>(staticEntities));
         map.setEnemies(enemies);
-    }
-
-    private Point[] generateVerticesFromCenter(Point center){
-        return new Point[]{
-                center.add(center.smult(-1)),
-                new Point(center.getX()+centerOffset.getX(), center.getY()-centerOffset.getY()),
-                center.add(centerOffset),
-                new Point(center.getX()-centerOffset.getX(), center.getY()+centerOffset.getY())
-        };
     }
 
     private int generateDoorTileColor(RoomEdge edge){
@@ -526,7 +509,7 @@ public class MapConstructor {
         return boundary;
     }
 
-    public static ArrayList<Tile> populateGrid(Perimeter perimeter) {
+    private static ArrayList<Tile> populateGrid(Perimeter perimeter) {
         ArrayList<Tile> tileSet = new ArrayList<>();
 
         //visited tiles are added here
