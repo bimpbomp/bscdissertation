@@ -236,7 +236,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         //ArrayList<Entity> staticEntitiesToRender = new ArrayList<>();
 
         /*for (Entity staticEntity: levelState.getStaticEntities().values()){
-            if (isOnScreen(staticEntity.getShape().getRenderVertices())){
+            if (isOnScreen(staticEntity.getShape().getVertices())){
                 staticEntitiesToRender.add(staticEntity);
             }
         }*/

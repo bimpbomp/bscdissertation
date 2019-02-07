@@ -1,17 +1,55 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
-import android.util.Log;
-import bham.student.txm683.heartbreaker.physics.CollisionOutline;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-public class IsoscelesTrapezium extends Polygon {
+public class IsoscelesTrapezium extends Polygon implements Renderable {
+    private float primaryAngle;
 
-    private float bottomWidth;
+    private int currentColor;
+    private int defaultColor;
+    private Paint paint;
+
+    public IsoscelesTrapezium(Vector[] vertexVectors, int color){
+        super(vertexVectors);
+
+        this.primaryAngle = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+
+        this.currentColor = color;
+        this.defaultColor = color;
+
+        this.paint = new Paint();
+    }
+
+    @Override
+    void setForwardUnitVector() {
+        this.forwardUnitVector = vertexVectors[0].rotate((float) Math.cos(primaryAngle), (float) Math.sin(primaryAngle)).getUnitVector();
+    }
+
+    @Override
+    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
+        this.paint.setColor(currentColor);
+
+        canvas.drawPath(getPathWithPoints(getVertices(renderOffset)), paint);
+    }
+
+    @Override
+    public void setColor(int color) {
+        this.currentColor = color;
+    }
+
+    @Override
+    public void revertToDefaultColor() {
+        this.currentColor = defaultColor;
+    }
+}
+
+/*private float bottomWidth;
     private float topWidth;
-    private float angleBetweenUpAndPrimaryVectors;
+    private float primaryAngle;
 
     public IsoscelesTrapezium(Point geometricCenter, float topWidth, float bottomWidth, float height, int colorValue){
         super(geometricCenter, Math.max(topWidth, bottomWidth), height, colorValue, ShapeIdentifier.ISO_TRAPEZIUM);
@@ -31,7 +69,7 @@ public class IsoscelesTrapezium extends Polygon {
         this.forwardUnitVector = new Vector(geometricCenter, new Point(geometricCenter.getX(), geometricCenter.getY()-1));
         this.collisionOutline = new CollisionOutline(vertexVectors);
 
-        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+        this.primaryAngle = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
     }
 
     public IsoscelesTrapezium(String stateString) throws JSONException {
@@ -40,7 +78,7 @@ public class IsoscelesTrapezium extends Polygon {
         this.bottomWidth = (float) jsonObject.getDouble("bottomwidth");
         this.topWidth = (float) jsonObject.getDouble("topwidth");
 
-        this.angleBetweenUpAndPrimaryVectors = (float) jsonObject.getDouble("anglebetweenprimaryandup");
+        this.primaryAngle = (float) jsonObject.getDouble("anglebetweenprimaryandup");
     }
 
     public void contractHeight(float changeInHeightRatio) {
@@ -86,7 +124,7 @@ public class IsoscelesTrapezium extends Polygon {
         Polygon.rectOrTrapeziumChangeWidth(changeInWidth, forwardUnitVector, vertexVectors);
 
         this.contractionWidth = newWidth;
-        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+        this.primaryAngle = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
     }
 
     @Override
@@ -99,12 +137,12 @@ public class IsoscelesTrapezium extends Polygon {
         //same formula as a rectangle for changing height
         Rectangle.rectOrTrapeziumChangeHeight(changeInHeight, forwardUnitVector, vertexVectors);
         this.contractionHeight = newHeight;
-        this.angleBetweenUpAndPrimaryVectors = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+        this.primaryAngle = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
     }
 
     @Override
     public void setForwardUnitVector() {
-        this.forwardUnitVector = vertexVectors[0].rotate((float) Math.cos(angleBetweenUpAndPrimaryVectors), (float) Math.sin(angleBetweenUpAndPrimaryVectors)).getUnitVector();
+        this.forwardUnitVector = vertexVectors[0].rotate((float) Math.cos(primaryAngle), (float) Math.sin(primaryAngle)).getUnitVector();
     }
 
     @Override
@@ -112,7 +150,6 @@ public class IsoscelesTrapezium extends Polygon {
         JSONObject jsonObject = getJSONObject();
         jsonObject.put("topwidth", topWidth);
         jsonObject.put("bottomwidth", bottomWidth);
-        jsonObject.put("anglebetweenprimaryandup", angleBetweenUpAndPrimaryVectors);
+        jsonObject.put("anglebetweenprimaryandup", primaryAngle);
         return jsonObject;
-    }
-}
+    }*/

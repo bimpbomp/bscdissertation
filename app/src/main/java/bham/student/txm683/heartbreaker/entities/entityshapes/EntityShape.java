@@ -22,10 +22,6 @@ public abstract class EntityShape implements SaveableState {
     Paint paint;
     int defaultColor;
 
-    EntityShape(){
-
-    }
-
     /**
      * Creates an EntityShape with center at the given coordinates.
      * @param geometricCenter Point for the center of the shape.
@@ -150,13 +146,6 @@ public abstract class EntityShape implements SaveableState {
         jsonObject.put("defaultcolor", defaultColor);
 
         return jsonObject;
-    }
-
-    float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
-        float dot = primaryVector.dot(movementVector);
-        float det = primaryVector.det(movementVector);
-
-        return (float) Math.atan2(det, dot);
     }
 
     public Point getCenter(){

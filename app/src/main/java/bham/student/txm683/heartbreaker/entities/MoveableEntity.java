@@ -1,20 +1,37 @@
 package bham.student.txm683.heartbreaker.entities;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.util.Log;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
-import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.text.ParseException;
+public abstract class MoveableEntity extends Entity {
+    private Vector requestedMovementVector;
+    private float maxSpeed;
 
-public class MoveableEntity extends Entity {
-    private Vector inputtedMovementVector;
+    public MoveableEntity(String name, Point position, float maxSpeed){
+        super(name, position);
+
+        this.maxSpeed = maxSpeed;
+        this.requestedMovementVector = new Vector();
+    }
+
+    public abstract void move(float secondsSinceLastGameTick);
+
+    Vector calculateMovementVector(float secondsSinceLastGameTick){
+        return requestedMovementVector.equals(new Vector()) ?
+                new Vector() : requestedMovementVector.sMult(secondsSinceLastGameTick * maxSpeed);
+    }
+
+    public void setRequestedMovementVector(Vector requestedMovementVector) {
+        this.requestedMovementVector = requestedMovementVector;
+    }
+
+    @Override
+    public boolean canMove() {
+        return true;
+    }
+}
+
+/*private Vector requestedMovementVector;
     private float maxSpeed;
 
     private int roomID;
@@ -44,17 +61,13 @@ public class MoveableEntity extends Entity {
 
         this.maxSpeed = maxSpeed;
 
-        this.inputtedMovementVector = new Vector();
+        this.requestedMovementVector = new Vector();
 
         moveable = true;
 
         health = 5;
     }
 
-    /**
-     * Updates the shape position and rotation based on time passed and current movement vector.
-     * @param secondsSinceLastGameTick time since last game tick, in seconds
-     */
     public void move(float secondsSinceLastGameTick){
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
         //Log.d(TAG, "movement vector: " + movementVector.relativeToString());
@@ -65,11 +78,6 @@ public class MoveableEntity extends Entity {
         }
     }
 
-    /**
-     * Used to deal damage to this entity
-     * @param damageDealt damage to deal
-     * @return True if entity died
-     */
     public boolean damage(int damageDealt){
         boolean died = false;
 
@@ -82,14 +90,6 @@ public class MoveableEntity extends Entity {
         return died;
     }
 
-
-
-    /**
-     * Draws the entity to the given canvas
-     * @param canvas Canvas to draw to.
-     * @param secondsSinceLastGameTick time since last game tick in seconds for interpolation of position
-     * @param renderOffset Point to offset vertices by for rendering on scrolling screen. Provided as negative.
-     */
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastGameTick, boolean renderName){
 
         if (collided){
@@ -119,24 +119,24 @@ public class MoveableEntity extends Entity {
     }
 
     private Vector calculateMovementVector(float secondsSinceLastGameTick){
-        /*if (Float.compare(secondsSinceLastGameTick, 0f) != 0) {
-            if (!inputtedMovementVector.equals(new Vector())) {
+        *//*if (Float.compare(secondsSinceLastGameTick, 0f) != 0) {
+            if (!requestedMovementVector.equals(new Vector())) {
                 Log.d(TAG, shape.getCenter().toString());
                 Vector velocity = new Vector(oldCenter, shape.getCenter());
-                Vector accVector = inputtedMovementVector.sMult(50 * secondsSinceLastGameTick);
+                Vector accVector = requestedMovementVector.sMult(50 * secondsSinceLastGameTick);
                 oldCenter = shape.getCenter();
 
 
                 return velocity.vAdd(accVector);
             }
         }
-        return new Vector();*/
+        return new Vector();*//*
 
-        return inputtedMovementVector != null ? inputtedMovementVector.sMult(secondsSinceLastGameTick * maxSpeed) : new Vector();
+        return requestedMovementVector != null ? requestedMovementVector.sMult(secondsSinceLastGameTick * maxSpeed) : new Vector();
     }
 
     public void setMovementVector(Vector movementVector){
-        this.inputtedMovementVector = movementVector;
+        this.requestedMovementVector = movementVector;
     }
 
     public void setMaxSpeed(float maxSpeed) {
@@ -156,5 +156,4 @@ public class MoveableEntity extends Entity {
 
     public void setRoomID(int roomID) {
         this.roomID = roomID;
-    }
-}
+    }*/

@@ -1,6 +1,5 @@
 package bham.student.txm683.heartbreaker.physics;
 
-import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class CollisionOutline {
@@ -10,9 +9,9 @@ public class CollisionOutline {
         this.vertexVectors = vertexVectors;
     }
 
-    public Point[] getCollisionVertices(){
+    /*public Point[] getCollisionVertices(){
         return Vector.getVertices(vertexVectors);
-    }
+    }*/
 
     public Vector getVertexVector(int idx){
         if (idx >= 0 && idx < vertexVectors.length)

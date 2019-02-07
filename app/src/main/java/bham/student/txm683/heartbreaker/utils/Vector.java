@@ -274,11 +274,11 @@ public class Vector implements SaveableState {
         return jsonObject;
     }
 
-    public static Point[] getVertices(Vector[] vertexVectors) {
+    /*public static Point[] getVertices(Vector[] vertexVectors) {
         Point[] vertices = new Point[vertexVectors.length];
         for (int i = 0; i < vertexVectors.length; i++){
             vertices[i] = vertexVectors[i].getHead();
         }
         return vertices;
-    }
+    }*/
 }

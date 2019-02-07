@@ -42,7 +42,7 @@ public class Perimeter extends Polygon {
 
     @Override
     public Point[] getCollisionVertices() {
-        return getRenderVertices();
+        return this.getVertices();
     }
 
     /**

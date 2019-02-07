@@ -208,7 +208,7 @@ public class MapConstructor {
         for (List<Point> boundary : boundaries){
             //stores the unique points as an outline for the wall in collisions
             List<Point> collisionPoints = new ArrayList<>();
-            //stores the outline for rendering (topleft, bottom right
+            //stores the outline for rendering (topleft, bottom right points)
             List<Point> renderingPoints = new ArrayList<>();
 
             StringBuilder stringBuilder = new StringBuilder();

@@ -452,8 +452,8 @@ public class CollisionManager {
     //Separating axis theorem for two polygons
     //returns the overlap or the empty vector
     public static Vector collisionCheckTwoPolygons(Polygon polygon1, Polygon polygon2){
-        Point[] firstEntityVertices = polygon1.getRenderVertices();
-        Point[] secondEntityVertices = polygon2.getRenderVertices();
+        Point[] firstEntityVertices = polygon1.getVertices();
+        Point[] secondEntityVertices = polygon2.getVertices();
 
         ArrayList<Vector> edges = new ArrayList<>(getEdges(polygon1.getShapeIdentifier(), firstEntityVertices));
         edges.addAll(getEdges(polygon2.getShapeIdentifier(), secondEntityVertices));

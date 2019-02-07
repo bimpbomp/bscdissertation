@@ -1,38 +1,135 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
-import android.graphics.Canvas;
 import android.graphics.Path;
-import android.support.annotation.NonNull;
-import android.util.Log;
-import bham.student.txm683.heartbreaker.physics.CollisionOutline;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-public abstract class Polygon extends EntityShape {
+public abstract class Polygon {
 
     Vector[] vertexVectors;
+    Vector forwardUnitVector;
+
+    public Polygon(Vector[] vertexVectors){
+        this.vertexVectors = vertexVectors;
+
+        this.forwardUnitVector = new Vector(0,-1);
+    }
+
+    /**
+     * Sets the forwardUnitVector member of this class.
+     * Is used when the object is rotated
+     */
+    abstract void setForwardUnitVector();
+
+    /**
+     * Rotates the shape to the direction of the given vector
+     * @param movementVector Vector to align direction with
+     **/
+    public void rotateShape(Vector movementVector){
+
+        float angle = calculateAngleBetweenVectors(forwardUnitVector, movementVector.getUnitVector());
+
+        float cosAngle = (float) Math.cos(angle);
+        float sinAngle = (float) Math.sin(angle);
+
+        if (!(Math.abs(cosAngle - 1f) < 0.0001f)) {
+
+            for (int i = 0; i < vertexVectors.length; i++){
+                vertexVectors[i] = vertexVectors[i].rotate(cosAngle, sinAngle);
+            }
+        }
+
+        setForwardUnitVector();
+    }
+
+    /**
+     * Translates the vertices of this shape by the given movement vector.
+     * @param movementVector Direction and magnitude to translate each vertex by
+     */
+    public void translateShape(Vector movementVector){
+        Point amountToTranslate = movementVector.getRelativeToTailPoint();
+
+        for (int i = 0; i < vertexVectors.length; i++){
+            vertexVectors[i] = vertexVectors[i].translate(amountToTranslate);
+        }
+    }
+
+    /**
+     * Calculates the angle from the primary vector to the movement vector
+     * @param primaryVector Vector of the shape
+     * @param movementVector Vector to know angle to
+     * @return The angle between the given vectors
+     */
+    float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
+        float dot = primaryVector.dot(movementVector);
+        float det = primaryVector.det(movementVector);
+
+        return (float) Math.atan2(det, dot);
+    }
+
+    /**
+     * Creates a path between the given points
+     * @param points Points to join
+     * @return Created path
+     */
+    static Path getPathWithPoints(Point[] points){
+        Path path = new Path();
+
+        if (points.length > 0) {
+            path.moveTo(points[0].getX(), points[0].getY());
+
+            for (Point point : points) {
+                path.lineTo(point.getX(), point.getY());
+            }
+            path.close();
+        }
+        return path;
+    }
+
+    /**
+     *
+     * @param offset Amount to offset each vertex
+     * @return The vertices of this shape in clockwise order starting at the top leftmost vertex offset by the given amount
+     */
+    public Point[] getVertices(Point offset) {
+        return offsetVertices(getVertices(), offset);
+    }
+
+    /**
+     *
+     * @return The vertices of this shape in clockwise order starting at the top leftmost vertex
+     */
+    public Point[] getVertices() {
+        Point[] vertices = new Point[vertexVectors.length];
+        for (int i = 0; i < vertexVectors.length; i++){
+            vertices[i] = vertexVectors[i].getHead();
+        }
+        return vertices;
+    }
+
+    /**
+     * Adds the given offset to each element in the given array
+     * @param vertices The vertices to be offset
+     * @param offset The amount to offset the vertices
+     * @return The offset vertices
+     */
+    Point[] offsetVertices(Point[] vertices, Point offset){
+        for (int i = 0; i < vertices.length; i++){
+            vertices[i] = vertices[i].add(offset);
+        }
+        return vertices;
+    }
+}
+
+/*Vector[] vertexVectors;
     float height;
     float width;
-
-    float contractionHeight;
-    float contractionWidth;
-
-    CollisionOutline collisionOutline;
-    //boolean shapeDifference;
 
     public Polygon(Point center, float width, float height, int colorValue, ShapeIdentifier shapeIdentifier){
         super(center, colorValue, shapeIdentifier);
 
         this.height = height;
         this.width = width;
-
-        this.contractionHeight = height;
-        this.contractionWidth = width;
-
-        //this.shapeDifference = false;
     }
 
     public Polygon(String jsonString, ShapeIdentifier shapeIdentifier) throws JSONException {
@@ -51,9 +148,6 @@ public abstract class Polygon extends EntityShape {
         for (int i = 0; i < verticesArray.length(); i++){
             this.vertexVectors[i] = new Vector(geometricCenter, new Point(verticesArray.getJSONObject(i)));
         }
-
-        this.contractionHeight = height;
-        this.contractionWidth = width;
     }
 
     public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
@@ -61,7 +155,7 @@ public abstract class Polygon extends EntityShape {
 
         if (interpolationVector == null || interpolationVector.equals(new Vector())) {
             //Log.d(TAG+":draw", "zero interpol vector");
-            path = getPathWithPoints(getRenderVertices(renderOffset));
+            path = getPathWithPoints(getVertices(renderOffset));
         } else {
             //Log.d(TAG+":draw", interpolationVector.toString());
             path = getPathWithPoints(getInterpolatedVertices(interpolationVector, renderOffset));
@@ -93,7 +187,7 @@ public abstract class Polygon extends EntityShape {
     @Override
     public Point[] getCollisionVertices() {
         //return collisionOutline.getCollisionVertices();
-        return getRenderVertices();
+        return getVertices();
     }
 
     private static Path getPathWithPoints(Point[] points){
@@ -110,24 +204,15 @@ public abstract class Polygon extends EntityShape {
         return path;
     }
 
-    /*public void resetCollisionOutline(){
+    *//*public void resetCollisionOutline(){
         this.collisionOutline.setVertexVectors(vertexVectors);
-    }*/
+    }
 
-    /**
-     *
-     * @return The vertices of the visible shape in global coordinates
-     */
-    public Point[] getRenderVertices() {
+    public Point[] getVertices() {
         return Vector.getVertices(vertexVectors);
     }
 
-    /**
-     *
-     * @param renderOffset Amount to offset the shape's vertices
-     * @return The vertices of the visible shape offset by the given value
-     */
-    public Point[] getRenderVertices(Point renderOffset) {
+    public Point[] getVertices(Point renderOffset) {
         Point[] vertices = new Point[vertexVectors.length];
         for (int i = 0; i < vertexVectors.length; i++){
             vertices[i] = vertexVectors[i].getHead().add(renderOffset);
@@ -156,14 +241,9 @@ public abstract class Polygon extends EntityShape {
             }
             return interpolatedVertices;
         }
-        return getRenderVertices(renderOffset);
+        return getVertices(renderOffset);
     }
 
-    /**
-     * Rotates the shape to the direction of the given vector
-     * @param movementVector Vector to align direction with
-     */
-    @Override
     public void rotateShape(Vector movementVector){
 
         float angle = calculateAngleBetweenVectors(forwardUnitVector, movementVector.getUnitVector());
@@ -175,18 +255,13 @@ public abstract class Polygon extends EntityShape {
 
             for (int i = 0; i < vertexVectors.length; i++){
                 vertexVectors[i] = vertexVectors[i].rotate(cosAngle, sinAngle);
-                //collisionOutline.setVertexVector(collisionOutline.getVertexVector(i).rotate(cosAngle, sinAngle), i);
             }
         }
 
         setForwardUnitVector();
     }
 
-    /**
-     * Translates the vertices of this shape by the given movement vector.
-     * @param movementVector The vector to move the vertices.
-     */
-    @Override
+
     public void translateShape(Vector movementVector){
         Point amountToTranslate = movementVector.getRelativeToTailPoint();
 
@@ -194,17 +269,17 @@ public abstract class Polygon extends EntityShape {
 
         for (int i = 0; i < vertexVectors.length; i++){
             vertexVectors[i] = vertexVectors[i].translate(amountToTranslate);
-            //collisionOutline.setVertexVector(collisionOutline.getVertexVector(i).translate(amountToTranslate), i);
         }
 
         setForwardUnitVector();
     }
 
+
     @NonNull
     @Override
     public String toString() {
         StringBuilder vertices = new StringBuilder();
-        for (Point vertex : getRenderVertices()){
+        for (Point vertex : getVertices()){
             vertices.append(vertex.toString());
             vertices.append(", ");
         }
@@ -247,5 +322,4 @@ public abstract class Polygon extends EntityShape {
         vertexVectors[2] = vertexVectors[2].vAdd(changeInWidthVectorRight);
         vertexVectors[1] = vertexVectors[1].vAdd(changeInWidthVectorRight);
         vertexVectors[3] = vertexVectors[3].vAdd(changeInWidthVectorLeft);
-    }
-}
+    }*/

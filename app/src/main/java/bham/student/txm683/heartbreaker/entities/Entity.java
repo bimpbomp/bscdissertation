@@ -3,20 +3,60 @@ package bham.student.txm683.heartbreaker.entities;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import bham.student.txm683.heartbreaker.SaveableState;
-import bham.student.txm683.heartbreaker.entities.entityshapes.*;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.text.ParseException;
+public abstract class Entity  implements Collidable {
+    private String name;
+    private Point position;
 
-public class Entity implements SaveableState, Collidable {
-    String TAG;
+    private Paint paint;
+
+    Entity(String name, Point position){
+        this.name = name;
+        this.position = position;
+
+        this.paint = new Paint();
+        this.paint.setColor(Color.GRAY);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Point getPosition() {
+        return position;
+    }
+
+    public void setPosition(Point position) {
+        this.position = position;
+    }
+
+    public abstract boolean canMove();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        if (o instanceof Entity)
+            return name.equals(((Entity) o).name);
+
+        return false;
+    }
+
+    public void drawName(Canvas canvas, Point renderOffset){
+        RenderingTools.renderCenteredText(canvas, paint, getName(), getPosition().add(renderOffset));
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(13, 43).append(name).toHashCode();
+    }
+}
+
+    /*String TAG;
 
     String name;
     Polygon shape;
@@ -127,18 +167,14 @@ public class Entity implements SaveableState, Collidable {
     }
 
     private void initTextPaint(){
-        /*textPaint = new Paint();
+        *//*textPaint = new Paint();
         textPaint.setColor(Color.GRAY);
         textPaint.setStrokeWidth(15f);
         textPaint.setTextSize(28f);
-        textPaint.setTextAlign(Paint.Align.CENTER);*/
+        textPaint.setTextAlign(Paint.Align.CENTER);*//*
         textPaint = RenderingTools.initPaintForText(Color.GRAY, 28f, Paint.Align.CENTER);
     }
 
-    /**
-    * Draws the entity to the given canvas
-    * @param canvas Canvas to draw to.
-    */
     public void draw(Canvas canvas, Point renderOffset, boolean renderEntityName){
 
         if (collided){
@@ -168,10 +204,6 @@ public class Entity implements SaveableState, Collidable {
         return this.name;
     }
 
-    /**
-    * Generates a String in JSON for saving state
-    * @return String in JSON format
-    */
     @Override
     public JSONObject getStateObject() throws JSONException {
         JSONObject jsonObject = new JSONObject();
@@ -192,18 +224,4 @@ public class Entity implements SaveableState, Collidable {
 
     public Polygon getShape(){
         return this.shape;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Entity entity = (Entity) o;
-        return name.equals(entity.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(13, 43).append(name).toHashCode();
-    }
-}
+    }*/
