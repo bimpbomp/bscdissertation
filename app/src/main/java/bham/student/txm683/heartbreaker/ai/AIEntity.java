@@ -4,7 +4,7 @@ import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
-import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.TileBFS;
@@ -15,9 +15,7 @@ import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Stack;
 
-public abstract class AIEntity extends MoveableEntity {
-    String TAG = "hb::" + this.getName();
-    static EnemyType ENEMY_TYPE = EnemyType.CHASER;
+public abstract class AIEntity extends MoveableEntity implements Renderable{
 
     Tile[] path;
 
@@ -27,11 +25,14 @@ public abstract class AIEntity extends MoveableEntity {
 
     MoveableEntity target;
 
-    public AIEntity(String name, Point spawnCoordinates, int size, int colorValue, float maxSpeed, LevelState levelState) {
-        super(name, spawnCoordinates, ShapeIdentifier.KITE, size, size, colorValue, maxSpeed);
+    public AIEntity(String name, Point spawnCoordinates, float maxSpeed) {
+        super(name, spawnCoordinates, maxSpeed);
 
-        this.levelState = levelState;
         this.currentBehaviour = AIBehaviour.HALTED;
+    }
+
+    public void setLevelState(LevelState levelState){
+        this.levelState = levelState;
     }
 
     public Tile[] getPath() {
@@ -84,8 +85,8 @@ public abstract class AIEntity extends MoveableEntity {
 
             for (Tile neighbour : TileBFS.getNeighbours(currentTile)){
 
-                if (levelState.hasEntityAtTile(neighbour))
-                    continue;
+                /*if (levelState.hasEntityAtTile(neighbour))
+                    continue;*/
 
                 Log.d(aIName, "current: " + currentTile.toString() + " neighbour: " + neighbour.toString());
 

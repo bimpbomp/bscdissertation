@@ -1,9 +1,7 @@
 package bham.student.txm683.heartbreaker;
 
-import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.input.InputManager;
-import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.PhysicsController;
@@ -68,9 +66,9 @@ public class Level implements Runnable {
 
                 while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick) {
 
-                    levelState.getPlayer().setMovementVector(inputManager.getThumbstick().getMovementVector());
+                    levelState.getPlayer().setRequestedMovementVector(inputManager.getThumbstick().getMovementVector());
 
-                    for (Room room : levelState.getMap().getRooms().values()){
+                    /*for (Room room : levelState.getMap().getRooms().values()){
                         if (room.isEntityInRoom(levelState.getPlayer())) {
                             levelState.getPlayer().setRoomID(room.getId());
                             break;
@@ -84,7 +82,7 @@ public class Level implements Runnable {
                                 break;
                             }
                         }
-                    }
+                    }*/
 
                     physicsController.update(gameTickTimeStepInMillis / 1000f);
 

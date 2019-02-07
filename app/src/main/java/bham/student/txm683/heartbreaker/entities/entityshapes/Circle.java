@@ -1,5 +1,6 @@
+/*
 package bham.student.txm683.heartbreaker.entities.entityshapes;
-
+//TODO: re-implement circles
 
 import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.physics.CollisionOutline;
@@ -8,7 +9,7 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Circle extends EntityShape {
+public class Circle {
 
     private float radius;
     private CollisionOutline collisionOutline;
@@ -58,10 +59,6 @@ public class Circle extends EntityShape {
         this.forwardUnitVector = new Vector(-1, 0);
     }
 
-    /**
-     * Returns a bounding box covering the circle for Spatial partitioning
-     * @return Bounding rectangle vertices
-     */
     @Override
     public Point[] getCollisionVertices() {
         return new Point[]{
@@ -78,18 +75,6 @@ public class Circle extends EntityShape {
     }
 
     @Override
-    public void translateShape(Vector translationVector) {
-        //Log.d(TAG, "translationVector: " + translationVector.relativeToString() + ", center: " + geometricCenter.toString());
-        geometricCenter = geometricCenter.add(translationVector.getRelativeToTailPoint());
-    }
-
-    @Override
-    public void rotateShape(Vector rotationVector) {
-        float angle = calculateAngleBetweenVectors(forwardUnitVector, rotationVector);
-        forwardUnitVector = forwardUnitVector.rotate((float) Math.cos(angle), (float) Math.sin(angle));
-    }
-
-    @Override
     public JSONObject getStateObject() throws JSONException {
         JSONObject jsonObject = super.getJSONObject();
 
@@ -98,3 +83,4 @@ public class Circle extends EntityShape {
         return jsonObject;
     }
 }
+*/

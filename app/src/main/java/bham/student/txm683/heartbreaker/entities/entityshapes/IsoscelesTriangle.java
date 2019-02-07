@@ -1,18 +1,55 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
-import bham.student.txm683.heartbreaker.physics.CollisionOutline;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-public class IsoscelesTriangle extends Polygon {
+public class IsoscelesTriangle extends Polygon implements Renderable {
 
-    private static final String TAG = "hb::TRIANGLE";
+    private int currentColor;
+    private int defaultColor;
+    private Paint paint;
+
+    public IsoscelesTriangle(Vector[] vertexVectors, int colorValue){
+        super(vertexVectors, ShapeIdentifier.TRIANGLE);
+
+        this.currentColor = colorValue;
+        this.defaultColor = colorValue;
+
+        this.paint = new Paint();
+    }
+
+    @Override
+    public void setForwardUnitVector() {
+        this.forwardUnitVector = vertexVectors[0].getUnitVector();
+    }
+
+    @Override
+    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
+        paint.setColor(currentColor);
+
+        canvas.drawPath(getPathWithPoints(getVertices(renderOffset)), paint);
+    }
+
+    @Override
+    public void setColor(int color) {
+        this.currentColor = color;
+    }
+
+    @Override
+    public void revertToDefaultColor() {
+        this.currentColor = defaultColor;
+    }
+}
+
+/*
+private static final String TAG = "hb::TRIANGLE";
     private static final float TWO_THIRDS_CONSTANT = 0.6667f;
 
     public IsoscelesTriangle(Point geometricCenter, float baseWidth, float height, int colorValue){
-        super(geometricCenter, baseWidth, height, colorValue, ShapeIdentifier.ISO_TRIANGLE);
+        super(geometricCenter, baseWidth, height, colorValue, ShapeIdentifier.TRIANGLE);
 
         this.vertexVectors = new Vector[3];
 
@@ -30,7 +67,7 @@ public class IsoscelesTriangle extends Polygon {
     }
 
     public IsoscelesTriangle(String jsonString) throws JSONException {
-        super(jsonString, ShapeIdentifier.ISO_TRIANGLE);
+        super(jsonString, ShapeIdentifier.TRIANGLE);
     }
 
     @Override
@@ -74,6 +111,4 @@ public class IsoscelesTriangle extends Polygon {
     public JSONObject getStateObject() throws JSONException {
         return getJSONObject();
     }
-
-
-}
+*/

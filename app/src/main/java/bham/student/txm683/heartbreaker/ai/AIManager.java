@@ -17,6 +17,7 @@ public class AIManager {
         this.controlledAI = new ArrayList<>();
 
         for (AIEntity ai : ais){
+            ai.setLevelState(levelState);
             addAI(ai);
         }
     }

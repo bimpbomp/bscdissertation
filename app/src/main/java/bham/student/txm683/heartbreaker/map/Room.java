@@ -28,7 +28,7 @@ public class Room {
      * @return true if entity overlaps perimeter, false if not.
      */
     public boolean isEntityInRoom(Entity entity){
-        return !CollisionManager.getPushVectorBetweenTwoShapes(perimeter, entity.getShape()).equals(new Vector());
+        return !CollisionManager.collisionCheckTwoPolygons(perimeter, entity).equals(new Vector());
     }
 
     public int getId() {

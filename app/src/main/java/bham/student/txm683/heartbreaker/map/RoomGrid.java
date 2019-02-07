@@ -36,7 +36,7 @@ public class RoomGrid {
     }
 
     public void addEntity(Entity entity){
-        Point[] vertices = entity.getShape().getCollisionVertices();
+        Point[] vertices = entity.getCollisionVertices();
 
         //adds entities vertices to tiles that it's vertices exist in
         for (Point point : vertices){

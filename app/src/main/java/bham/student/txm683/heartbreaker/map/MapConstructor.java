@@ -4,16 +4,16 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
-import bham.student.txm683.heartbreaker.ai.EnemyType;
+import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.Chaser;
 import bham.student.txm683.heartbreaker.entities.Door;
+import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomEdge;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
-import bham.student.txm683.heartbreaker.utils.TileBFS;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.utils.*;
 
 import java.util.*;
 
@@ -23,10 +23,19 @@ public class MapConstructor {
     private int tileSize;
     private Point centerOffset;
 
+    private UniqueID uniqueID;
+
     //spacing between sets of collision points added to wall
     private int gapBetweenPoints;
 
+    private int doorColor = Color.BLUE;
+    private int wallColor = Color.rgb(32,32,32);
+    private int chaserColor = Color.rgb(255, 153, 51);
+    private int upperPlayerColor = Color.BLUE;
+    private int lowerPlayerColor = Color.BLACK;
+
     public MapConstructor(){
+        this.uniqueID = new UniqueID();
     }
 
     public Map loadMap(String name, int tileSize){
@@ -97,26 +106,36 @@ public class MapConstructor {
 
         ArrayList<Door> doors = new ArrayList<>();
 
+        //public Door(int doorID, Point center, int width, int height, float fieldWidth,
+        //              boolean primaryLocked, boolean secondaryLocked, boolean vertical, int doorColor){
+
         doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
+                tileSize/2, tileSize, tileSize/2f, false, false, true, doorColor));
+        doors.add(new Door(0, new Point(7*tileSize,3*tileSize).add(centerOffset),
+                tileSize/2, tileSize, tileSize/2f, false, false, true, doorColor));
+        doors.add(new Door(0, new Point(4*tileSize,8*tileSize).add(centerOffset),
+                tileSize/2, tileSize, tileSize/2f, false, false, true, doorColor));
+
+        /*doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
                 tileSize/2, tileSize, false, Color.BLUE));
         doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset),
                 tileSize/2, tileSize, false, Color.BLUE));
         doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset),
-                tileSize/2, tileSize, false, Color.BLUE));
+                tileSize/2, tileSize, false, Color.BLUE));*/
 
         RoomEdge door0 = roomGraph.addConnection(0,1, doors.get(0));
         RoomEdge door1 = roomGraph.addConnection(1,2, doors.get(1));
         RoomEdge door2 = roomGraph.addConnection(1,3,  doors.get(2));
 
         //add doors to roomgrid's tilesets
-        roomGrids.get(0).addToTileSet(doors.get(0).getSpawnCoordinates());
-        roomGrids.get(1).addToTileSet(doors.get(0).getSpawnCoordinates());
+        roomGrids.get(0).addToTileSet(doors.get(0).getPosition());
+        roomGrids.get(1).addToTileSet(doors.get(0).getPosition());
 
-        roomGrids.get(1).addToTileSet(doors.get(1).getSpawnCoordinates());
-        roomGrids.get(2).addToTileSet(doors.get(1).getSpawnCoordinates());
+        roomGrids.get(1).addToTileSet(doors.get(1).getPosition());
+        roomGrids.get(2).addToTileSet(doors.get(1).getPosition());
 
-        roomGrids.get(1).addToTileSet(doors.get(2).getSpawnCoordinates());
-        roomGrids.get(3).addToTileSet(doors.get(2).getSpawnCoordinates());
+        roomGrids.get(1).addToTileSet(doors.get(2).getPosition());
+        roomGrids.get(3).addToTileSet(doors.get(2).getPosition());
 
         door0.getDoor().setTileBackground(tileSize, generateDoorTileColor(door0));
         door1.getDoor().setTileBackground(tileSize, generateDoorTileColor(door1));
@@ -168,7 +187,7 @@ public class MapConstructor {
 
                 //for each boundary in the current room
                 for (List<Point> wallPoints : boundaries) {
-                    doorPositionIndex = wallPoints.indexOf(door.getSpawnCoordinates().add(centerOffset.smult(-1)));
+                    doorPositionIndex = wallPoints.indexOf(door.getPosition().add(centerOffset.smult(-1)));
                     if (doorPositionIndex >= 0) {
 
                         if (doorPositionIndex == 0) {
@@ -441,12 +460,22 @@ public class MapConstructor {
                 stringBuilder.append("END\n");
                 Log.d(TAG + "COLLISIONVERTICES: ", stringBuilder.toString());
 
-                walls.add(new Wall(collisionPoints.toArray(new Point[0]), renderingPoints.toArray(new Point[0]), Color.rgb(32,32,32)));
+                //public Wall(String name, Point[] collisionVertices, Point topLeft, Point bottomRight,
+                //              Point center, int colorValue){
+                if (renderingPoints.size() == 2){
+                    Point topLeft = renderingPoints.get(0);
+                    Point bottomRight = renderingPoints.get(1);
+                    Point center = new Point(bottomRight.getX()-topLeft.getX(),
+                            bottomRight.getY()-topLeft.getY()).smult(0.5f);
+
+                    walls.add(new Wall("W:"+uniqueID.id(), collisionPoints.toArray(new Point[0]),
+                            topLeft, bottomRight, center, wallColor));
+                }
             }
         }
 
-        ArrayList<Pair<EnemyType, Point>> enemies = new ArrayList<>();
-        enemies.add(new Pair<>(EnemyType.CHASER, new Point(10*tileSize,tileSize).add(centerOffset)));
+        ArrayList<AIEntity> enemies = new ArrayList<>();
+        enemies.add(new Chaser("C:" + uniqueID.id(), new Point(10*tileSize, tileSize).add(centerOffset), map.getTileSize()/2, chaserColor, 300f, 100));
 
         //initialise map with generated contents
         map.setWalls(walls);
@@ -455,8 +484,9 @@ public class MapConstructor {
         map.setRoomGraph(roomGraph);
         map.setRooms(rooms);
         map.setDoors(doors);
-        map.setPlayerSpawn(new Point(tileSize, tileSize).add(centerOffset));
-        //map.setStaticEntities(new ArrayList<>(staticEntities));
+        map.setPlayer(new Player("player", new Point(tileSize, tileSize).add(centerOffset), tileSize/2,
+                300f, upperPlayerColor, lowerPlayerColor, 100));
+
         map.setEnemies(enemies);
     }
 

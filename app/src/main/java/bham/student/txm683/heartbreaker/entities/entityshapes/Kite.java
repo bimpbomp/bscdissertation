@@ -15,7 +15,7 @@ public class Kite extends Polygon implements Renderable {
     private Paint paint;
 
     public Kite(Vector[] vertexVectors, int upperTriColor, int lowerTriColor) throws IllegalArgumentException {
-        super(vertexVectors);
+        super(vertexVectors, ShapeIdentifier.KITE);
 
         if (vertexVectors.length != 4){
             throw new IllegalArgumentException("Incorrect Number of vertices given to Kite class." +

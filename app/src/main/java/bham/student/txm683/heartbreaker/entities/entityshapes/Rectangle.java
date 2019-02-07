@@ -14,7 +14,7 @@ public class Rectangle extends Polygon implements Renderable {
     private int currentColor;
 
     public Rectangle(Vector[] vertexVectors, int colorValue){
-        super(vertexVectors);
+        super(vertexVectors, ShapeIdentifier.RECTANGLE);
 
         this.primaryAngle = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
 
@@ -62,7 +62,7 @@ public class Rectangle extends Polygon implements Renderable {
 /*private float primaryAngle;
 
     public Rectangle(Point geometricCenter, float width, float height, int colorValue){
-        super(geometricCenter, width, height, colorValue, ShapeIdentifier.RECT);
+        super(geometricCenter, width, height, colorValue, ShapeIdentifier.RECTANGLE);
 
         this.vertexVectors = new Vector[4];
 
@@ -82,7 +82,7 @@ public class Rectangle extends Polygon implements Renderable {
 
     public Rectangle(Point center, Point topLeft, Point bottomRight, int colorValue){
         super(center, bottomRight.getX()-topLeft.getX(), bottomRight.getY()-topLeft.getY(),
-                colorValue, ShapeIdentifier.RECT);
+                colorValue, ShapeIdentifier.RECTANGLE);
 
         this.vertexVectors = new Vector[4];
 
@@ -98,7 +98,7 @@ public class Rectangle extends Polygon implements Renderable {
     }
 
     public Rectangle(String stateString) throws JSONException {
-        super(stateString, ShapeIdentifier.RECT);
+        super(stateString, ShapeIdentifier.RECTANGLE);
 
         JSONObject jsonObject = new JSONObject(stateString);
 

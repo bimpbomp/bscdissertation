@@ -30,11 +30,9 @@ public abstract class Entity  implements Collidable {
         return position;
     }
 
-    public void setPosition(Point position) {
-        this.position = position;
+    public void setPosition(Point newPosition) {
+        this.position = newPosition;
     }
-
-    public abstract boolean canMove();
 
     @Override
     public boolean equals(Object o) {
@@ -79,17 +77,17 @@ public abstract class Entity  implements Collidable {
 
         switch (shapeIdentifier){
 
-            case ISO_TRIANGLE:
+            case TRIANGLE:
                 this.shape = new IsoscelesTriangle(spawnCoordinates, width, height, colorValue);
                 break;
-            case RECT:
+            case RECTANGLE:
                 this.shape = new Rectangle(spawnCoordinates, width, height, colorValue);
                 break;
             case KITE:
                 this.shape = new Kite(spawnCoordinates, width, height* 0.667f, height * 0.333f, colorValue);
                 break;
-            case ISO_TRAPEZIUM:
-                this.shape = new IsoscelesTrapezium(spawnCoordinates, width* 0.667f, width, height, colorValue);
+            case TRAPEZIUM:
+                this.shape = new Trapezium(spawnCoordinates, width* 0.667f, width, height, colorValue);
                 break;
         }
         moveable = false;
@@ -122,17 +120,17 @@ public abstract class Entity  implements Collidable {
 
         try {
             switch (ShapeIdentifier.fromInt(jsonObject.getInt("shapeidentifier"))) {
-                case ISO_TRIANGLE:
+                case TRIANGLE:
                     this.shape = new IsoscelesTriangle((String)jsonObject.get("shape"));
                     break;
-                case RECT:
+                case RECTANGLE:
                     this.shape = new Rectangle(jsonObject.getString("shape"));
                     break;
                 case KITE:
                     this.shape = new Kite(jsonObject.getString("shape"));
                     break;
-                case ISO_TRAPEZIUM:
-                    this.shape = new IsoscelesTrapezium(jsonObject.getString("shape"));
+                case TRAPEZIUM:
+                    this.shape = new Trapezium(jsonObject.getString("shape"));
                     break;
                 default:
                     throw new ParseException("Invalid shape identifier", 0);

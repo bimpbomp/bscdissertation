@@ -1,39 +1,24 @@
 package bham.student.txm683.heartbreaker;
 
-import android.graphics.Color;
-import android.util.Log;
-import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
-import bham.student.txm683.heartbreaker.ai.Chaser;
-import bham.student.txm683.heartbreaker.ai.EnemyType;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.Wall;
-import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
-import bham.student.txm683.heartbreaker.utils.UniqueID;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 public class LevelState {
     private static final String TAG = "hb::LevelState";
 
-    private UniqueID uniqueID;
-
     private Map map;
 
     private Player player;
-    private HashMap<Tile, Entity> staticEntities;
     private ArrayList<AIEntity> enemyEntities;
 
     private AIManager aiManager;
@@ -47,10 +32,8 @@ public class LevelState {
     private DebugInfo debugInfo;
 
     public LevelState(Map map){
-        this.uniqueID = new UniqueID();
         this.map = map;
 
-        this.staticEntities = new HashMap<>();
         this.enemyEntities = new ArrayList<>();
 
         this.readyToRender = false;
@@ -86,15 +69,15 @@ public class LevelState {
     }*/
 
     private void freshInitFromMap(){
-        int playerSize = map.getTileSize();
-        this.player = new Player("player", map.getPlayerSpawn(), playerSize, map.getTileSize()*3, Color.rgb(0,0,255));
+        //int playerSize = map.getTileSize();
+        //this.player = new Player("player", map.getPlayerSpawn(), playerSize, map.getTileSize()*3, Color.rgb(0,0,255));
 
         /*List<Point> staticSpawns = map.getStaticEntities();
         for (Point staticSpawn : staticSpawns){
             this.staticEntities.put(map.mapGlobalPointToTile(staticSpawn) , (new Boundary("B:"+uniqueID.id(), staticSpawn, map.getTileSize()+5, Color.rgb(32,32,32))));
         }*/
 
-        for (Wall wall : map.getWalls()){
+        /*for (Wall wall : map.getWalls()){
             wall.setName("W:"+uniqueID.id());
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -112,41 +95,16 @@ public class LevelState {
             }
             stringBuilder.append("END");
             Log.d(TAG, wall.getName() + " render: " + stringBuilder.toString());
-        }
-
-        List<Pair<EnemyType, Point>> enemySpawns = map.getEnemies();
-        Point enemySpawn;
-        EnemyType enemyType;
-        for (Pair pair : enemySpawns){
-            enemySpawn = (Point)pair.second;
-            enemyType = (EnemyType)pair.first;
-
-            ShapeIdentifier shapeIdentifier;
-
-            switch (enemyType){
-                case CHASER:
-                    shapeIdentifier = ShapeIdentifier.KITE;
-                    break;
-                default:
-                    shapeIdentifier = ShapeIdentifier.RECT;
-                    break;
-            }
-
-            this.enemyEntities.add(new Chaser("C:" + uniqueID.id(), enemySpawn, map.getTileSize()/2, Color.rgb(255, 153, 51), 300f, this));
-        }
+        }*/
     }
 
-    public void addStaticEntity(Entity entity){
-        this.staticEntities.put(map.mapGlobalPointToTile(entity.getSpawnCoordinates()), entity);
-    }
-
-    public boolean hasEntityAtTile(Tile tile){
+    /*public boolean hasEntityAtTile(Tile tile){
         return staticEntities.containsKey(tile);
     }
 
     public HashMap<Tile, Entity> getStaticEntities() {
         return staticEntities;
-    }
+    }*/
 
     public void setPlayer(Player player){
         this.player = player;
@@ -167,7 +125,7 @@ public class LevelState {
     }
 
     public Player getPlayer(){
-        return this.player;
+        return map.getPlayer();
     }
 
     public Map getMap() {
@@ -207,9 +165,9 @@ public class LevelState {
 
     private JSONObject[] convertEntityListToJSONObjectArray(Entity[] entityList) throws JSONException{
         JSONObject[] jsonObjects = new JSONObject[entityList.length];
-        for (int i = 0; i < entityList.length; i++){
+        /*for (int i = 0; i < entityList.length; i++){
             jsonObjects[i] = entityList[i].getStateObject();
-        }
+        }*/
         return jsonObjects;
     }
 

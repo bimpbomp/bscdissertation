@@ -1,40 +1,98 @@
 package bham.student.txm683.heartbreaker.entities;
 
-import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTrapezium;
+import android.graphics.Canvas;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
+import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.physics.Collidable;
+import bham.student.txm683.heartbreaker.physics.Damageable;
+import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
-import org.json.JSONException;
+import bham.student.txm683.heartbreaker.utils.Vector;
 
-import java.text.ParseException;
+public class Player extends MoveableEntity implements Damageable, Renderable, Collidable {
 
-public class Player extends MoveableEntity {
+    private Kite shape;
 
-    private int maxCharge;
-    private int currentMeleeCharge;
-    private long lastChargeTime;
-    private long currentChargeTime;
+    private int health;
 
-    private static final int TIME_BETWEEN_CHARGES = 25;
+    public Player(String name, Point center, int size, float maxSpeed, int upperTriColor, int lowerTriColor, int initialHealth) {
+        super(name, center, maxSpeed);
 
-    private int attackCooldown;
+        float width = size * 0.75f;
+        float centerToLowerTri = size * 0.25f;
 
-    private int damageDealt;
+        this.shape = new Kite(new Vector[]{
+                new Vector(center, center.add(new Point(0, -0.5f * size))),
+                new Vector(center, center.add(new Point(width/2f, centerToLowerTri))),
+                new Vector(center, center.add(new Point(width/-2f, centerToLowerTri))),
+                new Vector(center, center.add(new Point(0, 0.5f * size))),
+        }, upperTriColor, lowerTriColor);
 
-    public Player(String name, Point spawnCoordinates, int size, float maxSpeed, int color){
-        super(name, new IsoscelesTrapezium(spawnCoordinates, (size/2f), (size/2f), (size/2f), color), maxSpeed);
-
-        damageDealt = 0;
-
-        attackCooldown = 0;
-
-        this.maxCharge = 25;
-
-        //resetMeleeCharges();
+        this.health = initialHealth;
     }
 
-    public Player(String stateString) throws ParseException, JSONException {
-        super(stateString);
+    @Override
+    public void move(float secondsSinceLastGameTick) {
+        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
+        shape.translateShape(movementVector);
+        shape.rotateShape(movementVector);
     }
 
+    @Override
+    public Point[] getCollisionVertices() {
+        return shape.getVertices();
+    }
+
+    @Override
+    public boolean isSolid() {
+        return true;
+    }
+
+    @Override
+    public int getHealth() {
+        return this.health;
+    }
+
+    @Override
+    public void setHealth(int health) {
+        this.health = health;
+    }
+
+    @Override
+    public boolean inflictDamage(int damageToInflict) {
+        health -= damageToInflict;
+
+        return health < 0;
+    }
+
+    @Override
+    public void restoreHealth(int healthToRestore) {
+        this.health += healthToRestore;
+    }
+
+    @Override
+    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
+        shape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
+
+        if (renderEntityName)
+            drawName(canvas, renderOffset);
+    }
+
+    @Override
+    public void setColor(int color) {
+        shape.setColor(color);
+    }
+
+    @Override
+    public void revertToDefaultColor() {
+        shape.revertToDefaultColor();
+    }
+
+    @Override
+    public ShapeIdentifier getShapeIdentifier() {
+        return shape.getShapeIdentifier();
+    }
+}
     /*private void resetMeleeCharges(){
         this.currentMeleeCharge = 0;
 
@@ -62,9 +120,6 @@ public class Player extends MoveableEntity {
         }
     }
 
-    *//**
-     * Called when the melee button is released.
-     *//*
     public void meleeAttack(){
         Log.d(TAG, "melee attack with charge of " + currentMeleeCharge);
         shape.returnToNormal();
@@ -81,10 +136,6 @@ public class Player extends MoveableEntity {
         attackCooldown = 5;
         launchedAttack = true;
     }
-
-    *//**
-     * Called by collision manager at end of checks to mark collision as checked
-     *//*
     public void resetAttack(){
         launchedAttack = false;
         damageDealt = 0;
@@ -107,4 +158,3 @@ public class Player extends MoveableEntity {
     public int getDamageFromMeleeAttack(){
         return damageDealt;
     }*/
-}

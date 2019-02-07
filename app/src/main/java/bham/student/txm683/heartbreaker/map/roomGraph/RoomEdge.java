@@ -47,7 +47,7 @@ public class RoomEdge {
         return "Edge{" +
                 "firstNode=" + firstRoom.getRoom().getId() +
                 ", secondNode=" + secondRoom.getRoom().getId() +
-                ", door=" + door.getDoorID() +
+                ", door=" + door.getName() +
                 '}';
     }
 }

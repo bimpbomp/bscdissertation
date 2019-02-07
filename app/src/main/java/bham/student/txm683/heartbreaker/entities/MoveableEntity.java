@@ -16,7 +16,7 @@ public abstract class MoveableEntity extends Entity {
 
     public abstract void move(float secondsSinceLastGameTick);
 
-    Vector calculateMovementVector(float secondsSinceLastGameTick){
+    public Vector calculateMovementVector(float secondsSinceLastGameTick){
         return requestedMovementVector.equals(new Vector()) ?
                 new Vector() : requestedMovementVector.sMult(secondsSinceLastGameTick * maxSpeed);
     }

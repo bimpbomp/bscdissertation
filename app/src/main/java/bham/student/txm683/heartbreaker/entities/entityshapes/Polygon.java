@@ -4,15 +4,18 @@ import android.graphics.Path;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
-public abstract class Polygon {
+public abstract class Polygon implements Shape{
 
+    private ShapeIdentifier shapeIdentifier;
     Vector[] vertexVectors;
     Vector forwardUnitVector;
 
-    public Polygon(Vector[] vertexVectors){
-        this.vertexVectors = vertexVectors;
+    Polygon(Vector[] vertexVector, ShapeIdentifier shapeIdentifier){
+        this.vertexVectors = vertexVector;
 
         this.forwardUnitVector = new Vector(0,-1);
+
+        this.shapeIdentifier = shapeIdentifier;
     }
 
     /**
@@ -113,11 +116,16 @@ public abstract class Polygon {
      * @param offset The amount to offset the vertices
      * @return The offset vertices
      */
-    Point[] offsetVertices(Point[] vertices, Point offset){
+    static Point[] offsetVertices(Point[] vertices, Point offset){
         for (int i = 0; i < vertices.length; i++){
             vertices[i] = vertices[i].add(offset);
         }
         return vertices;
+    }
+
+    @Override
+    public ShapeIdentifier getShapeIdentifier() {
+        return this.shapeIdentifier;
     }
 }
 

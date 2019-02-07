@@ -6,15 +6,15 @@ import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
-public class IsoscelesTrapezium extends Polygon implements Renderable {
+public class Trapezium extends Polygon implements Renderable {
     private float primaryAngle;
 
     private int currentColor;
     private int defaultColor;
     private Paint paint;
 
-    public IsoscelesTrapezium(Vector[] vertexVectors, int color){
-        super(vertexVectors);
+    public Trapezium(Vector[] vertexVectors, int color){
+        super(vertexVectors, ShapeIdentifier.TRAPEZIUM);
 
         this.primaryAngle = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
 
@@ -51,8 +51,8 @@ public class IsoscelesTrapezium extends Polygon implements Renderable {
     private float topWidth;
     private float primaryAngle;
 
-    public IsoscelesTrapezium(Point geometricCenter, float topWidth, float bottomWidth, float height, int colorValue){
-        super(geometricCenter, Math.max(topWidth, bottomWidth), height, colorValue, ShapeIdentifier.ISO_TRAPEZIUM);
+    public Trapezium(Point geometricCenter, float topWidth, float bottomWidth, float height, int colorValue){
+        super(geometricCenter, Math.max(topWidth, bottomWidth), height, colorValue, ShapeIdentifier.TRAPEZIUM);
 
         this.topWidth = topWidth;
         this.bottomWidth = bottomWidth;
@@ -72,8 +72,8 @@ public class IsoscelesTrapezium extends Polygon implements Renderable {
         this.primaryAngle = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
     }
 
-    public IsoscelesTrapezium(String stateString) throws JSONException {
-        super(stateString, ShapeIdentifier.ISO_TRAPEZIUM);
+    public Trapezium(String stateString) throws JSONException {
+        super(stateString, ShapeIdentifier.TRAPEZIUM);
         JSONObject jsonObject = new JSONObject(stateString);
         this.bottomWidth = (float) jsonObject.getDouble("bottomwidth");
         this.topWidth = (float) jsonObject.getDouble("topwidth");

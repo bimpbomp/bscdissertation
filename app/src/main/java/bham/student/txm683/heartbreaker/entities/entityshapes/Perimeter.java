@@ -1,60 +1,94 @@
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import bham.student.txm683.heartbreaker.physics.Collidable;
+import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Un-rotatable shape for defining a region as a room
  */
-public class Perimeter extends Polygon {
+public class Perimeter implements Renderable, Collidable, Shape {
+
+    private Point[] vertices;
+    private int currentColor;
+    private int defaultColor;
+    private Paint paint;
 
     /**
      *
      * @param vertices Vertices of perimeter defined in a clockwise manner, starting at the top left vertex
      */
     public Perimeter(Point[] vertices, int colorValue) {
-        super(vertices[0], 0, 0, colorValue, ShapeIdentifier.INVALID);
+        this.vertices = vertices;
 
-        this.vertexVectors = new Vector[vertices.length];
+        this.defaultColor = colorValue;
+        this.currentColor = colorValue;
 
-        for (int i = 0; i < vertices.length; i++) {
-            this.vertexVectors[i] = new Vector(geometricCenter, vertices[i]);
-        }
+        this.paint = new Paint();
     }
 
     public void convertToGlobal(int tileSize){
-        geometricCenter = geometricCenter.smult(tileSize);
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertexVectors[i] = new Vector(geometricCenter, vertexVectors[i].getHead().smult(tileSize));
+        for (int i = 0; i < vertices.length; i++){
+            vertices[i] = vertices[i].smult(tileSize);
         }
-    }
-
-    /**
-     * This function does nothing, and is overridden to prevent the shape being rotated
-     * @param movementVector Irrelevant
-     */
-    @Override
-    public void rotateShape(Vector movementVector) {
-
     }
 
     @Override
     public Point[] getCollisionVertices() {
-        return this.getVertices();
-    }
-
-    /**
-     * Set to the zero vector as it is not needed (no rotations)
-     */
-    @Override
-    public void setForwardUnitVector() {
-        this.forwardUnitVector = new Vector();
+        return this.vertices;
     }
 
     @Override
-    public JSONObject getStateObject() throws JSONException {
+    public boolean isSolid() {
+        return false;
+    }
+
+    @Override
+    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
+        this.paint.setColor(currentColor);
+
+        canvas.drawPath(Polygon.getPathWithPoints(Polygon.offsetVertices(vertices, renderOffset)), paint);
+    }
+
+    @Override
+    public void setColor(int color) {
+        this.currentColor = color;
+    }
+
+    @Override
+    public void revertToDefaultColor() {
+        this.currentColor = defaultColor;
+    }
+
+    public int getDefaultColor() {
+        return defaultColor;
+    }
+
+    @Override
+    public boolean canMove() {
+        return false;
+    }
+
+    @Override
+    public String getName() {
         return null;
+    }
+
+    @Override
+    public ShapeIdentifier getShapeIdentifier() {
+        return ShapeIdentifier.PERIMETER;
+    }
+
+    @Override
+    public Point getPosition() {
+        return vertices[0];
+    }
+
+    @Override
+    public void setPosition(Point newPosition) {
+
     }
 }

@@ -1,8 +1,8 @@
 package bham.student.txm683.heartbreaker.map;
 
-import android.util.Pair;
-import bham.student.txm683.heartbreaker.ai.EnemyType;
+import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.entities.Door;
+import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -18,10 +18,9 @@ public class Map {
 
     private int tileSize, widthInTiles, heightInTiles;
 
-    private Point playerSpawn;
+    private Player player;
 
-    private List<Point> staticEntities;
-    private List<Pair<EnemyType, Point>> enemies;
+    private List<AIEntity> enemies;
     private List<Wall> walls;
 
     private HashMap<Integer, Room> rooms;
@@ -61,15 +60,15 @@ public class Map {
         return tileSize;
     }
 
-    public void setPlayerSpawn(Point playerSpawn) {
-        this.playerSpawn = playerSpawn;
+    public Player getPlayer() {
+        return player;
     }
 
-    public void setStaticEntities(List<Point> staticEntities) {
-        this.staticEntities = staticEntities;
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
-    public void setEnemies(List<Pair<EnemyType, Point>> enemies) {
+    public void setEnemies(List<AIEntity> enemies) {
         this.enemies = enemies;
     }
 
@@ -85,15 +84,7 @@ public class Map {
         this.doors = doors;
     }
 
-    public Point getPlayerSpawn() {
-        return playerSpawn;
-    }
-
-    public List<Point> getStaticEntities() {
-        return staticEntities;
-    }
-
-    public List<Pair<EnemyType, Point>> getEnemies() {
+    public List<AIEntity> getEnemies() {
         return enemies;
     }
 

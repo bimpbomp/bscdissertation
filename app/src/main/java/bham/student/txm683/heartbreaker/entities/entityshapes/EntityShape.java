@@ -1,3 +1,4 @@
+/*
 package bham.student.txm683.heartbreaker.entities.entityshapes;
 
 import android.graphics.Canvas;
@@ -22,11 +23,6 @@ public abstract class EntityShape implements SaveableState {
     Paint paint;
     int defaultColor;
 
-    /**
-     * Creates an EntityShape with center at the given coordinates.
-     * @param geometricCenter Point for the center of the shape.
-     * @param colorValue Color.constant for shape color.
-     */
     EntityShape(Point geometricCenter, int colorValue, ShapeIdentifier shapeIdentifier){
         TAG = "hb::" + this.getClass().getSimpleName();
 
@@ -42,11 +38,6 @@ public abstract class EntityShape implements SaveableState {
         this.shapeIdentifier = shapeIdentifier;
     }
 
-    /**
-     * Creates an EntityShape object from the given JSON formatted String.
-     * @param jsonString String in JSON format
-     * @throws JSONException Thrown if the required members cannot be extracted from the jsonString
-     */
     EntityShape(String jsonString, ShapeIdentifier shapeIdentifier) throws JSONException {
         TAG = "hb::" + this.getClass().getSimpleName();
 
@@ -84,13 +75,6 @@ public abstract class EntityShape implements SaveableState {
 
     public abstract Point[] getCollisionVertices();
 
-    /**
-     * Draws the shape to the given canvas.
-     * InterpolationVector of zero will render the shape as it was on the last game tick
-     * @param canvas Canvas to draw to.
-     * @param renderOffset Offset to translate shape's world coordinates into screen coordinates. Given as a negative value
-     * @param interpolationVector Vector describing movement direction
-     */
     public abstract void draw(Canvas canvas, Point renderOffset, Vector interpolationVector);
 
     public abstract void translateShape(Vector translationVector);
@@ -101,22 +85,10 @@ public abstract class EntityShape implements SaveableState {
         translateShape(new Vector(this.geometricCenter, geometricCenter));
     }
 
-    /**
-     * Interpolates the shapes center for rendering, and applies the given renderOffset.
-     * Doesn't update the shapes stored value for it's center
-     * @param interpolationVector Vector describing movement direction
-     * @param renderOffset Offset to translate shape's world coordinates into screen coordinates. Given as a negative value
-     * @return The interpolated center for this shape after adding the interpolationVector and renderOffset
-     */
     public Point getInterpolatedCenter(Vector interpolationVector, Point renderOffset){
         return this.geometricCenter.add(interpolationVector.getRelativeToTailPoint()).add(renderOffset);
     }
 
-    /**
-     * Rotates, then translates the shape in the direction of the given vector.
-     * Rotation makes the shapes forward vector point in the same direction as the movementVector.
-     * @param movementVector Vector for use in rotation and translation
-     */
     public void move(Vector movementVector){
         rotateShape(movementVector);
         translateShape(movementVector);
@@ -130,13 +102,6 @@ public abstract class EntityShape implements SaveableState {
                 "}";
     }
 
-    /**
-     * Serialises the EntityShape into a JSON object.
-     * Since this class is abstract, this function is called by the extending classes as part
-     * of the serialisation to JSON format.
-     * @return JSONObject containing the members of this class.
-     * @throws JSONException Throws JSON exception if the object cannot be serialised.
-     */
     JSONObject getJSONObject() throws JSONException {
         JSONObject jsonObject = new JSONObject();
 
@@ -180,3 +145,4 @@ public abstract class EntityShape implements SaveableState {
         return shapeIdentifier;
     }
 }
+*/
