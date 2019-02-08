@@ -12,8 +12,8 @@ public class InteractionField implements Renderable, Collidable {
     private Rectangle shape;
     private String name;
 
-    public InteractionField(Vector[] vertexVectors, int color){
-        shape = new Rectangle(vertexVectors, color);
+    public InteractionField(Point center, Vector[] vertexVectors, int color){
+        shape = new Rectangle(center, vertexVectors, color);
         this.name = "";
     }
 
@@ -45,7 +45,7 @@ public class InteractionField implements Renderable, Collidable {
     @Override
     public boolean canMove() {
         //TODO add to constructor
-        //door field cant move but enemy sight and player melee can
+        //e.g. door field cant move but enemy sight and player melee can
         return false;
     }
 
@@ -60,12 +60,12 @@ public class InteractionField implements Renderable, Collidable {
     }
 
     @Override
-    public Point getPosition() {
-        return shape.getVertices()[0];
+    public Point getCenter() {
+        return shape.getCenter();
     }
 
     @Override
-    public void setPosition(Point newPosition) {
-        //TODO implement position of interaction field
+    public void setCenter(Point newCenter) {
+        shape.translateShape(new Vector(shape.getCenter(), newCenter));
     }
 }

@@ -16,7 +16,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
     private int health;
 
     public Chaser(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
-        super(name, center, maxSpeed);
+        super(name, maxSpeed);
 
         shape = new Rectangle(center, size, size, colorValue);
         this.health = initialHealth;
@@ -31,10 +31,10 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
 
                 if (levelState.inSameRoom(this, target)){
                     Log.d(getName(), "in same room");
-                    path = applyAStar(getName(), levelState.getMap().mapGlobalPointToTile(getPosition()),
-                            levelState.getMap().mapGlobalPointToTile(target.getPosition()), 10);
+                    path = applyAStar(getName(), levelState.getMap().mapGlobalPointToTile(getCenter()),
+                            levelState.getMap().mapGlobalPointToTile(target.getCenter()), 10);
                     if (path.length > 1){
-                        setRequestedMovementVector(new Vector(getPosition(),
+                        setRequestedMovementVector(new Vector(getCenter(),
                                 levelState.getMap().mapTileToGlobalPoint(path[1])).getUnitVector());
                     } else {
                         Log.d(getName(), "Path length of less than 2");
@@ -47,7 +47,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
                     if (roomPath.length > 1){
                         Log.d(getName(), roomPath[0] + " -> " + roomPath[1]);
                         Point door = levelState.getMap().getRoomGraph().getDoorBetweenRooms(getRoomID(), roomPath[1].getRoom().getId()).getSpawnCoordinates();
-                        Vector movementVector = new Vector(getPosition(),door).getUnitVector();
+                        Vector movementVector = new Vector(getCenter(),door).getUnitVector();
 
                         setRequestedMovementVector(movementVector);
                     } else {
@@ -139,5 +139,15 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
     @Override
     public ShapeIdentifier getShapeIdentifier() {
         return shape.getShapeIdentifier();
+    }
+
+    @Override
+    public Point getCenter() {
+        return shape.getCenter();
+    }
+
+    @Override
+    public void setCenter(Point newCenter) {
+        shape.translateShape(new Vector(shape.getCenter(), newCenter));
     }
 }

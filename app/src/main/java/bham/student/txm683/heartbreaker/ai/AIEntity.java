@@ -5,7 +5,6 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
-import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.TileBFS;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -25,8 +24,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable{
 
     MoveableEntity target;
 
-    public AIEntity(String name, Point spawnCoordinates, float maxSpeed) {
-        super(name, spawnCoordinates, maxSpeed);
+    public AIEntity(String name, float maxSpeed) {
+        super(name, maxSpeed);
 
         this.currentBehaviour = AIBehaviour.HALTED;
     }

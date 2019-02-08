@@ -4,14 +4,18 @@ import android.graphics.Path;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
+import java.util.ArrayList;
+
 public abstract class Polygon implements Shape{
 
     private ShapeIdentifier shapeIdentifier;
     Vector[] vertexVectors;
     Vector forwardUnitVector;
+    Point center;
 
-    Polygon(Vector[] vertexVector, ShapeIdentifier shapeIdentifier){
-        this.vertexVectors = vertexVector;
+    Polygon(Point center, Vector[] vertexVectors, ShapeIdentifier shapeIdentifier){
+        this.vertexVectors = vertexVectors;
+        this.center = center;
 
         this.forwardUnitVector = new Vector(0,-1);
 
@@ -51,6 +55,8 @@ public abstract class Polygon implements Shape{
      */
     public void translateShape(Vector movementVector){
         Point amountToTranslate = movementVector.getRelativeToTailPoint();
+
+        center = center.add(amountToTranslate);
 
         for (int i = 0; i < vertexVectors.length; i++){
             vertexVectors[i] = vertexVectors[i].translate(amountToTranslate);
@@ -110,6 +116,15 @@ public abstract class Polygon implements Shape{
         return vertices;
     }
 
+    public Point getCenter(){
+        return center;
+    }
+
+    @Override
+    public ShapeIdentifier getShapeIdentifier() {
+        return this.shapeIdentifier;
+    }
+
     /**
      * Adds the given offset to each element in the given array
      * @param vertices The vertices to be offset
@@ -117,217 +132,24 @@ public abstract class Polygon implements Shape{
      * @return The offset vertices
      */
     static Point[] offsetVertices(Point[] vertices, Point offset){
+        Point[] v = new Point[vertices.length];
         for (int i = 0; i < vertices.length; i++){
-            vertices[i] = vertices[i].add(offset);
+            v[i] = vertices[i].add(offset);
         }
-        return vertices;
+        return v;
     }
 
-    @Override
-    public ShapeIdentifier getShapeIdentifier() {
-        return this.shapeIdentifier;
+    public static ArrayList<Vector> createTriangle(Point center, float width, float height){
+        float twoThirdsHeight = height * 0.667f;
+        ArrayList<Vector> vertices = new ArrayList<>();
+
+        vertices.add(new Vector(center, new Point(center.getX(), center.getY() - twoThirdsHeight)));
+
+        float baseY = center.getY() + (height-twoThirdsHeight);
+
+        vertices.add(new Vector(center, new Point(center.getX() + (width / 2), baseY)));
+        vertices.add(new Vector(center, new Point(center.getX() - (width / 2), baseY)));
+
+        return vertices;
     }
 }
-
-/*Vector[] vertexVectors;
-    float height;
-    float width;
-
-    public Polygon(Point center, float width, float height, int colorValue, ShapeIdentifier shapeIdentifier){
-        super(center, colorValue, shapeIdentifier);
-
-        this.height = height;
-        this.width = width;
-    }
-
-    public Polygon(String jsonString, ShapeIdentifier shapeIdentifier) throws JSONException {
-        super(jsonString, shapeIdentifier);
-
-        JSONObject jsonObject = new JSONObject(jsonString);
-
-        Log.d("hb::Polygon", jsonString);
-
-        this.height = Float.parseFloat(jsonObject.getString("height"));
-        this.width = Float.parseFloat(jsonObject.getString("width"));
-
-        JSONArray verticesArray = jsonObject.getJSONArray("vertices");
-
-        this.vertexVectors = new Vector[verticesArray.length()];
-        for (int i = 0; i < verticesArray.length(); i++){
-            this.vertexVectors[i] = new Vector(geometricCenter, new Point(verticesArray.getJSONObject(i)));
-        }
-    }
-
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
-        Path path;
-
-        if (interpolationVector == null || interpolationVector.equals(new Vector())) {
-            //Log.d(TAG+":draw", "zero interpol vector");
-            path = getPathWithPoints(getVertices(renderOffset));
-        } else {
-            //Log.d(TAG+":draw", interpolationVector.toString());
-            path = getPathWithPoints(getInterpolatedVertices(interpolationVector, renderOffset));
-        }
-
-        canvas.drawPath(path, this.paint);
-    }
-
-    @Override
-    public float getHeight() {
-        return height;
-    }
-
-    @Override
-    public float getWidth() {
-        return width;
-    }
-
-    @Override
-    public void setHeight(float newHeight) {
-        this.height = newHeight;
-    }
-
-    @Override
-    public void setWidth(float newWidth) {
-        this.width = newWidth;
-    }
-
-    @Override
-    public Point[] getCollisionVertices() {
-        //return collisionOutline.getCollisionVertices();
-        return getVertices();
-    }
-
-    private static Path getPathWithPoints(Point[] points){
-        Path path = new Path();
-
-        if (points.length > 0) {
-            path.moveTo(points[0].getX(), points[0].getY());
-
-            for (Point point : points) {
-                path.lineTo(point.getX(), point.getY());
-            }
-        }
-        path.close();
-        return path;
-    }
-
-    *//*public void resetCollisionOutline(){
-        this.collisionOutline.setVertexVectors(vertexVectors);
-    }
-
-    public Point[] getVertices() {
-        return Vector.getVertices(vertexVectors);
-    }
-
-    public Point[] getVertices(Point renderOffset) {
-        Point[] vertices = new Point[vertexVectors.length];
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertices[i] = vertexVectors[i].getHead().add(renderOffset);
-        }
-        return vertices;
-    }
-
-    public void setCenter(Point geometricCenter){
-        translateShape(new Vector(this.geometricCenter, geometricCenter));
-    }
-
-    private Point[] getInterpolatedVertices(Vector interpolationVector, Point renderOffset){
-
-        if (!interpolationVector.equals(new Vector())) {
-            Point amountToAdd = interpolationVector.getRelativeToTailPoint();
-
-            float angle = calculateAngleBetweenVectors(forwardUnitVector, interpolationVector);
-
-            float cosAngle = (float) Math.cos(angle);
-
-            float sinAngle = (float) Math.sin(angle);
-
-            Point[] interpolatedVertices = new Point[vertexVectors.length];
-            for (int i = 0; i < vertexVectors.length; i++){
-                interpolatedVertices[i] = vertexVectors[i].rotate(cosAngle, sinAngle).translate(amountToAdd).getHead().add(renderOffset);
-            }
-            return interpolatedVertices;
-        }
-        return getVertices(renderOffset);
-    }
-
-    public void rotateShape(Vector movementVector){
-
-        float angle = calculateAngleBetweenVectors(forwardUnitVector, movementVector.getUnitVector());
-
-        float cosAngle = (float) Math.cos(angle);
-        float sinAngle = (float) Math.sin(angle);
-
-        if (!(Math.abs(cosAngle - 1f) < 0.0001f)) {
-
-            for (int i = 0; i < vertexVectors.length; i++){
-                vertexVectors[i] = vertexVectors[i].rotate(cosAngle, sinAngle);
-            }
-        }
-
-        setForwardUnitVector();
-    }
-
-
-    public void translateShape(Vector movementVector){
-        Point amountToTranslate = movementVector.getRelativeToTailPoint();
-
-        this.geometricCenter = this.geometricCenter.add(amountToTranslate);
-
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertexVectors[i] = vertexVectors[i].translate(amountToTranslate);
-        }
-
-        setForwardUnitVector();
-    }
-
-
-    @NonNull
-    @Override
-    public String toString() {
-        StringBuilder vertices = new StringBuilder();
-        for (Point vertex : getVertices()){
-            vertices.append(vertex.toString());
-            vertices.append(", ");
-        }
-        return this.getClass().getName() + "{" +
-                "center: " + geometricCenter.toString() +
-                ", vertices: " + vertices.toString() +
-                "}";
-    }
-
-    @Override
-    JSONObject getJSONObject() throws JSONException {
-        JSONObject jsonObject = super.getJSONObject();
-
-        JSONObject[] vertices = new JSONObject[vertexVectors.length];
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertices[i] = vertexVectors[i].getHead().getStateObject();
-        }
-        jsonObject.put("vertices", new JSONArray(vertices));
-        jsonObject.put("height", height);
-        jsonObject.put("width",width);
-
-        return jsonObject;
-    }
-
-    static void rectOrTrapeziumChangeHeight(float changeInHeight, Vector forwardUnitVector, Vector[] vertexVectors){
-        Vector changeInHeightVectorUp = forwardUnitVector.sMult(changeInHeight/2);
-        Vector changeInHeightVectorDown = changeInHeightVectorUp.sMult(-1);
-
-        vertexVectors[0] = vertexVectors[0].vAdd(changeInHeightVectorUp);
-        vertexVectors[1] = vertexVectors[1].vAdd(changeInHeightVectorUp);
-        vertexVectors[2] = vertexVectors[2].vAdd(changeInHeightVectorDown);
-        vertexVectors[3] = vertexVectors[3].vAdd(changeInHeightVectorDown);
-    }
-
-    static void rectOrTrapeziumChangeWidth(float changeInWidth, Vector forwardUnitVector, Vector[] vertexVectors){
-        Vector changeInWidthVectorLeft = forwardUnitVector.rotateAntiClockwise90().sMult(changeInWidth/2);
-        Vector changeInWidthVectorRight = changeInWidthVectorLeft.sMult(-1);
-
-        vertexVectors[0] = vertexVectors[0].vAdd(changeInWidthVectorLeft);
-        vertexVectors[2] = vertexVectors[2].vAdd(changeInWidthVectorRight);
-        vertexVectors[1] = vertexVectors[1].vAdd(changeInWidthVectorRight);
-        vertexVectors[3] = vertexVectors[3].vAdd(changeInWidthVectorLeft);
-    }*/

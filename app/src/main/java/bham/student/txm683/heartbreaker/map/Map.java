@@ -8,6 +8,7 @@ import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class Map {
 
     private Player player;
 
-    private List<AIEntity> enemies;
+    private ArrayList<AIEntity> enemies;
     private List<Wall> walls;
 
     private HashMap<Integer, Room> rooms;
@@ -68,7 +69,7 @@ public class Map {
         this.player = player;
     }
 
-    public void setEnemies(List<AIEntity> enemies) {
+    public void setEnemies(ArrayList<AIEntity> enemies) {
         this.enemies = enemies;
     }
 
@@ -84,7 +85,7 @@ public class Map {
         this.doors = doors;
     }
 
-    public List<AIEntity> getEnemies() {
+    public ArrayList<AIEntity> getEnemies() {
         return enemies;
     }
 

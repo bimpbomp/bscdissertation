@@ -77,8 +77,10 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
 
-        this.levelState = levelView.getLevelState();
-        levelState.setPaused(true);
+        if (levelState != null) {
+            this.levelState = levelView.getLevelState();
+            levelState.setPaused(true);
+        }
         Log.d(TAG, "onPause");
     }
 
@@ -87,8 +89,8 @@ public class MainActivity extends Activity {
         super.onStop();
         this.levelState.setReadyToRender(false);
 
-        String saveString = levelState.getSaveString();
-        saveToFile(SAVE_FILE_NAME, saveString);
+        /*String saveString = levelState.getSaveString();
+        saveToFile(SAVE_FILE_NAME, saveString);*/
 
         audioController.releaseResources();
 

@@ -63,7 +63,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.level = new Level(this);
         setFocusable(true);
 
-        textPaint = RenderingTools.initPaintForText(Color.BLACK, 48, Paint.Align.CENTER);
+        textPaint = RenderingTools.initPaintForText(Color.BLACK, 30, Paint.Align.CENTER);
 
         tilePaint = new Paint();
         tilePaint.setStrokeWidth(8f);
@@ -117,7 +117,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         if (this.levelState == null) {
 
-            tileSize = 100;
+            tileSize = 200;
             MapConstructor mapConstructor = new MapConstructor();
 
             this.levelState = new LevelState(mapConstructor.loadMap("Map2", tileSize));
@@ -224,11 +224,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(int renderFPS, int gameTickFPS, float secondsSinceLastGameTick){
 
         //get visible boundaries relative to world coordinates
-        viewWorldOrigin = levelState.getPlayer().getPosition().add(new Point(-1*viewWidth/2f, -1*viewHeight/2f));
+        viewWorldOrigin = levelState.getPlayer().getCenter().add(new Point(-1*viewWidth/2f, -1*viewHeight/2f));
         viewWorldMax = viewWorldOrigin.add(new Point(viewWidth, viewHeight));
 
         //Calculate what entities are in view of the player on screen
-
 
         ArrayList<Wall> wallsToRender = new ArrayList<>();
         for (Wall wall: levelState.getMap().getWalls()){
@@ -331,7 +330,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                         }
                     }
                 }
-                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "[" + i + "," + j + "]", center, tileColor, 10);
+                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, (i*tileSize) + ",\n" + (j*tileSize), center, tileColor, 10);
             }
         }
     }

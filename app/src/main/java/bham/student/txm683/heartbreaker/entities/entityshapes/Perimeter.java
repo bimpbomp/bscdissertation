@@ -83,12 +83,17 @@ public class Perimeter implements Renderable, Collidable, Shape {
     }
 
     @Override
-    public Point getPosition() {
-        return vertices[0];
+    public Point getCenter() {
+        return null;
     }
 
     @Override
-    public void setPosition(Point newPosition) {
+    public void translateShape(Vector movementVector) {
+
+    }
+
+    @Override
+    public void setCenter(Point newCenter) {
 
     }
 }

@@ -2,7 +2,6 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
-import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Chaser;
@@ -31,8 +30,8 @@ public class MapConstructor {
     private int doorColor = Color.BLUE;
     private int wallColor = Color.rgb(32,32,32);
     private int chaserColor = Color.rgb(255, 153, 51);
-    private int upperPlayerColor = Color.BLUE;
-    private int lowerPlayerColor = Color.BLACK;
+    private int upperPlayerColor = Color.WHITE;
+    private int lowerPlayerColor = Color.MAGENTA;
 
     public MapConstructor(){
         this.uniqueID = new UniqueID();
@@ -42,7 +41,7 @@ public class MapConstructor {
         map = new Map(name, tileSize);
         this.tileSize = tileSize;
 
-        this.gapBetweenPoints = tileSize*2;
+        this.gapBetweenPoints = tileSize;
 
         this.centerOffset = new Point(tileSize/2f, tileSize/2f);
 
@@ -110,11 +109,11 @@ public class MapConstructor {
         //              boolean primaryLocked, boolean secondaryLocked, boolean vertical, int doorColor){
 
         doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
-                tileSize/2, tileSize, tileSize/2f, false, false, true, doorColor));
-        doors.add(new Door(0, new Point(7*tileSize,3*tileSize).add(centerOffset),
-                tileSize/2, tileSize, tileSize/2f, false, false, true, doorColor));
-        doors.add(new Door(0, new Point(4*tileSize,8*tileSize).add(centerOffset),
-                tileSize/2, tileSize, tileSize/2f, false, false, true, doorColor));
+                tileSize/2, tileSize, tileSize/4f, true, false, true, doorColor));
+        doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset),
+                tileSize/2, tileSize, tileSize/4f, false, false, true, doorColor));
+        doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset),
+                tileSize/2, tileSize, tileSize/4f, false, false, true, doorColor));
 
         /*doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
                 tileSize/2, tileSize, false, Color.BLUE));
@@ -128,14 +127,14 @@ public class MapConstructor {
         RoomEdge door2 = roomGraph.addConnection(1,3,  doors.get(2));
 
         //add doors to roomgrid's tilesets
-        roomGrids.get(0).addToTileSet(doors.get(0).getPosition());
-        roomGrids.get(1).addToTileSet(doors.get(0).getPosition());
+        roomGrids.get(0).addToTileSet(doors.get(0).getCenter());
+        roomGrids.get(1).addToTileSet(doors.get(0).getCenter());
 
-        roomGrids.get(1).addToTileSet(doors.get(1).getPosition());
-        roomGrids.get(2).addToTileSet(doors.get(1).getPosition());
+        roomGrids.get(1).addToTileSet(doors.get(1).getCenter());
+        roomGrids.get(2).addToTileSet(doors.get(1).getCenter());
 
-        roomGrids.get(1).addToTileSet(doors.get(2).getPosition());
-        roomGrids.get(3).addToTileSet(doors.get(2).getPosition());
+        roomGrids.get(1).addToTileSet(doors.get(2).getCenter());
+        roomGrids.get(3).addToTileSet(doors.get(2).getCenter());
 
         door0.getDoor().setTileBackground(tileSize, generateDoorTileColor(door0));
         door1.getDoor().setTileBackground(tileSize, generateDoorTileColor(door1));
@@ -187,7 +186,7 @@ public class MapConstructor {
 
                 //for each boundary in the current room
                 for (List<Point> wallPoints : boundaries) {
-                    doorPositionIndex = wallPoints.indexOf(door.getPosition().add(centerOffset.smult(-1)));
+                    doorPositionIndex = wallPoints.indexOf(door.getCenter().add(centerOffset.smult(-1)));
                     if (doorPositionIndex >= 0) {
 
                         if (doorPositionIndex == 0) {
@@ -236,7 +235,7 @@ public class MapConstructor {
                 stringBuilder.append(" - ");
             }
             stringBuilder.append("END\n");
-            Log.d(TAG + "BOUNDARY: ", stringBuilder.toString());
+            //Log.d(TAG + "BOUNDARY: ", stringBuilder.toString());
 
             //bounds of the wall (used for rendering)
             if (boundary.size() > 1){
@@ -257,7 +256,7 @@ public class MapConstructor {
 
                 if (Math.abs(lastPoint.getX() - firstPoint.getX()) > 0.001){
                     //horizontal wall, as no change in y
-                    Log.d(TAG+"DIRECTION", "HORIZONTALWALL");
+                    //Log.d(TAG+"DIRECTION", "HORIZONTALWALL");
 
                     if (directionOfWall.getX() > 0){
                         //first point is at left of wall
@@ -295,7 +294,7 @@ public class MapConstructor {
                             pointQueue.add(lastTopLeftPoint.add(new Point(0, tileSize)));
                         }
 
-                        Log.d(TAG+"ADDED POINTS", lastTopLeftPoint.toString() + ", " + lastTopLeftPoint.add(new Point(0, tileSize)));
+                        //Log.d(TAG+"ADDED POINTS", lastTopLeftPoint.toString() + ", " + lastTopLeftPoint.add(new Point(0, tileSize)));
 
                         numberOfEntitiesInWall--;
                     }
@@ -306,13 +305,13 @@ public class MapConstructor {
                             pointQueue.add(lastPoint.add(new Point(tileSize, 0)));
                             pointStack.add(lastPoint.add(new Point(tileSize, tileSize)));
 
-                            Log.d(TAG+"ADDED POINTS AT END (RIGHTMOST)", lastPoint.add(new Point(tileSize, 0)).toString() + ", " + lastPoint.add(new Point(tileSize, tileSize)));
+                            //Log.d(TAG+"ADDED POINTS AT END (RIGHTMOST)", lastPoint.add(new Point(tileSize, 0)).toString() + ", " + lastPoint.add(new Point(tileSize, tileSize)));
                         } else {
                             //if the wall grows left, add the leftmost two vertices
                             pointStack.add(lastPoint);
                             pointQueue.add(lastPoint.add(new Point(0, tileSize)));
 
-                            Log.d(TAG+"ADDED POINTS AT END (LEFTMOST)", lastPoint.toString() + ", " + lastPoint.add(new Point(0, tileSize)));
+                            //Log.d(TAG+"ADDED POINTS AT END (LEFTMOST)", lastPoint.toString() + ", " + lastPoint.add(new Point(0, tileSize)));
                         }
                     }
 
@@ -345,7 +344,7 @@ public class MapConstructor {
 
                 } else {
                     //vertical wall, as no change in x
-                    Log.d(TAG+"DIRECTION", "VERTICALWALL");
+                    //Log.d(TAG+"DIRECTION", "VERTICALWALL");
 
                     if (directionOfWall.getY() > 0){
 
@@ -385,7 +384,7 @@ public class MapConstructor {
                             pointStack.add(lastTopLeftPoint.add(new Point(tileSize, 0)));
                         }
 
-                        Log.d(TAG+"ADDED POINTS", lastTopLeftPoint.toString() + ", " + lastTopLeftPoint.add(new Point(tileSize, 0)));
+                        //Log.d(TAG+"ADDED POINTS", lastTopLeftPoint.toString() + ", " + lastTopLeftPoint.add(new Point(tileSize, 0)));
 
                         numberOfEntitiesInWall--;
                     }
@@ -395,13 +394,13 @@ public class MapConstructor {
                             //if wall grows down, add the bottom two vertices
                             pointStack.add(lastPoint.add(new Point(0, tileSize)));
                             pointQueue.add(lastPoint.add(new Point(tileSize, tileSize)));
-                            Log.d(TAG+"ADDED POINTS AT END (BOTTOM)", lastPoint.add(new Point(0, tileSize)).toString() + ", " + lastPoint.add(new Point(tileSize, tileSize)));
+                            //Log.d(TAG+"ADDED POINTS AT END (BOTTOM)", lastPoint.add(new Point(0, tileSize)).toString() + ", " + lastPoint.add(new Point(tileSize, tileSize)));
                         } else {
                             //if the wall grows up, add the top two vertices
                             pointQueue.add(lastPoint);
                             pointStack.add(lastPoint.add(new Point(tileSize, 0)));
 
-                            Log.d(TAG+"ADDED POINTS AT END (TOP)", lastPoint.toString() + ", " + lastPoint.add(new Point(tileSize, 0)));
+                            //Log.d(TAG+"ADDED POINTS AT END (TOP)", lastPoint.toString() + ", " + lastPoint.add(new Point(tileSize, 0)));
                         }
                     }
 
@@ -438,7 +437,7 @@ public class MapConstructor {
                 }
             } else if (boundary.size() == 1){
                 //wall is one block
-                Log.d(TAG+"WALL ONE BLOCK", boundary.get(0).toString());
+                //Log.d(TAG+"WALL ONE BLOCK", boundary.get(0).toString());
                 Point wallPoint = boundary.get(0);
                 collisionPoints.add(wallPoint);
                 collisionPoints.add(wallPoint.add(new Point(tileSize, 0)));
@@ -452,24 +451,17 @@ public class MapConstructor {
 
             if (collisionPoints.size() > 0){
 
-                stringBuilder = new StringBuilder();
-                for (Point point : collisionPoints) {
-                    stringBuilder.append(point.toString());
-                    stringBuilder.append(" - ");
-                }
-                stringBuilder.append("END\n");
-                Log.d(TAG + "COLLISIONVERTICES: ", stringBuilder.toString());
-
                 //public Wall(String name, Point[] collisionVertices, Point topLeft, Point bottomRight,
                 //              Point center, int colorValue){
                 if (renderingPoints.size() == 2){
                     Point topLeft = renderingPoints.get(0);
                     Point bottomRight = renderingPoints.get(1);
-                    Point center = new Point(bottomRight.getX()-topLeft.getX(),
-                            bottomRight.getY()-topLeft.getY()).smult(0.5f);
+                    Point center = topLeft.add(new Point(bottomRight.getX()-topLeft.getX(),
+                            bottomRight.getY()-topLeft.getY()).smult(0.5f));
 
-                    walls.add(new Wall("W:"+uniqueID.id(), collisionPoints.toArray(new Point[0]),
-                            topLeft, bottomRight, center, wallColor));
+                    Wall wall = new Wall("W:"+uniqueID.id(), collisionPoints.toArray(new Point[0]),
+                            topLeft, bottomRight, center, wallColor);
+                    walls.add(wall);
                 }
             }
         }
@@ -485,7 +477,7 @@ public class MapConstructor {
         map.setRooms(rooms);
         map.setDoors(doors);
         map.setPlayer(new Player("player", new Point(tileSize, tileSize).add(centerOffset), tileSize/2,
-                300f, upperPlayerColor, lowerPlayerColor, 100));
+                tileSize*2, upperPlayerColor, lowerPlayerColor, 100));
 
         map.setEnemies(enemies);
     }
@@ -602,54 +594,4 @@ public class MapConstructor {
         }
         return false;
     }
-
-    /*private Tile searchForTileType(Tile startingPosition, int desiredTileType) throws MapConversionException {
-        *//*if (!TileType.isValidTileType(desiredTileType))
-            throw new MapConversionException(MCEReason.SEARCH_FOR_INVALID_TILE_TYPE);*//*
-
-        //visited tiles are added here
-        HashSet<Tile> closedSet = new HashSet<>();
-
-        //contains tiles that are valid and have been seen (as a neighbour) but not visited.
-        //ordered by the integer cost to get to that tile from the starting position
-        PriorityQueue<Pair<Tile, Integer>> openSet = TileBFS.initOpenSet();
-        openSet.add(new Pair<>(startingPosition, 0));
-
-        //initialise variables needed in loop
-        Pair<Tile, Integer> tileAndCost;
-        Tile currentTile;
-        int currentCost;
-        int neighbourTileType;
-        while (!openSet.isEmpty()) {
-
-            //get the tile with the lowest cost
-            tileAndCost = openSet.poll();
-            currentTile = tileAndCost.first;
-            currentCost = tileAndCost.second;
-
-            //add it to the closed set so it isn't inspected again
-            closedSet.add(currentTile);
-
-            ArrayList<Tile> neighbours = TileBFS.getNeighbours(currentTile);
-
-            for (Tile neighbour : neighbours) {
-                //get the color of this neighbour
-                //neighbourTileType = getPixelColorWithOffset(neighbour,0,0);
-                neighbourTileType = currentTile.getX();
-
-                *//*if (neighbourTileType == TileType.INVALID || closedSet.contains(neighbour)) {
-                    //if the tile is out of bounds, or has already been inspected, move on
-                    continue;
-                } else if (neighbourTileType == desiredTileType) {
-                    //if the tile is the goal, return
-                    return neighbour;
-                }*//*
-
-                //neighbour is a valid tile but not target, calc it's cost and add to openset
-                int neighbourCost = currentCost + 1;
-                openSet.add(new Pair<>(neighbour, neighbourCost));
-            }
-        }
-        return startingPosition;
-    }*/
 }

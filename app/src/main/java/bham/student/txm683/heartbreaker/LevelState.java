@@ -8,8 +8,6 @@ import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -40,8 +38,6 @@ public class LevelState {
         this.paused = false;
 
         this.debugInfo = new DebugInfo();
-
-        freshInitFromMap();
     }
 
     /*public LevelState(String stateString) throws ParseException, JSONException {
@@ -66,44 +62,6 @@ public class LevelState {
         }
 
         this.debugInfo = new DebugInfo();
-    }*/
-
-    private void freshInitFromMap(){
-        //int playerSize = map.getTileSize();
-        //this.player = new Player("player", map.getPlayerSpawn(), playerSize, map.getTileSize()*3, Color.rgb(0,0,255));
-
-        /*List<Point> staticSpawns = map.getStaticEntities();
-        for (Point staticSpawn : staticSpawns){
-            this.staticEntities.put(map.mapGlobalPointToTile(staticSpawn) , (new Boundary("B:"+uniqueID.id(), staticSpawn, map.getTileSize()+5, Color.rgb(32,32,32))));
-        }*/
-
-        /*for (Wall wall : map.getWalls()){
-            wall.setName("W:"+uniqueID.id());
-
-            StringBuilder stringBuilder = new StringBuilder();
-            for (Point point : wall.getCollisionVertices()){
-                stringBuilder.append(point.toString());
-                stringBuilder.append(" - ");
-            }
-            stringBuilder.append("END");
-            Log.d(TAG, wall.getName() + " collision: " + stringBuilder.toString());
-
-            stringBuilder = new StringBuilder();
-            for (Point point : wall.getRenderableVertices()){
-                stringBuilder.append(point.toString());
-                stringBuilder.append(" - ");
-            }
-            stringBuilder.append("END");
-            Log.d(TAG, wall.getName() + " render: " + stringBuilder.toString());
-        }*/
-    }
-
-    /*public boolean hasEntityAtTile(Tile tile){
-        return staticEntities.containsKey(tile);
-    }
-
-    public HashMap<Tile, Entity> getStaticEntities() {
-        return staticEntities;
     }*/
 
     public void setPlayer(Player player){
@@ -140,39 +98,8 @@ public class LevelState {
         return screenHeight;
     }
 
-    public String getSaveString(){
-        JSONObject jsonObject = new JSONObject();
-
-        /*try {
-            jsonObject.put("mapname", map.getName());
-            jsonObject.put("uniqueidcounter", uniqueID.counter());
-
-            jsonObject.put("player", player.getStateObject());
-
-            JSONObject[] staticsStateString = convertEntityListToJSONObjectArray(staticEntities.toArray(new Entity[0]));
-            jsonObject.put("statics", new JSONArray(staticsStateString));
-
-            JSONObject[] enemiesStateString = convertEntityListToJSONObjectArray(enemyEntities.toArray(new Entity[0]));
-            jsonObject.put("enemies", new JSONArray(enemiesStateString));
-
-        } catch (JSONException e){
-            //error parsing state for saving, abort
-            return "";
-        }*/
-
-        return jsonObject.toString();
-    }
-
-    private JSONObject[] convertEntityListToJSONObjectArray(Entity[] entityList) throws JSONException{
-        JSONObject[] jsonObjects = new JSONObject[entityList.length];
-        /*for (int i = 0; i < entityList.length; i++){
-            jsonObjects[i] = entityList[i].getStateObject();
-        }*/
-        return jsonObjects;
-    }
-
     public ArrayList<AIEntity> getEnemyEntities() {
-        return enemyEntities;
+        return map.getEnemies();
     }
 
     public boolean isReadyToRender() {

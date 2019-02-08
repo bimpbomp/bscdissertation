@@ -27,10 +27,12 @@ public class Door extends Entity implements Renderable, Collidable {
     private static final int LOCKED_COLOR = Color.RED;
     private static final int UNLOCKED_COLOR = Color.GREEN;
 
-    public Door(int doorID, Point center, int width, int height, float fieldWidth, boolean primaryLocked, boolean secondaryLocked, boolean vertical, int doorColor){
-        super(doorID+"", center);
+    public Door(int doorID, Point center, int width, int height, float fieldWidth, boolean primaryLocked,
+                boolean secondaryLocked, boolean vertical, int doorColor){
 
-        this.doorShape = new Rectangle(getPosition(), width, height, doorColor);
+        super(doorID+"");
+
+        this.doorShape = new Rectangle(center, width, height, doorColor);
 
         this.primaryLocked = primaryLocked;
         this.secondaryLocked = secondaryLocked;
@@ -55,7 +57,7 @@ public class Door extends Entity implements Renderable, Collidable {
                     fieldBottomRight.getY()-fieldTopLeft.getY()).smult(0.5f);
 
 
-            this.primaryField = new InteractionField(new Vector[]{
+            this.primaryField = new InteractionField(fieldCenter, new Vector[]{
                     new Vector(fieldCenter, fieldTopLeft),
                     new Vector(fieldCenter, doorCorners[0]),
                     new Vector(fieldCenter, fieldBottomRight),
@@ -70,7 +72,7 @@ public class Door extends Entity implements Renderable, Collidable {
             fieldCenter = new Point(fieldBottomRight.getX()-fieldTopLeft.getX(),
                     fieldBottomRight.getY()-fieldTopLeft.getY()).smult(0.5f);
 
-            this.secondaryField = new InteractionField(new Vector[]{
+            this.secondaryField = new InteractionField(fieldCenter, new Vector[]{
                     new Vector(fieldCenter, fieldTopLeft),
                     new Vector(fieldCenter, fieldTopLeft.add(new Point(fieldWidth, 0))),
                     new Vector(fieldCenter, fieldBottomRight),
@@ -89,7 +91,7 @@ public class Door extends Entity implements Renderable, Collidable {
                     fieldBottomRight.getY()-fieldTopLeft.getY()).smult(0.5f);
 
 
-            this.primaryField = new InteractionField(new Vector[]{
+            this.primaryField = new InteractionField(fieldCenter, new Vector[]{
                     new Vector(fieldCenter, fieldTopLeft),
                     new Vector(fieldCenter, doorCorners[1].add(new Point(0, -1*fieldWidth))),
                     new Vector(fieldCenter, fieldBottomRight),
@@ -104,7 +106,7 @@ public class Door extends Entity implements Renderable, Collidable {
             fieldCenter = new Point(fieldBottomRight.getX()-fieldTopLeft.getX(),
                     fieldBottomRight.getY()-fieldTopLeft.getY()).smult(0.5f);
 
-            this.secondaryField = new InteractionField(new Vector[]{
+            this.secondaryField = new InteractionField(fieldCenter, new Vector[]{
                     new Vector(fieldCenter, fieldTopLeft),
                     new Vector(fieldCenter, doorCorners[2]),
                     new Vector(fieldCenter, fieldBottomRight),
@@ -114,7 +116,7 @@ public class Door extends Entity implements Renderable, Collidable {
     }
 
     public void setTileBackground(int tileSize, int backgroundColor) {
-        this.tileBackground = new Rectangle(getPosition(), tileSize, tileSize, backgroundColor);
+        this.tileBackground = new Rectangle(getCenter(), tileSize, tileSize, backgroundColor);
     }
 
     @Override
@@ -127,7 +129,7 @@ public class Door extends Entity implements Renderable, Collidable {
         doorShape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
 
         if (renderEntityName)
-            drawName(canvas, renderOffset);
+            drawName(canvas, getCenter().add(renderOffset));
     }
 
     @Override
@@ -158,6 +160,16 @@ public class Door extends Entity implements Renderable, Collidable {
     @Override
     public ShapeIdentifier getShapeIdentifier() {
         return ShapeIdentifier.RECTANGLE;
+    }
+
+    @Override
+    public Point getCenter() {
+        return doorShape.getCenter();
+    }
+
+    @Override
+    public void setCenter(Point newCenter) {
+
     }
 
     public boolean isPrimaryLocked() {
@@ -204,37 +216,3 @@ public class Door extends Entity implements Renderable, Collidable {
         return Integer.parseInt(getName());
     }
 }
-
-/*private int doorID;
-
-    private boolean locked;
-
-    private Rectangle tileBackground;
-
-    public Door(int doorID, Point spawnCoordinates, int width, int height, boolean locked, int doorColor){
-        super(doorID+"", spawnCoordinates, ShapeIdentifier.RECTANGLE, width, height, doorColor);
-        this.doorID = doorID;
-        this.locked = locked;
-    }
-
-    public void setTileBackground(int tileSize, int backgroundColor) {
-        this.tileBackground = new Rectangle(spawnCoordinates, tileSize, tileSize, backgroundColor);
-    }
-
-    @Override
-    public void draw(Canvas canvas, Point renderOffset, boolean renderEntityName) {
-        tileBackground.draw(canvas, renderOffset, new Vector());
-        super.draw(canvas, renderOffset, renderEntityName);
-    }
-
-    public int getDoorID() {
-        return doorID;
-    }
-
-    public boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }*/

@@ -10,6 +10,6 @@ public interface Collidable {
     boolean canMove();
     String getName();
     ShapeIdentifier getShapeIdentifier();
-    Point getPosition();
-    void setPosition(Point newPosition);
+    Point getCenter();
+    void setCenter(Point newCenter);
 }
