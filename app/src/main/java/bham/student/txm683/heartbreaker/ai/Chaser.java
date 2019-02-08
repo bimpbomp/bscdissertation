@@ -123,7 +123,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
         shape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
 
         if (renderEntityName)
-            drawName(canvas, renderOffset);
+            drawName(canvas, getCenter().add(renderOffset));
     }
 
     @Override
