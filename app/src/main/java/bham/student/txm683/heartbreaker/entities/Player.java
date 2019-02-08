@@ -5,6 +5,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.physics.Collidable;
+import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -40,7 +41,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
     public void move(float secondsSinceLastGameTick) {
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
 
-        if (!movementVector.equals(new Vector())) {
+        if (!movementVector.equals(Vector.ZERO_VECTOR)) {
             shape.translateShape(movementVector);
             shape.rotateShape(movementVector);
         }
@@ -110,5 +111,10 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
     @Override
     public void setCenter(Point newCenter) {
         shape.translateShape(new Vector (shape.getCenter(), newCenter));
+    }
+
+    @Override
+    public CollidableType getCollidableType() {
+        return CollidableType.PLAYER;
     }
 }

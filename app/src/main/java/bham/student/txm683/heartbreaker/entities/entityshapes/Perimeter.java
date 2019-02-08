@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.physics.Collidable;
+import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -95,5 +96,10 @@ public class Perimeter implements Renderable, Collidable, Shape {
     @Override
     public void setCenter(Point newCenter) {
 
+    }
+
+    @Override
+    public CollidableType getCollidableType() {
+        return CollidableType.PERIMETER;
     }
 }

@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.physics.Collidable;
+import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -67,6 +68,11 @@ public class Wall extends Entity implements Collidable, Renderable {
     @Override
     public ShapeIdentifier getShapeIdentifier() {
         return shape.getShapeIdentifier();
+    }
+
+    @Override
+    public CollidableType getCollidableType() {
+        return CollidableType.WALL;
     }
 
     @Override

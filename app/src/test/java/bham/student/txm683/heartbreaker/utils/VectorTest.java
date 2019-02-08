@@ -18,7 +18,7 @@ public class VectorTest {
     private static final float GY = 234.1234f;
     private static final float GLENGTH = 1256.2438f;
 
-    private Vector a = new Vector();
+    private Vector a = Vector.ZERO_VECTOR;
     private Vector b = new Vector(-1,1);
     private Vector c = new Vector(1,-1);
     private Vector d = new Vector(1,1);
@@ -32,7 +32,7 @@ public class VectorTest {
 
     @Before
     public void setUp() throws Exception {
-        a = new Vector();
+        a = Vector.ZERO_VECTOR;
         b = new Vector(-1,1);
         c = new Vector(1,-1);
         d = new Vector(1,1);
@@ -43,7 +43,7 @@ public class VectorTest {
 
     @Test
     public void getUnitVector() {
-        Vector ua = new Vector();
+        Vector ua = Vector.ZERO_VECTOR;
         Vector ub = new Vector(-1/ROOT2,1/ROOT2);
         Vector uc = new Vector(1/ROOT2,-1/ROOT2);
         Vector ud = new Vector(1/ROOT2,1/ROOT2);
@@ -83,7 +83,7 @@ public class VectorTest {
     public void equals() {
         assertFalse(a.equals(b));
         assertFalse(b.equals(c));
-        assertTrue(a.equals(new Vector()));
+        assertTrue(a.equals(Vector.ZERO_VECTOR));
         assertFalse(f.equals(g));
     }
 

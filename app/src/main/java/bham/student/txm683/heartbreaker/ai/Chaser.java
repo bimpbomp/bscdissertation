@@ -38,7 +38,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
                                 levelState.getMap().mapTileToGlobalPoint(path[1])).getUnitVector());
                     } else {
                         Log.d(getName(), "Path length of less than 2");
-                        setRequestedMovementVector(new Vector());
+                        setRequestedMovementVector(Vector.ZERO_VECTOR);
                     }
 
                 }/* else {
@@ -54,7 +54,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
                         if (roomPath.length == 1){
                             Log.d(getName(), roomPath[0]+"");
                         }
-                        setRequestedMovementVector(new Vector());
+                        setRequestedMovementVector(Vector.ZERO_VECTOR);
                     }
                 }*/
                 break;
@@ -76,7 +76,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
     public void halt() {
         currentBehaviour = AIBehaviour.HALTED;
 
-        setRequestedMovementVector(new Vector());
+        setRequestedMovementVector(Vector.ZERO_VECTOR);
     }
 
     @Override

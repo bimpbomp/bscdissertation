@@ -10,14 +10,14 @@ public abstract class MoveableEntity extends Entity {
         super(name);
 
         this.maxSpeed = maxSpeed;
-        this.requestedMovementVector = new Vector();
+        this.requestedMovementVector = Vector.ZERO_VECTOR;
     }
 
     public abstract void move(float secondsSinceLastGameTick);
 
     public Vector calculateMovementVector(float secondsSinceLastGameTick){
-        return requestedMovementVector.equals(new Vector()) ?
-                new Vector() : requestedMovementVector.sMult(secondsSinceLastGameTick * maxSpeed);
+        return requestedMovementVector.equals(Vector.ZERO_VECTOR) ?
+                Vector.ZERO_VECTOR : requestedMovementVector.sMult(secondsSinceLastGameTick * maxSpeed);
     }
 
     public void setRequestedMovementVector(Vector requestedMovementVector) {

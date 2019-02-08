@@ -246,7 +246,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         Canvas canvas = getHolder().lockCanvas();
 
-        Vector interpolationVector = new Vector();
+        Vector interpolationVector = Vector.ZERO_VECTOR;
 
         if (canvas != null){
             super.draw(canvas);
@@ -268,12 +268,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             if (debugInfo.renderMapTileGrid())
                 drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset, tilePaint);
 
-            for (Door door : levelState.getMap().getDoors()){
+            for (Door door : levelState.getMap().getDoors().values()){
                 door.draw(canvas, renderOffset, interpolationVector, debugInfo.renderEntityNames());
             }
 
             //draw player and entities
-            levelState.getPlayer().draw(canvas, renderOffset, new Vector(), debugInfo.renderEntityNames());
+            levelState.getPlayer().draw(canvas, renderOffset, Vector.ZERO_VECTOR, debugInfo.renderEntityNames());
 
             for (Renderable entity : enemiesToRender){
                 entity.draw(canvas, renderOffset, interpolationVector, debugInfo.renderEntityNames());

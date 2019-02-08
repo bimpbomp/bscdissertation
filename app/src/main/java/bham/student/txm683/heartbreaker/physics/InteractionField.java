@@ -11,10 +11,18 @@ public class InteractionField implements Renderable, Collidable {
 
     private Rectangle shape;
     private String name;
+    private String owner;
 
-    public InteractionField(Point center, Vector[] vertexVectors, int color){
-        shape = new Rectangle(center, vertexVectors, color);
-        this.name = "";
+    private boolean canMove;
+
+    public InteractionField(String owner, String name, Point center, float width, float height, int color){
+        shape = new Rectangle(center, width, height, color);
+        this.name = name;
+        this.owner = owner;
+    }
+
+    public String getOwner() {
+        return owner;
     }
 
     @Override
@@ -57,6 +65,11 @@ public class InteractionField implements Renderable, Collidable {
     @Override
     public ShapeIdentifier getShapeIdentifier() {
         return shape.getShapeIdentifier();
+    }
+
+    @Override
+    public CollidableType getCollidableType() {
+        return CollidableType.INTERACTION_FIELD;
     }
 
     @Override

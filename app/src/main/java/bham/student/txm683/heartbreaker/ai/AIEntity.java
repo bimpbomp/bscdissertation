@@ -4,6 +4,7 @@ import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
+import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.TileBFS;
@@ -28,6 +29,11 @@ public abstract class AIEntity extends MoveableEntity implements Renderable{
         super(name, maxSpeed);
 
         this.currentBehaviour = AIBehaviour.HALTED;
+    }
+
+    @Override
+    public CollidableType getCollidableType() {
+        return CollidableType.AI_ENTITY;
     }
 
     public void setLevelState(LevelState levelState){

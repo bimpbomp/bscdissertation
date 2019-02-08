@@ -60,28 +60,28 @@ public class MapConstructor {
                 new Point(5,0),
                 new Point(5, 5),
                 new Point(0, 5)
-        }, Color.rgb(102, 255, 0)));
+        }, Color.rgb(0, 147, 175)));
 
         perimeters.add(new Perimeter(new Point[]{
                 new Point(4,1),
                 new Point(8,1),
                 new Point(8,11),
                 new Point(4,11)
-        }, Color.rgb(79, 255, 176)));
+        }, Color.rgb(175, 216, 245)));
 
         perimeters.add(new Perimeter(new Point[]{
                 new Point(7,0),
                 new Point(12,0),
                 new Point(12,6),
                 new Point(7,6)
-        }, Color.rgb(173, 255, 47)));
+        }, Color.rgb(31, 117, 254)));
 
         perimeters.add(new Perimeter(new Point[]{
                 new Point(1,7),
                 new Point(5,7),
                 new Point(5,13),
                 new Point(1,13)
-        }, Color.rgb(80, 200, 120)));
+        }, Color.rgb(0, 112, 184)));
 
         ArrayList<RoomGrid> roomGrids = new ArrayList<>();
         for (Perimeter perimeter : perimeters){
@@ -109,11 +109,11 @@ public class MapConstructor {
         //              boolean primaryLocked, boolean secondaryLocked, boolean vertical, int doorColor){
 
         doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
-                tileSize/2, tileSize, tileSize/4f, true, false, true, doorColor));
+                tileSize/2, tileSize, false, true, true, doorColor));
         doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset),
-                tileSize/2, tileSize, tileSize/4f, false, false, true, doorColor));
+                tileSize/2, tileSize, false, false, true, doorColor));
         doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset),
-                tileSize/2, tileSize, tileSize/4f, false, false, true, doorColor));
+                tileSize/2, tileSize, false, false, true, doorColor));
 
         /*doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
                 tileSize/2, tileSize, false, Color.BLUE));

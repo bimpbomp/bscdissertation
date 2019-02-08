@@ -8,7 +8,11 @@ import org.json.JSONObject;
 
 public class Vector implements SaveableState {
 
-    private static final String DELIMITER = "->";
+    public static final Vector ZERO_VECTOR;
+
+    static {
+        ZERO_VECTOR = new Vector();
+    }
 
     private final Point tail;
     private final Point head;
@@ -100,7 +104,7 @@ public class Vector implements SaveableState {
                 unitVector = this.sMult(1/length);
             }
         } else {
-            unitVector = new Vector();
+            unitVector = Vector.ZERO_VECTOR;
         }
 
         return unitVector;

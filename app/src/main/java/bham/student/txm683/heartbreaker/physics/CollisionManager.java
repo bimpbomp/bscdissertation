@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.physics;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -19,6 +20,8 @@ public class CollisionManager {
     private LevelState levelState;
 
     private HashSet<String> checkedPairNames;
+
+    private HashSet<Pair<Collidable, Collidable>> solidNonSolidCollisionPairs;
 
     private HashSet<String> currentTickCollidedPairs;
 
@@ -63,14 +66,24 @@ public class CollisionManager {
         int cellSize = levelState.getMap().getTileSize() * 2;
         broadPhaseGrid = new Grid(new Point(levelState.getMap().getTileSize()/-2f,levelState.getMap().getTileSize()/-2f), gridMaximum, cellSize);
 
+        //add player
         broadPhaseGrid.addEntityToGrid(levelState.getPlayer());
 
+        //add ai
         for (Collidable enemy : levelState.getEnemyEntities()){
             broadPhaseGrid.addEntityToGrid(enemy);
         }
 
+        //add walls
         for (Collidable wall : levelState.getMap().getWalls()){
             broadPhaseGrid.addEntityToGrid(wall);
+        }
+
+        //add doors
+        for (Door door : levelState.getMap().getDoors().values()){
+            broadPhaseGrid.addEntityToGrid(door);
+            broadPhaseGrid.addEntityToGrid(door.getPrimaryField());
+            broadPhaseGrid.addEntityToGrid(door.getSecondaryField());
         }
 
         //each element will be a bin from a grid reference with more than one entity in
@@ -93,6 +106,11 @@ public class CollisionManager {
         checkedPairNames = new HashSet<>();
         currentTickCollidedPairs = new HashSet<>();
 
+        HashSet<String> doorsToOpen = new HashSet<>();
+
+        solidNonSolidCollisionPairs = new HashSet<>();
+
+        //check for and resolve any intersections between solid objects
         for (Pair<ArrayList<Collidable>, Pair<Integer, Integer>> binPair : bins){
             ArrayList<Collidable> bin = binPair.first;
             Pair<Integer, Integer> binGridReference = binPair.second;
@@ -114,7 +132,7 @@ public class CollisionManager {
                         Collidable secondEntity = bin.get(j);
 
                         //if both entities are static, skip
-                        if (!firstEntity.canMove() && !secondEntity.canMove()){
+                        if ((!firstEntity.canMove() && !secondEntity.canMove()) || (!firstEntity.isSolid() && !secondEntity.isSolid())){
                             continue;
                         }
 
@@ -127,9 +145,8 @@ public class CollisionManager {
                         
                         Vector pushVector = collisionCheckTwoPolygons(firstEntity, secondEntity);
 
-
                         //if a collision has occurred (zero vector says a collision hasn't occurred)
-                        if (!pushVector.equals(new Vector())) {
+                        if (!pushVector.equals(Vector.ZERO_VECTOR)) {
                             Log.d("hb::CollisionManager", "Collision between: " + firstEntity.getName() + " and " + secondEntity.getName());
 
                             //at least one entity can move, as we ignored any pairs of static entities earlier on
@@ -145,62 +162,81 @@ public class CollisionManager {
                             Point firstAmountMoved;
                             Point secondAmountMoved;
 
-                            if (firstEntity.canMove() && secondEntity.canMove()) {
+                            if (!firstEntity.isSolid() ||
+                                    !secondEntity.isSolid()) {
+                                //one of the entities is not a solid and the collision does not need to be resolved
 
-                                //resolve collisions with any statics that share a cell with either entity
-                                isEntityAbleToBePushed(firstEntity, binGridReference, true);
-                                isEntityAbleToBePushed(secondEntity, binGridReference, true);
+                                Collidable solidEntity = firstEntity.isSolid() ? firstEntity : secondEntity;
+                                Collidable nonSolidEntity = firstEntity.isSolid() ? secondEntity : firstEntity;
 
-                                //update position of first entity with half of the push vector
-                                firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
-                                newCenter = firstEntity.getCenter().add(firstAmountMoved);
-                                firstEntity.setCenter(newCenter);
+                                if (nonSolidEntity.getCollidableType() == CollidableType.INTERACTION_FIELD){
 
-                                //update position of second entity with half of the inverted pushVector
-                                //i.e pushes second entity away from first
-                                secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
-                                newCenter = secondEntity.getCenter().add(secondAmountMoved);
-                                secondEntity.setCenter(newCenter);
-
-                                //check if the entities now overlap any statics with their new positions
-                                firstAbleToMove = isEntityAbleToBePushed(firstEntity, binGridReference, false);
-                                secondAbleToMove = isEntityAbleToBePushed(secondEntity, binGridReference, false);
-
-                                if (!secondAbleToMove){
-                                    //if the second entity now overlaps a static, move it back to it's original position
-                                    //and move the first entity the other half of the distance so it doesn't overlap the second
-                                    //collision is resolved, move to next entity pair
-                                    moveEntityCenter(firstEntity, firstAmountMoved);
-                                    moveEntityCenter(secondEntity, secondAmountMoved.smult(-1f));
-
-                                } else if (!firstAbleToMove){
-                                    //if the first entity now overlaps a static, move it back to it's original position
-                                    //and move the second entity the other half of the distance so it doesn't overlap the first
-                                    //collision is resolved, move to next entity pair
-                                    moveEntityCenter(firstEntity, firstAmountMoved.smult(-1f));
-                                    moveEntityCenter(secondEntity, secondAmountMoved);
+                                    Door fieldOwner = levelState.getMap().getDoors().get(((InteractionField) nonSolidEntity).getOwner());
+                                    if (fieldOwner != null && fieldOwner.isSideUnlocked(nonSolidEntity.getName())){
+                                        //if the interaction field belongs to a door
+                                        //isSideUnlocked it if the side the field is on is unlocked
+                                        doorsToOpen.add(fieldOwner.getName());
+                                    }
                                 }
 
-                            } else if (firstEntity.canMove()){
-
-                                //if only the first entity can move (is not static), resolution is to add all push
-                                //vector to first entity
-                                //collision is resolved, move to next entity pair
-                                firstAmountMoved = pushVector.getRelativeToTailPoint();
-                                newCenter = firstEntity.getCenter().add(firstAmountMoved);
-                                firstEntity.setCenter(newCenter);
-
                             } else {
-                                //if only the second entity can move (is not static), resolution is to add all push
-                                //vector to second entity
-                                //collision is resolved, move to next entity pair
-                                secondAmountMoved = pushVector.sMult(-1).getRelativeToTailPoint();
-                                newCenter = secondEntity.getCenter().add(secondAmountMoved);
-                                secondEntity.setCenter(newCenter);
-                            }
-                            addToCollidedThisTickSet(firstEntity, secondEntity);
+                                //both entities are solid and the collision needs to be resolved.
+                                if (firstEntity.canMove() && secondEntity.canMove()) {
 
-                            //handle attacks
+                                    //resolve collisions with any statics that share a cell with either entity
+                                    isEntityAbleToBePushed(firstEntity, binGridReference, true);
+                                    isEntityAbleToBePushed(secondEntity, binGridReference, true);
+
+                                    //update position of first entity with half of the push vector
+                                    firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
+                                    newCenter = firstEntity.getCenter().add(firstAmountMoved);
+                                    firstEntity.setCenter(newCenter);
+
+                                    //update position of second entity with half of the inverted pushVector
+                                    //i.e pushes second entity away from first
+                                    secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
+                                    newCenter = secondEntity.getCenter().add(secondAmountMoved);
+                                    secondEntity.setCenter(newCenter);
+
+                                    //check if the entities now overlap any statics with their new positions
+                                    firstAbleToMove = isEntityAbleToBePushed(firstEntity, binGridReference, false);
+                                    secondAbleToMove = isEntityAbleToBePushed(secondEntity, binGridReference, false);
+
+                                    if (!secondAbleToMove) {
+                                        //if the second entity now overlaps a static, move it back to it's original position
+                                        //and move the first entity the other half of the distance so it doesn't overlap the second
+                                        //collision is resolved, move to next entity pair
+                                        moveEntityCenter(firstEntity, firstAmountMoved);
+                                        moveEntityCenter(secondEntity, secondAmountMoved.smult(-1f));
+
+                                    } else if (!firstAbleToMove) {
+                                        //if the first entity now overlaps a static, move it back to it's original position
+                                        //and move the second entity the other half of the distance so it doesn't overlap the first
+                                        //collision is resolved, move to next entity pair
+                                        moveEntityCenter(firstEntity, firstAmountMoved.smult(-1f));
+                                        moveEntityCenter(secondEntity, secondAmountMoved);
+                                    }
+
+                                } else if (firstEntity.canMove() && secondEntity.isSolid()) {
+
+                                    //if only the first entity can move (is not static), resolution is to add all push
+                                    //vector to first entity
+                                    //collision is resolved, move to next entity pair
+                                    firstAmountMoved = pushVector.getRelativeToTailPoint();
+                                    newCenter = firstEntity.getCenter().add(firstAmountMoved);
+                                    firstEntity.setCenter(newCenter);
+
+                                } else if (secondEntity.canMove() && firstEntity.isSolid()) {
+                                    //if only the second entity can move (is not static), resolution is to add all push
+                                    //vector to second entity
+                                    //collision is resolved, move to next entity pair
+                                    secondAmountMoved = pushVector.sMult(-1).getRelativeToTailPoint();
+                                    newCenter = secondEntity.getCenter().add(secondAmountMoved);
+                                    secondEntity.setCenter(newCenter);
+                                }
+                                addToCollidedThisTickSet(firstEntity, secondEntity);
+
+                            }
                         }
                         //add entity names to the checked names set so that they aren't checked twice
                         addCheckedPairNames(firstEntity, secondEntity);
@@ -209,7 +245,17 @@ public class CollisionManager {
             }
         }
 
+        for (Door door : levelState.getMap().getDoors().values()){
+            if (doorsToOpen.contains(door.getName()))
+                door.setOpen(true);
+            else
+                door.setOpen(false);
+        }
         collidedLastTick = currentTickCollidedPairs;
+    }
+
+    private static void resolveCollisionWithDoorField(InteractionField field, Collidable solidEntity){
+
     }
 
     private static void moveEntityCenter(Collidable entity, Point amountToMove){
@@ -249,7 +295,7 @@ public class CollisionManager {
             if (!entityInBin.canMove()) {
                 //check if the two entities collide
                 Vector pushVector = collisionCheckTwoPolygons(entity, entityInBin);
-                collided = !(pushVector.equals(new Vector()));
+                collided = !(pushVector.equals(Vector.ZERO_VECTOR));
 
                 if (collided) {
                     if (resolveCollision){
@@ -269,7 +315,7 @@ public class CollisionManager {
     }
 
     private static Vector getMinimumPushVector(ArrayList<Vector> pushVectors){
-        Vector minPushVector = new Vector();
+        Vector minPushVector = Vector.ZERO_VECTOR;
         if (pushVectors.size() > 0) {
             minPushVector = pushVectors.get(0);
 
@@ -320,7 +366,7 @@ public class CollisionManager {
 
             return axis.getUnitVector().sMult(pushVectorLength);
         }
-        return new Vector();
+        return Vector.ZERO_VECTOR;
     }
 
     //Returns the unit normals for the given edges.
@@ -370,7 +416,7 @@ public class CollisionManager {
         for (Vector axis : orthogonalAxes){
             Vector pushVector = isSeparatingAxis(axis, convertToVectorsFromOrigin(firstEntityVertices), convertToVectorsFromOrigin(secondEntityVertices));
 
-            if (pushVector.equals(new Vector())){
+            if (pushVector.equals(Vector.ZERO_VECTOR)){
                 collided = false;
                 break;
             } else {
@@ -387,7 +433,7 @@ public class CollisionManager {
             }
             return minPushVector;
         }
-        return new Vector();
+        return Vector.ZERO_VECTOR;
     }
 
 
@@ -406,7 +452,7 @@ public static Vector collisionCheckTwoCircles(Circle circle1, Circle circle2){
     if (distanceBetweenCenters < radiiSum){
         return center2ToCenter1.getUnitVector().sMult(radiiSum - distanceBetweenCenters + PUSH_VECTOR_ERROR);
     }
-    return new Vector();
+    return Vector.ZERO_VECTOR;
 }
 
 //checks if a collision has occurred between a circle and a polygon.
@@ -451,19 +497,19 @@ public static Vector collisionCheckCircleAndPolygon(Circle circle, Polygon polyg
 
     //Log.d(TAG, "pushVector: " + pushVector.relativeToString() + ", max orth index: " + minOrthIndex);
 
-    if (minOrthIndex >= 0 && !pushVector.equals(new Vector())){
+    if (minOrthIndex >= 0 && !pushVector.equals(Vector.ZERO_VECTOR)){
             Vector secondaryPushVector = isSeparatingAxis(orthogonals[minOrthIndex],
                     new Vector(circle.getCenter().add(orthogonals[minOrthIndex].sMult(-1f*circle.getRadius()).getRelativeToTailPoint())),
                     polygonVerticesFromOrigin);
 
             //Log.d(TAG, "secondary push: " + secondaryPushVector.relativeToString());
-            if (!secondaryPushVector.equals(new Vector())){
+            if (!secondaryPushVector.equals(Vector.ZERO_VECTOR)){
                 pushVector = secondaryPushVector;
             } else {
-                pushVector = new Vector();
+                pushVector = Vector.ZERO_VECTOR;
             }
     } else {
-        pushVector = new Vector();
+        pushVector = Vector.ZERO_VECTOR;
     }
     return pushVector;
 }*/
@@ -490,5 +536,5 @@ public static Vector collisionCheckCircleAndPolygon(Circle circle, Polygon polyg
 
             return axis.sMult(pushVectorLength);
         }
-        return new Vector();
+        return Vector.ZERO_VECTOR;
     }*/

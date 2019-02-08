@@ -25,15 +25,16 @@ public class Map {
     private List<Wall> walls;
 
     private HashMap<Integer, Room> rooms;
+    private HashMap<String, Door> doors;
 
     private RoomGraph roomGraph;
-    private List<Door> doors;
 
     private HashMap<Integer, RoomGrid> roomGrids;
 
     public Map(String name, int tileSize){
         this.name = name;
         this.tileSize = tileSize;
+        this.doors = new HashMap<>();
     }
 
     public Point mapTileToGlobalPoint(Tile tile){
@@ -82,7 +83,9 @@ public class Map {
     }
 
     public void setDoors(List<Door> doors) {
-        this.doors = doors;
+        for (Door door : doors){
+            this.doors.put(door.getName(), door);
+        }
     }
 
     public ArrayList<AIEntity> getEnemies() {
@@ -97,7 +100,7 @@ public class Map {
         return roomGraph;
     }
 
-    public List<Door> getDoors() {
+    public HashMap<String, Door> getDoors() {
         return doors;
     }
 

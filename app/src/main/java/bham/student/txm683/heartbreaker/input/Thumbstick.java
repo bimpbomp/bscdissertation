@@ -88,7 +88,7 @@ public class Thumbstick implements InputUIElement{
 
     public Vector getMovementVector(){
         if (inputVector.getTail().equals(inputVector.getHead())){
-            return new Vector();
+            return Vector.ZERO_VECTOR;
         } else {
             if (inputVector.getLength() > maxInputLengthRequirement){
                 return inputVector.getUnitVector();
