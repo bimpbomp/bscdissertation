@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -38,7 +39,7 @@ public class Kite extends Polygon implements Renderable {
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         /*
         * Ignoring interpolationVector since it's not implemented yet,
         * also ignoring the renderEntityName boolean as it doesn't have a name
@@ -51,6 +52,11 @@ public class Kite extends Polygon implements Renderable {
         //draw lower triangle
         paint.setColor(currentLowerTriColor);
         canvas.drawPath(getPathWithPoints(offsetVertices(lowerTriangleVertices(), renderOffset)), paint);
+    }
+
+    @Override
+    public BoundingBox getRenderingVertices() {
+        return new BoundingBox(getVertices());
     }
 
     @Override
@@ -69,6 +75,10 @@ public class Kite extends Polygon implements Renderable {
 
     public void revertUppertriToDefaultColor(){
         this.currentUpperTriColor = defaultUpperTriColor;
+    }
+
+    public int getCurrentLowerTriColor() {
+        return currentLowerTriColor;
     }
 
     private Point[] upperTriangleVertices(){

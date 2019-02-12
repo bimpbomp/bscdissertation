@@ -6,8 +6,10 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
-import bham.student.txm683.heartbreaker.physics.InteractionField;
+import bham.student.txm683.heartbreaker.physics.fields.DoorField;
+import bham.student.txm683.heartbreaker.physics.fields.InteractionField;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -26,11 +28,11 @@ public class Door extends Entity implements Renderable, Collidable {
 
     private boolean open;
 
-    private InteractionField primaryField;
-    private InteractionField secondaryField;
+    private DoorField primaryField;
+    private DoorField secondaryField;
 
-    private static final int LOCKED_COLOR = Color.RED;
-    private static final int UNLOCKED_COLOR = Color.GREEN;
+    private static final int LOCKED_COLOR = Color.argb(150, 255, 0 ,0);
+    private static final int UNLOCKED_COLOR = Color.argb(150, 0, 255, 0);
 
     private static final float DOOR_RATIO = 0.5f;
     private static final float TRANSLATION_RATIO = 0.25f;
@@ -56,8 +58,8 @@ public class Door extends Entity implements Renderable, Collidable {
             this.secondaryShape = new Rectangle(center, width * DOOR_RATIO, height, secondaryLocked ? LOCKED_COLOR : UNLOCKED_COLOR);
             this.secondaryShape.translateShape(new Vector(width * TRANSLATION_RATIO, 0));
 
-            this.primaryField = new InteractionField(doorID+"", "P", center.add(new Point(-0.5f * width, 0)), width, height, Color.GRAY);
-            this.secondaryField = new InteractionField(doorID+"", "S", center.add(new Point(0.5f * width, 0)), width, height, Color.LTGRAY);
+            this.primaryField = new DoorField(doorID+"", "P", center.add(new Point(-0.5f * width, 0)), width, height, Color.GRAY);
+            this.secondaryField = new DoorField(doorID+"", "S", center.add(new Point(0.5f * width, 0)), width, height, Color.LTGRAY);
 
         } else {
 
@@ -69,8 +71,8 @@ public class Door extends Entity implements Renderable, Collidable {
             this.secondaryShape = new Rectangle(center, width, height * DOOR_RATIO, secondaryLocked ? LOCKED_COLOR : UNLOCKED_COLOR);
             this.secondaryShape.translateShape(new Vector(0, height * TRANSLATION_RATIO));
 
-            this.primaryField = new InteractionField(doorID+"", "P", center.add(new Point(0, -0.5f * height)), width, height, Color.GRAY);
-            this.secondaryField = new InteractionField(doorID+"", "S", center.add(new Point(0, 0.5f * height)), width, height, Color.LTGRAY);
+            this.primaryField = new DoorField(doorID+"", "P", center.add(new Point(0, -0.5f * height)), width, height, Color.GRAY);
+            this.secondaryField = new DoorField(doorID+"", "S", center.add(new Point(0, 0.5f * height)), width, height, Color.LTGRAY);
         }
     }
 
@@ -79,16 +81,21 @@ public class Door extends Entity implements Renderable, Collidable {
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
-        tileBackground.draw(canvas, renderOffset, interpolationVector, renderEntityName);
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
+        tileBackground.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
-        primaryShape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
-        secondaryShape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
+        primaryShape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+        secondaryShape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
-        doorShape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
+        doorShape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
+    }
+
+    @Override
+    public BoundingBox getRenderingVertices() {
+        return tileBackground.getRenderingVertices();
     }
 
     @Override
@@ -152,9 +159,9 @@ public class Door extends Entity implements Renderable, Collidable {
         this.primaryLocked = primaryLocked;
 
         if (this.primaryLocked)
-            primaryField.setColor(LOCKED_COLOR);
+            primaryShape.setColor(LOCKED_COLOR);
         else
-            primaryField.setColor(UNLOCKED_COLOR);
+            primaryShape.setColor(UNLOCKED_COLOR);
     }
 
     public boolean isSecondaryLocked() {
@@ -165,9 +172,9 @@ public class Door extends Entity implements Renderable, Collidable {
         this.secondaryLocked = secondaryLocked;
 
         if (secondaryLocked)
-            secondaryField.setColor(LOCKED_COLOR);
+            secondaryShape.setColor(LOCKED_COLOR);
         else
-            secondaryField.setColor(UNLOCKED_COLOR);
+            secondaryShape.setColor(UNLOCKED_COLOR);
     }
 
     public boolean isOpen() {

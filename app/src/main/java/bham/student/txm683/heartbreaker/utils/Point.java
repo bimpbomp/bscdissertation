@@ -38,11 +38,11 @@ public class Point implements SaveableState {
         return new Point(x + p.x, y + p.y);
     }
 
-    public Point addVector(Vector v){
-        return new Point(x + v.getXRelativeToTail(), y + v.getYRelativeToTail());
+    public Point add(float x, float y){
+        return new Point(this.x + x, this.y + y);
     }
 
-    public Point smult(float scalar){
+    public Point sMult(float scalar){
         return new Point(x*scalar, y*scalar);
     }
 

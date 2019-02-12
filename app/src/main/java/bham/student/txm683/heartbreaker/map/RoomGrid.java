@@ -13,7 +13,7 @@ public class RoomGrid {
     private HashSet<Tile> tileSet;
     private int tileSize;
 
-    //entities that wont move or be destroyed
+    //entities that wont tick or be destroyed
     private HashMap<Tile, HashSet<Entity>> permanentEntities;
     //each tile has a bucket for holding entities
     private HashMap<Tile, HashSet<Entity>> entitiesInGrid;

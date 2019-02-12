@@ -38,7 +38,7 @@ public class Map {
     }
 
     public Point mapTileToGlobalPoint(Tile tile){
-        Point point = new Point(tile.getX(), tile.getY()).smult(tileSize);
+        Point point = new Point(tile.getX(), tile.getY()).sMult(tileSize);
         return new Point(point.getX()+tileSize/2f, point.getY()+tileSize/2f);
     }
 

@@ -1,13 +1,17 @@
 package bham.student.txm683.heartbreaker.rendering;
 
 import android.graphics.Canvas;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
 
 public interface Renderable {
-    void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName);
+    void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName);
 
     void setColor(int color);
 
     void revertToDefaultColor();
+
+    BoundingBox getRenderingVertices();
+
+    String getName();
 }

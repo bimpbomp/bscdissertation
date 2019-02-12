@@ -1,86 +1,75 @@
-/*
 package bham.student.txm683.heartbreaker.entities.entityshapes;
-//TODO: re-implement circles
 
 import android.graphics.Canvas;
-import bham.student.txm683.heartbreaker.physics.CollisionOutline;
+import android.graphics.Paint;
+import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-public class Circle {
+public class Circle implements Renderable, Shape {
 
     private float radius;
-    private CollisionOutline collisionOutline;
+    private Point center;
 
-    public Circle(Point center, float radius, int colorValue){
-        super(center, colorValue, ShapeIdentifier.CIRCLE);
+    private int defaultColor;
+    private int currentColor;
+
+    private Paint paint;
+
+    public Circle(Point center, float radius, int color){
         this.radius = radius;
+        this.center = center;
 
-        setForwardUnitVector();
+        this.defaultColor = color;
+        this.currentColor = color;
+
+        this.paint = new Paint();
     }
 
-    public Circle(String stateString) throws JSONException{
-        super(stateString, ShapeIdentifier.CIRCLE);
-
-        JSONObject jsonObject = new JSONObject(stateString);
-
-        radius = Float.parseFloat(jsonObject.getString("radius"));
-
-    }
-
-    public float getRadius(){
+    public float getRadius() {
         return radius;
     }
 
-    @Override
-    public void setHeight(float newHeight) {
-        this.radius = newHeight/2f;
+    public Point getCenter() {
+        return center;
     }
 
     @Override
-    public float getHeight() {
-        return this.radius*2;
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
+        paint.setColor(currentColor);
+
+        Point offsetCenter = center.add(renderOffset);
+        canvas.drawCircle(offsetCenter.getX(), offsetCenter.getY(), radius, paint);
     }
 
     @Override
-    public void setWidth(float newWidth) {
-        this.radius = newWidth/2f;
+    public void setColor(int color) {
+        this.currentColor = color;
     }
 
     @Override
-    public float getWidth() {
-        return this.radius*2f;
+    public void revertToDefaultColor() {
+        this.currentColor = defaultColor;
     }
 
     @Override
-    public void setForwardUnitVector() {
-        this.forwardUnitVector = new Vector(-1, 0);
+    public BoundingBox getRenderingVertices() {
+        return new BoundingBox(center.add(-1 * radius, -1 * radius), center.add(radius, radius));
     }
 
     @Override
-    public Point[] getCollisionVertices() {
-        return new Point[]{
-                new Point(geometricCenter.getX()-radius, geometricCenter.getY()-radius),
-                new Point(geometricCenter.getX()+radius, geometricCenter.getY()-radius),
-                new Point(geometricCenter.getX()+radius, geometricCenter.getY()+radius),
-                new Point(geometricCenter.getX()-radius, geometricCenter.getY()+radius)};
+    public String getName() {
+        return "CIRCLE";
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector) {
-        Point offsettedCenter = geometricCenter.add(renderOffset);
-        canvas.drawCircle(offsettedCenter.getX(), offsettedCenter.getY(), radius, paint);
+    public ShapeIdentifier getShapeIdentifier() {
+        return ShapeIdentifier.CIRCLE;
     }
 
     @Override
-    public JSONObject getStateObject() throws JSONException {
-        JSONObject jsonObject = super.getJSONObject();
-
-        jsonObject.put("radius", radius);
-
-        return jsonObject;
+    public void translateShape(Vector movementVector) {
+        center.add(movementVector.getRelativeToTailPoint());
     }
 }
-*/

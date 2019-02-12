@@ -139,7 +139,7 @@ public class RoomGraph {
                 }
 
                 if (closedSet.contains(neighbour)) {
-                    //if the node has already been inspected, move on
+                    //if the node has already been inspected, tick on
                     continue;
                 }
 

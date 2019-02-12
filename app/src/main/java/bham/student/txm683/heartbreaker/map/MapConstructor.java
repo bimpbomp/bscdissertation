@@ -186,7 +186,7 @@ public class MapConstructor {
 
                 //for each boundary in the current room
                 for (List<Point> wallPoints : boundaries) {
-                    doorPositionIndex = wallPoints.indexOf(door.getCenter().add(centerOffset.smult(-1)));
+                    doorPositionIndex = wallPoints.indexOf(door.getCenter().add(centerOffset.sMult(-1)));
                     if (doorPositionIndex >= 0) {
 
                         if (doorPositionIndex == 0) {
@@ -457,7 +457,7 @@ public class MapConstructor {
                     Point topLeft = renderingPoints.get(0);
                     Point bottomRight = renderingPoints.get(1);
                     Point center = topLeft.add(new Point(bottomRight.getX()-topLeft.getX(),
-                            bottomRight.getY()-topLeft.getY()).smult(0.5f));
+                            bottomRight.getY()-topLeft.getY()).sMult(0.5f));
 
                     Wall wall = new Wall("W:"+uniqueID.id(), collisionPoints.toArray(new Point[0]),
                             topLeft, bottomRight, center, wallColor);
@@ -524,7 +524,7 @@ public class MapConstructor {
         while (tilesToAdd > 0){
             boundary.add(currentPoint);
 
-            currentPoint = currentPoint.add(directionToNextVertex.getUnitVector().getRelativeToTailPoint().smult(tileSize));
+            currentPoint = currentPoint.add(directionToNextVertex.getUnitVector().getRelativeToTailPoint().sMult(tileSize));
             tilesToAdd--;
         }
 
@@ -568,7 +568,7 @@ public class MapConstructor {
             for (Tile neighbour : neighbours) {
 
                 if (closedSet.contains(neighbour) || !tileIsInPerimeter(perimeter, neighbour)) {
-                    //if the tile is out of bounds, or has already been inspected, move on
+                    //if the tile is out of bounds, or has already been inspected, tick on
                     continue;
                 }
 

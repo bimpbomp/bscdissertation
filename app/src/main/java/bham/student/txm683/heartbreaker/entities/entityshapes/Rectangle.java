@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -16,7 +17,7 @@ public class Rectangle extends Polygon implements Renderable {
     public Rectangle(Point center, Vector[] vertexVectors, int colorValue){
         super(center, vertexVectors, ShapeIdentifier.RECTANGLE);
 
-        this.primaryAngle = calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
+        this.primaryAngle = Vector.calculateAngleBetweenVectors(vertexVectors[0], this.forwardUnitVector);
 
         this.paint = new Paint();
 
@@ -38,7 +39,7 @@ public class Rectangle extends Polygon implements Renderable {
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         /*
          * Ignoring interpolationVector since it's not implemented yet,
          * also ignoring the renderEntityName boolean as it doesn't have a name
@@ -56,5 +57,10 @@ public class Rectangle extends Polygon implements Renderable {
     @Override
     public void setColor(int color) {
         this.currentColor = color;
+    }
+
+    @Override
+    public BoundingBox getRenderingVertices() {
+        return new BoundingBox(getVertices());
     }
 }

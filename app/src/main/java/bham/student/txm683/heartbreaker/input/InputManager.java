@@ -6,14 +6,16 @@ import android.view.MotionEvent;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.utils.Point;
 
+
+//TODO issue with input when thumbstick has pointer and first finger was activating other button
 public class InputManager {
     private static final String TAG = "hb::InputManager";
 
     private Thumbstick thumbstick;
     private Button pauseButton;
 
-    private Button meleeButton;
-    private Button rangedButton;
+    private Button secondaryWeaponButton;
+    private Button primaryWeaponButton;
 
     private Button[] debugButtons;
 
@@ -24,6 +26,7 @@ public class InputManager {
     }
 
     public boolean onTouchEvent(MotionEvent event){
+
         boolean eventHandled;
 
         int eventIndex = event.getActionIndex();
@@ -95,8 +98,10 @@ public class InputManager {
 
                     if (thumbstick.hasID(eventID))
                         thumbstick.setActivePosition(coordinatesPressed);
-                    /*else if (meleeButton.hasID(eventID))
-                        levelState.getPlayer().chargeMelee();*/
+                    else if (primaryWeaponButton.hasID(eventID))
+                        levelState.addBullet(levelState.getPlayer().shootPrimary());
+                    else if (secondaryWeaponButton.hasID(eventID))
+                        levelState.addBullet(levelState.getPlayer().shootSecondary());
                 }
                 break;
 
@@ -121,16 +126,18 @@ public class InputManager {
     }
 
     private void handleDownResumed(int eventID, Point coordinatesPressed){
-        if (thumbstick.containsPoint(coordinatesPressed)){
+        if (thumbstick.getID() < 0 && thumbstick.containsPoint(coordinatesPressed)){
             thumbstick.setActivePosition(coordinatesPressed);
             thumbstick.setPointerID(eventID);
 
-        } else if (meleeButton.containsPoint(coordinatesPressed)){
-            meleeButton.setPointerID(eventID);
-        } else if (pauseButton.containsPoint(coordinatesPressed)){
+        } else if (secondaryWeaponButton.getID() < 0 && secondaryWeaponButton.containsPoint(coordinatesPressed)){
+            levelState.addBullet(levelState.getPlayer().shootSecondary());
+            secondaryWeaponButton.setPointerID(eventID);
+        } else if (pauseButton.getID() < 0 && pauseButton.containsPoint(coordinatesPressed)){
             pauseButton.setPointerID(eventID);
-        } else if (rangedButton.containsPoint(coordinatesPressed)){
-            rangedButton.setPointerID(eventID);
+        } else if (primaryWeaponButton.getID() < 0 && primaryWeaponButton.containsPoint(coordinatesPressed)){
+            levelState.addBullet(levelState.getPlayer().shootPrimary());
+            primaryWeaponButton.setPointerID(eventID);
         }
     }
 
@@ -157,19 +164,18 @@ public class InputManager {
 
         if (pauseButton.hasID(eventID)) {
             //cancel any outstanding pressed buttons
-            meleeButton.cancel();
+            secondaryWeaponButton.cancel();
             thumbstick.cancel();
 
             pauseButton.onClick();
 
         } else if (thumbstick.hasID(eventID)){
             thumbstick.cancel();
-        } else if (meleeButton.hasID(eventID)){
+        } else if (secondaryWeaponButton.hasID(eventID)){
             //levelState.getPlayer().meleeAttack();
-            meleeButton.cancel();
-        } else if (rangedButton.hasID(eventID)){
-            //levelState.getPlayer(). ;
-            rangedButton.cancel();
+            secondaryWeaponButton.cancel();
+        } else if (primaryWeaponButton.hasID(eventID)){
+            primaryWeaponButton.cancel();
         }
 
     }
@@ -178,8 +184,8 @@ public class InputManager {
         if (!levelState.isPaused()) {
             thumbstick.draw(canvas);
 
-            rangedButton.draw(canvas, textPaint);
-            meleeButton.draw(canvas, textPaint);
+            primaryWeaponButton.draw(canvas, textPaint);
+            secondaryWeaponButton.draw(canvas, textPaint);
         } else {
             if (debugButtons != null) {
                 for (Button button : debugButtons) {
@@ -207,13 +213,13 @@ public class InputManager {
         this.pauseButton = pauseButton;
     }
 
-    public void setMeleeButton(Button meleeButton) {
-        this.meleeButton = meleeButton;
+    public void setSecondaryWeaponButton(Button secondaryWeaponButton) {
+        this.secondaryWeaponButton = secondaryWeaponButton;
     }
 
     public void setDebugButtons(Button[] buttons){
         this.debugButtons = buttons;
     }
 
-    public void setRangedButton(Button rangedButton){this.rangedButton = rangedButton;}
+    public void setPrimaryWeaponButton(Button primaryWeaponButton){this.primaryWeaponButton = primaryWeaponButton;}
 }

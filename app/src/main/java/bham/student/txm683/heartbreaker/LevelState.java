@@ -5,11 +5,15 @@ import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Player;
+import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class LevelState {
     private static final String TAG = "hb::LevelState";
@@ -18,6 +22,7 @@ public class LevelState {
 
     private Player player;
     private ArrayList<AIEntity> enemyEntities;
+    private CopyOnWriteArrayList<Projectile> bullets;
 
     private AIManager aiManager;
 
@@ -29,15 +34,20 @@ public class LevelState {
 
     private DebugInfo debugInfo;
 
+    private ReentrantLock bulletLock;
+
     public LevelState(Map map){
         this.map = map;
 
         this.enemyEntities = new ArrayList<>();
+        this.bullets = new CopyOnWriteArrayList<>();
 
         this.readyToRender = false;
         this.paused = false;
 
         this.debugInfo = new DebugInfo();
+
+        this.bulletLock = new ReentrantLock();
     }
 
     /*public LevelState(String stateString) throws ParseException, JSONException {
@@ -80,6 +90,18 @@ public class LevelState {
                 break;
             }
         }
+    }
+
+    public CopyOnWriteArrayList<Projectile> getBullets() {
+        return bullets;
+    }
+
+    public void addBullet(Projectile[] bullets){
+        this.bullets.addAll(Arrays.asList(bullets));
+    }
+
+    public void removeBullet(Projectile bullet){
+        bullets.remove(bullet);
     }
 
     public Player getPlayer(){

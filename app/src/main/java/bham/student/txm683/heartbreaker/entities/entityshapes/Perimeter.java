@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -33,7 +34,7 @@ public class Perimeter implements Renderable, Collidable, Shape {
 
     public void convertToGlobal(int tileSize){
         for (int i = 0; i < vertices.length; i++){
-            vertices[i] = vertices[i].smult(tileSize);
+            vertices[i] = vertices[i].sMult(tileSize);
         }
     }
 
@@ -48,10 +49,15 @@ public class Perimeter implements Renderable, Collidable, Shape {
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         this.paint.setColor(currentColor);
 
         canvas.drawPath(Polygon.getPathWithPoints(Polygon.offsetVertices(vertices, renderOffset)), paint);
+    }
+
+    @Override
+    public BoundingBox getRenderingVertices() {
+        return new BoundingBox(vertices);
     }
 
     @Override

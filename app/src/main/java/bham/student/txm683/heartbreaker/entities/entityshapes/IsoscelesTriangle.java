@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -27,10 +28,15 @@ public class IsoscelesTriangle extends Polygon implements Renderable {
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         paint.setColor(currentColor);
 
         canvas.drawPath(getPathWithPoints(getVertices(renderOffset)), paint);
+    }
+
+    @Override
+    public BoundingBox getRenderingVertices() {
+        return new BoundingBox(getVertices());
     }
 
     @Override

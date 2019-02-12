@@ -28,13 +28,17 @@ public abstract class Polygon implements Shape{
      */
     abstract void setForwardUnitVector();
 
+    public Vector getForwardUnitVector() {
+        return forwardUnitVector;
+    }
+
     /**
      * Rotates the shape to the direction of the given vector
      * @param movementVector Vector to align direction with
      **/
     public void rotateShape(Vector movementVector){
 
-        float angle = calculateAngleBetweenVectors(forwardUnitVector, movementVector.getUnitVector());
+        float angle = Vector.calculateAngleBetweenVectors(forwardUnitVector, movementVector.getUnitVector());
 
         float cosAngle = (float) Math.cos(angle);
         float sinAngle = (float) Math.sin(angle);
@@ -61,19 +65,6 @@ public abstract class Polygon implements Shape{
         for (int i = 0; i < vertexVectors.length; i++){
             vertexVectors[i] = vertexVectors[i].translate(amountToTranslate);
         }
-    }
-
-    /**
-     * Calculates the angle from the primary vector to the movement vector
-     * @param primaryVector Vector of the shape
-     * @param movementVector Vector to know angle to
-     * @return The angle between the given vectors
-     */
-    float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
-        float dot = primaryVector.dot(movementVector);
-        float det = primaryVector.det(movementVector);
-
-        return (float) Math.atan2(det, dot);
     }
 
     /**
@@ -114,6 +105,10 @@ public abstract class Polygon implements Shape{
             vertices[i] = vertexVectors[i].getHead();
         }
         return vertices;
+    }
+
+    public String getName(){
+        return "SHAPE";
     }
 
     public Point getCenter(){

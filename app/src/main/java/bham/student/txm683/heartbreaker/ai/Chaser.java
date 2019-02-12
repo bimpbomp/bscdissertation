@@ -7,6 +7,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.Damageable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -80,7 +81,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
     }
 
     @Override
-    public void move(float secondsSinceLastGameTick) {
+    public void tick(float secondsSinceLastGameTick) {
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
 
         shape.translateShape(movementVector);
@@ -119,11 +120,16 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
-        shape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
+        shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
+    }
+
+    @Override
+    public BoundingBox getRenderingVertices() {
+        return shape.getRenderingVertices();
     }
 
     @Override

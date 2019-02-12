@@ -7,6 +7,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -29,9 +30,9 @@ public class Wall extends Entity implements Collidable, Renderable {
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName){
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName){
 
-        shape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
+        shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
         Point offsetCenter = getCenter().add(renderOffset);
 
@@ -39,6 +40,11 @@ public class Wall extends Entity implements Collidable, Renderable {
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
+    }
+
+    @Override
+    public BoundingBox getRenderingVertices() {
+        return shape.getRenderingVertices();
     }
 
     @Override

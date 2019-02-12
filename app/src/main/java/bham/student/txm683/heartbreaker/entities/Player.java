@@ -4,10 +4,14 @@ import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
+import bham.student.txm683.heartbreaker.entities.weapons.BombThrower;
+import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -19,6 +23,9 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
     private Kite shape;
 
     private int health;
+
+    private Weapon primaryWeapon;
+    private Weapon secondaryWeapon;
 
     public Player(String name, Point center, int size, float maxSpeed, int upperTriColor, int lowerTriColor, int initialHealth) {
         super(name, maxSpeed);
@@ -35,10 +42,26 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
         }, upperTriColor, lowerTriColor);
 
         this.health = initialHealth;
+
+        this.primaryWeapon = new BasicWeapon(name);
+        this.secondaryWeapon = new BombThrower(name);
+    }
+
+    public Projectile[] shootPrimary(){
+        return primaryWeapon.shoot(calcBulletPlacement(primaryWeapon.getBulletRadius()));
+    }
+
+    public Projectile[] shootSecondary(){
+        return secondaryWeapon.shoot(calcBulletPlacement(secondaryWeapon.getBulletRadius()));
+    }
+
+    private Vector calcBulletPlacement(float bulletRadius){
+        Vector bulletPlacement = new Vector(getCenter(), shape.getVertices()[0]);
+        return bulletPlacement.sMult((bulletPlacement.getLength() + bulletRadius + (calculateMovementVector(1/25f).getLength()) + 5f)/ bulletPlacement.getLength());
     }
 
     @Override
-    public void move(float secondsSinceLastGameTick) {
+    public void tick(float secondsSinceLastGameTick) {
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
 
         if (!movementVector.equals(Vector.ZERO_VECTOR)) {
@@ -81,11 +104,18 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
     }
 
     @Override
-    public void draw(Canvas canvas, Point renderOffset, Vector interpolationVector, boolean renderEntityName) {
-        shape.draw(canvas, renderOffset, interpolationVector, renderEntityName);
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
+        shape.setColor(primaryWeapon.getSymbolisingColor());
+
+        shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
+    }
+
+    @Override
+    public BoundingBox getRenderingVertices() {
+        return shape.getRenderingVertices();
     }
 
     @Override

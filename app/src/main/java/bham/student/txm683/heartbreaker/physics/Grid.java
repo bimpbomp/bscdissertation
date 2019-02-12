@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.physics;
 
 import android.util.Pair;
+import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.utils.Point;
 
 import java.util.ArrayList;
@@ -57,6 +58,15 @@ public class Grid {
             if ((gridReference.first >= 0 && gridReference.first <= gridDimensionsInCells.first) && (gridReference.second >= 0 && gridReference.second <= gridDimensionsInCells.second))
                 insertEntityAtGridPosition(gridReference.first, gridReference.second, entity);
         }
+    }
+
+    void addProjectileToGrid(Projectile projectile){
+        Pair<Integer, Integer> gridRef = mapPointToGridPosition(projectile.getCenter());
+
+        insertEntityAtGridPosition(gridRef.first, gridRef.second, projectile);
+
+        gridRef = mapPointToGridPosition(projectile.getPreviousCenter());
+        insertEntityAtGridPosition(gridRef.first, gridRef.second, projectile);
     }
 
     private Pair<Integer, Integer> mapPointToGridPosition(Point point){

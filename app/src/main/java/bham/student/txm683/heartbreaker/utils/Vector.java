@@ -179,6 +179,19 @@ public class Vector implements SaveableState {
     }
 
     /**
+     * Calculates the angle from the primary vector to the movement vector
+     * @param primaryVector Vector of the shape
+     * @param movementVector Vector to know angle to
+     * @return The angle between the given vectors
+     */
+    public static float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
+        float dot = primaryVector.dot(movementVector);
+        float det = primaryVector.det(movementVector);
+
+        return (float) Math.atan2(det, dot);
+    }
+
+    /**
      * Rotates this vector by an angle. Rotation is relative this vector's tail position.
      * @param cosAngle Cos of angle to rotate by
      * @param sinAngle Sin of angle to rotate by

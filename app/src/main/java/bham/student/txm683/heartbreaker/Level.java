@@ -4,7 +4,7 @@ import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
-import bham.student.txm683.heartbreaker.physics.PhysicsController;
+import bham.student.txm683.heartbreaker.physics.EntityController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
 
@@ -14,7 +14,7 @@ public class Level implements Runnable {
     private LevelView levelView;
     private LevelState levelState;
     private InputManager inputManager;
-    private PhysicsController physicsController;
+    private EntityController entityController;
     private CollisionManager collisionManager;
 
     private MessageBus messageBus;
@@ -48,7 +48,7 @@ public class Level implements Runnable {
     public void run(){
 
         //initialise systems
-        physicsController = new PhysicsController(levelState);
+        entityController = new EntityController(levelState);
         collisionManager = new CollisionManager(levelState);
 
         nextScheduledGameTick = System.currentTimeMillis();
@@ -84,7 +84,7 @@ public class Level implements Runnable {
                         }
                     }*/
 
-                    physicsController.update(gameTickTimeStepInMillis / 1000f);
+                    entityController.update(gameTickTimeStepInMillis / 1000f);
 
                     levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
 

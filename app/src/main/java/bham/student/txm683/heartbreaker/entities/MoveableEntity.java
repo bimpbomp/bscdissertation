@@ -13,7 +13,7 @@ public abstract class MoveableEntity extends Entity {
         this.requestedMovementVector = Vector.ZERO_VECTOR;
     }
 
-    public abstract void move(float secondsSinceLastGameTick);
+    public abstract void tick(float secondsSinceLastGameTick);
 
     public Vector calculateMovementVector(float secondsSinceLastGameTick){
         return requestedMovementVector.equals(Vector.ZERO_VECTOR) ?
@@ -22,6 +22,10 @@ public abstract class MoveableEntity extends Entity {
 
     public void setRequestedMovementVector(Vector requestedMovementVector) {
         this.requestedMovementVector = requestedMovementVector;
+    }
+
+    public Vector getRequestedMovementVector() {
+        return requestedMovementVector;
     }
 
     @Override

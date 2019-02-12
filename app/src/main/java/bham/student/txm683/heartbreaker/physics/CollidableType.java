@@ -6,5 +6,6 @@ public enum CollidableType {
     INTERACTION_FIELD,
     PLAYER,
     AI_ENTITY,
-    PERIMETER
+    PERIMETER,
+    PROJECTILE
 }

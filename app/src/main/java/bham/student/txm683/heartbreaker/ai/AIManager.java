@@ -35,7 +35,7 @@ public class AIManager {
 
         for (AIEntity aiEntity : controlledAI){
             aiEntity.update();
-            aiEntity.move(secondsSinceLastGameTick);
+            aiEntity.tick(secondsSinceLastGameTick);
         }
 
         /*if (!levelState.getDebugInfo().isAIActivated()){
@@ -50,10 +50,10 @@ public class AIManager {
             Point pathPoint = levelState.getMap().mapTileToGlobalPoint(path[1]);
             movementVector = new Vector(pathPoint.getX() - centerPosition.getX(), pathPoint.getY() - centerPosition.getY()).getUnitVector();
             controlledEntity.setMovementVector(movementVector);
-            controlledEntity.move(secondsSinceLastGameTick);
+            controlledEntity.tick(secondsSinceLastGameTick);
             Log.d(TAG, "Moving in direction: " + movementVector.relativeToString());
         } else {
-            Log.d(TAG, "Path has length less than 1, won't move");
+            Log.d(TAG, "Path has length less than 1, won't tick");
         }*/
     }
 
