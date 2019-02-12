@@ -256,6 +256,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     entity.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
+            //draw explosions
+            for (Renderable explosion : levelState.getLingeringExplosions()){
+                explosion.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+            }
+
             //draw walls
             for (Renderable wall : levelState.getMap().getWalls()){
                 if (isOnScreen(wall))

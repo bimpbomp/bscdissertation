@@ -3,11 +3,11 @@ package bham.student.txm683.heartbreaker;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.entities.Entity;
-import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.Room;
+import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 
 import java.util.ArrayList;
@@ -23,6 +23,9 @@ public class LevelState {
     private Player player;
     private ArrayList<AIEntity> enemyEntities;
     private CopyOnWriteArrayList<Projectile> bullets;
+    private CopyOnWriteArrayList<Explosion> explosions;
+
+    private CopyOnWriteArrayList<Explosion> lingeringExplosions;
 
     private AIManager aiManager;
 
@@ -41,6 +44,9 @@ public class LevelState {
 
         this.enemyEntities = new ArrayList<>();
         this.bullets = new CopyOnWriteArrayList<>();
+
+        this.explosions = new CopyOnWriteArrayList<>();
+        this.lingeringExplosions = new CopyOnWriteArrayList<>();
 
         this.readyToRender = false;
         this.paused = false;
@@ -83,13 +89,25 @@ public class LevelState {
         this.screenHeight = screenHeight;
     }
 
-    public void removeEnemy(MoveableEntity entity){
-        for (MoveableEntity enemy : enemyEntities){
-            if (enemy.getName().equals(entity.getName())){
-                enemyEntities.remove(enemy);
-                break;
-            }
-        }
+    public void removeEnemy(AIEntity entity){
+        enemyEntities.remove(entity);
+    }
+
+    public CopyOnWriteArrayList<Explosion> getExplosions() {
+        return explosions;
+    }
+
+    public void addExplosion(Explosion explosion){
+        this.explosions.add(explosion);
+        this.lingeringExplosions.add(explosion);
+    }
+
+    public CopyOnWriteArrayList<Explosion> getLingeringExplosions(){
+        return lingeringExplosions;
+    }
+
+    public void removeExplosions(){
+        this.explosions.clear();
     }
 
     public CopyOnWriteArrayList<Projectile> getBullets() {

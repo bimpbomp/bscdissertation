@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Color;
+import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.utils.Point;
 
 public class Bomb extends Projectile {
@@ -18,5 +19,9 @@ public class Bomb extends Projectile {
             revertToDefaultColor();
 
         super.tick(secondsSinceLastGameTick);
+    }
+
+    public Explosion explode(){
+        return new Explosion(getName(), getCenter(), getRadius()*5, getDamage(), Color.RED);
     }
 }
