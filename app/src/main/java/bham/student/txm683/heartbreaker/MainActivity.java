@@ -87,7 +87,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        this.levelState.setReadyToRender(false);
+        if (levelState != null)
+            this.levelState.setReadyToRender(false);
 
         /*String saveString = levelState.getSaveString();
         saveToFile(SAVE_FILE_NAME, saveString);*/

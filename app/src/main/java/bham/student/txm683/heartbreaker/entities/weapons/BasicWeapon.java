@@ -17,7 +17,7 @@ public class BasicWeapon extends Weapon {
         super(owner, 3);
 
         this.bulletRadius = 20f;
-        this.speed = 300;
+        this.speed = 1500;
         this.damage = 10;
 
         this.symbolisingColor = Color.MAGENTA;
