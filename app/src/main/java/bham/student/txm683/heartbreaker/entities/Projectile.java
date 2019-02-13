@@ -24,8 +24,12 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
     private int damage;
     private int lifeInTicks;
 
-    public Projectile(String name, Point center, float radius, float maxSpeed, int damage, int lifeInTicks, int color){
+    private String owner;
+
+    public Projectile(String name, String owner, Point center, float radius, float maxSpeed, int damage, int lifeInTicks, int color){
         super(name, maxSpeed);
+
+        this.owner = owner;
 
         this.paint = new Paint();
         this.currentColor = color;
@@ -39,6 +43,10 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
         this.damage = damage;
 
         this.lifeInTicks = lifeInTicks;
+    }
+
+    public String getOwner() {
+        return owner;
     }
 
     @Override

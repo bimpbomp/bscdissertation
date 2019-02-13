@@ -80,6 +80,11 @@ public class CollisionManager {
             broadPhaseGrid.addProjectileToGrid(projectile);
         }
 
+        //add explosions
+        for (Explosion explosion : levelState.getExplosions()){
+            broadPhaseGrid.addEntityToGrid(explosion);
+        }
+
         //each element will be a bin from a grid reference with more than one entity in
         bins = new ArrayList<>();
 
@@ -187,9 +192,12 @@ public class CollisionManager {
 
     private static void resolveExplosion(Explosion explosion, Collidable collidable){
         if (collidable instanceof Damageable){
+            Log.d(TAG, "explosion damaged " + collidable.getName());
             if (((Damageable) collidable).inflictDamage(explosion.getDamage())){
                 Log.d(TAG, collidable.getName() + " has died");
             }
+            Log.d(TAG, "explosion hit " + collidable.getName() + " and dealt " + explosion.getDamage() + " damage. " +
+                    "health now at " + ((Damageable) collidable).getHealth());
         }
     }
 
@@ -197,9 +205,10 @@ public class CollisionManager {
         //if the projectile damages on contact and the collidable can take damage, damage it
         if (!(projectile instanceof Bomb) && collidable instanceof Damageable) {
             //only damage the collidable if the projectile doesn't belong to them
-            if (!projectile.getName().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())){
+            if (!projectile.getOwner().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())){
                 Log.d(TAG, collidable.getName() + " has died");
             }
+            Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
         }
     }
 

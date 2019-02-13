@@ -6,8 +6,8 @@ import bham.student.txm683.heartbreaker.utils.Point;
 
 public class Bomb extends Projectile {
 
-    public Bomb(String name, Point center, float radius, float maxSpeed, int damage, int lifeInTicks, int color) {
-        super(name, center, radius, maxSpeed, damage, lifeInTicks, color);
+    public Bomb(String name, String owner, Point center, float radius, float maxSpeed, int damage, int lifeInTicks, int color) {
+        super(name, owner, center, radius, maxSpeed, damage, lifeInTicks, color);
     }
 
     @Override
@@ -22,6 +22,6 @@ public class Bomb extends Projectile {
     }
 
     public Explosion explode(){
-        return new Explosion(getName(), getCenter(), getRadius()*5, getDamage(), Color.RED);
+        return new Explosion(getName(), getOwner(), getCenter(), getRadius()*5, getDamage(), Color.RED);
     }
 }

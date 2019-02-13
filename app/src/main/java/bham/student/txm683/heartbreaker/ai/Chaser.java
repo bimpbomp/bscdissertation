@@ -111,7 +111,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
     @Override
     public boolean inflictDamage(int damageToInflict) {
         health -= damageToInflict;
-        return health < 0;
+        return health <= 0;
     }
 
     @Override

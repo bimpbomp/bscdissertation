@@ -29,7 +29,7 @@ public class BasicWeapon extends Weapon {
     public Projectile[] shoot(Vector shootVector) {
 
         if (!inCooldown()) {
-            Projectile bullet = new Projectile(getOwner(), shootVector.getHead(), bulletRadius,
+            Projectile bullet = new Projectile(getOwner()+getNextID(), getOwner(), shootVector.getHead(), bulletRadius,
                     speed, damage, bulletLife, symbolisingColor);
             bullet.setRequestedMovementVector(shootVector.getUnitVector());
 

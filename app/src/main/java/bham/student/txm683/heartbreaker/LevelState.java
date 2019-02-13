@@ -106,6 +106,10 @@ public class LevelState {
         return lingeringExplosions;
     }
 
+    public void removeLingeringExplosions(){
+        this.lingeringExplosions.clear();
+    }
+
     public void removeExplosions(){
         this.explosions.clear();
     }

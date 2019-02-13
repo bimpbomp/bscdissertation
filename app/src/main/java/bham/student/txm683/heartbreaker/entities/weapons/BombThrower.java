@@ -26,7 +26,7 @@ public class BombThrower extends Weapon {
     @Override
     public Projectile[] shoot(Vector shootVector) {
         if (!inCooldown()) {
-            Bomb bullet = new Bomb(getOwner(), shootVector.getHead(), bulletRadius,
+            Bomb bullet = new Bomb(getOwner()+getNextID(), getOwner(), shootVector.getHead(), bulletRadius,
                     speed, damage,fuseLengthInTicks, symbolisingColor);
             bullet.setRequestedMovementVector(shootVector.getUnitVector());
 

@@ -95,7 +95,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
     public boolean inflictDamage(int damageToInflict) {
         health -= damageToInflict;
 
-        return health < 0;
+        return health <= 0;
     }
 
     @Override

@@ -14,8 +14,8 @@ public class Explosion extends InteractionField implements Renderable, ICircle {
     private Circle shape;
     private int damage;
 
-    public Explosion(String owner, Point center, float radius, int damage, int color) {
-        super(owner, owner);
+    public Explosion(String name, String owner, Point center, float radius, int damage, int color) {
+        super(owner, name);
 
         this.shape = new Circle(center, radius, color);
 

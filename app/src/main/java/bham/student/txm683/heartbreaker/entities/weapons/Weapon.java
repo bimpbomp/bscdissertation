@@ -45,6 +45,10 @@ public abstract class Weapon {
         return currentCooldown > 0;
     }
 
+    int getNextID(){
+        return uniqueID.id();
+    }
+
     public abstract int getSymbolisingColor();
 
     public String getOwner() {
