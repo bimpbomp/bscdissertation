@@ -5,6 +5,7 @@ import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
+import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 
@@ -26,6 +27,8 @@ public class Map {
 
     private HashMap<Integer, Room> rooms;
     private HashMap<String, Door> doors;
+
+    private List<Pickup> pickups;
 
     private RoomGraph roomGraph;
 
@@ -52,6 +55,14 @@ public class Map {
         int x = (int) Math.floor(globalCoordinate.getX()/tileSize);
         int y = (int) Math.floor(globalCoordinate.getY()/tileSize);
         return new Point(x,y);
+    }
+
+    public List<Pickup> getPickups() {
+        return pickups;
+    }
+
+    public void setPickups(List<Pickup> pickups) {
+        this.pickups = pickups;
     }
 
     public String getName() {

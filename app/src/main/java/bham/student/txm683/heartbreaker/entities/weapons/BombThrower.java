@@ -13,19 +13,24 @@ public class BombThrower extends Weapon {
     private int symbolisingColor;
     private int fuseLengthInTicks;
 
+    private int ammo;
+
     public BombThrower(String owner) {
-        super(owner, 10);
+        super(owner, 10, AmmoType.BOMB);
 
         bulletRadius = 30f;
         speed = 0f;
         damage = 50;
         symbolisingColor = Color.BLACK;
         fuseLengthInTicks = 50;
+
+        ammo = 4;
     }
 
     @Override
     public Projectile[] shoot(Vector shootVector) {
-        if (!inCooldown()) {
+        if (!inCooldown() && ammo > 0) {
+            ammo--;
             Bomb bullet = new Bomb(getOwner()+getNextID(), getOwner(), shootVector.getHead(), bulletRadius,
                     speed, damage,fuseLengthInTicks, symbolisingColor);
             bullet.setRequestedMovementVector(shootVector.getUnitVector());
@@ -36,6 +41,16 @@ public class BombThrower extends Weapon {
 
         tickCooldown();
         return new Projectile[0];
+    }
+
+    @Override
+    public int getAmmo() {
+        return ammo;
+    }
+
+    @Override
+    public void addAmmo(int amountToAdd) {
+        ammo += amountToAdd;
     }
 
     @Override

@@ -242,9 +242,16 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     room.getPerimeter().draw(canvas, renderOffset, secondsSinceLastGameTick, false);
             }
 
+            //draw doors
             for (Renderable door : levelState.getMap().getDoors().values()){
                 if (isOnScreen(door))
                     door.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+            }
+
+            //draw pickups
+            for (Renderable pickup : levelState.getPickups()){
+                if (isOnScreen(pickup))
+                    pickup.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
             //draw player

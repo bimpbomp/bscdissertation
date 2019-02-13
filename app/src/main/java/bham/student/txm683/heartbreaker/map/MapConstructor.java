@@ -11,6 +11,8 @@ import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomEdge;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
+import bham.student.txm683.heartbreaker.pickups.Pickup;
+import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import bham.student.txm683.heartbreaker.utils.*;
 
@@ -480,6 +482,12 @@ public class MapConstructor {
                 tileSize*2, upperPlayerColor, lowerPlayerColor, 100));
 
         map.setEnemies(enemies);
+
+        List<Pickup> pickups = new ArrayList<>();
+
+        pickups.add(new Pickup(uniqueID.id()+"", PickupType.HEALTH, new Point(400, 2000).add(centerOffset), tileSize/4));
+        pickups.add(new Pickup(uniqueID.id()+"", PickupType.BOMB, new Point(400, 2200).add(centerOffset), tileSize/4));
+        map.setPickups(pickups);
     }
 
     private int generateDoorTileColor(RoomEdge edge){

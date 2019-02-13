@@ -14,7 +14,7 @@ public class BasicWeapon extends Weapon {
     private int bulletLife;
 
     public BasicWeapon(String owner){
-        super(owner, 3);
+        super(owner, 3, AmmoType.BULLET);
 
         this.bulletRadius = 20f;
         this.speed = 1500;
@@ -39,6 +39,16 @@ public class BasicWeapon extends Weapon {
 
         tickCooldown();
         return new Projectile[0];
+    }
+
+    @Override
+    public int getAmmo() {
+        return 1;
+    }
+
+    @Override
+    public void addAmmo(int amountToAdd) {
+
     }
 
     @Override

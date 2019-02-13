@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.BombThrower;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
@@ -45,6 +46,30 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
 
         this.primaryWeapon = new BasicWeapon(name);
         this.secondaryWeapon = new BombThrower(name);
+    }
+
+    public int getPrimaryAmmo() {
+        return primaryWeapon.getAmmo();
+    }
+
+    public int getSecondaryAmmo() {
+        return primaryWeapon.getAmmo();
+    }
+
+    public void addPrimaryAmmo(int amountToAdd){
+        this.primaryWeapon.addAmmo(amountToAdd);
+    }
+
+    public void addSecondaryAmmo(int amountToAdd){
+        this.secondaryWeapon.addAmmo(amountToAdd);
+    }
+
+    public AmmoType getPrimaryAmmoType() {
+        return primaryWeapon.getAmmoType();
+    }
+
+    public AmmoType getSecondaryAmmoType() {
+        return secondaryWeapon.getAmmoType();
     }
 
     public Projectile[] shootPrimary(){

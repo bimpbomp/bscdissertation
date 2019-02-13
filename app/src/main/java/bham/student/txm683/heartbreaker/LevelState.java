@@ -8,12 +8,13 @@ import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
+import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class LevelState {
     private static final String TAG = "hb::LevelState";
@@ -24,6 +25,8 @@ public class LevelState {
     private ArrayList<AIEntity> enemyEntities;
     private CopyOnWriteArrayList<Projectile> bullets;
     private CopyOnWriteArrayList<Explosion> explosions;
+
+    private CopyOnWriteArrayList<Pickup> pickups;
 
     private CopyOnWriteArrayList<Explosion> lingeringExplosions;
 
@@ -37,7 +40,6 @@ public class LevelState {
 
     private DebugInfo debugInfo;
 
-    private ReentrantLock bulletLock;
 
     public LevelState(Map map){
         this.map = map;
@@ -53,7 +55,7 @@ public class LevelState {
 
         this.debugInfo = new DebugInfo();
 
-        this.bulletLock = new ReentrantLock();
+        this.pickups = new CopyOnWriteArrayList<>(map.getPickups());
     }
 
     /*public LevelState(String stateString) throws ParseException, JSONException {
@@ -79,6 +81,18 @@ public class LevelState {
 
         this.debugInfo = new DebugInfo();
     }*/
+
+    public CopyOnWriteArrayList<Pickup> getPickups() {
+        return pickups;
+    }
+
+    public void removePickup(Pickup pickup){
+        pickups.remove(pickup);
+    }
+
+    public void setPickups(Collection<Pickup> collection){
+        pickups.addAll(collection);
+    }
 
     public void setPlayer(Player player){
         this.player = player;

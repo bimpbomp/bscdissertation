@@ -5,11 +5,14 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Bomb;
 import bham.student.txm683.heartbreaker.entities.Door;
+import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
+import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -83,6 +86,11 @@ public class CollisionManager {
         //add explosions
         for (Explosion explosion : levelState.getExplosions()){
             broadPhaseGrid.addEntityToGrid(explosion);
+        }
+
+        //add pickups
+        for (Pickup pickup : levelState.getPickups()){
+            broadPhaseGrid.addEntityToGrid(pickup);
         }
 
         //each element will be a bin from a grid reference with more than one entity in
@@ -164,6 +172,13 @@ public class CollisionManager {
                                     //collision occurred
                                     resolveDoorFieldActivation((DoorField) nonSolidEntity);
                                 }
+                            } else if (nonSolidEntity instanceof Pickup){
+                                pushVector = collisionCheckTwoPolygons(nonSolidEntity, solidEntity);
+
+                                if (!pushVector.equals(Vector.ZERO_VECTOR)){
+                                    //collision occurred
+                                    resolvePickupActivation((Pickup) nonSolidEntity, solidEntity);
+                                }
                             }
 
                         } else {
@@ -187,6 +202,29 @@ public class CollisionManager {
                 door.setOpen(true);
             else
                 door.setOpen(false);
+        }
+    }
+
+    private void resolvePickupActivation(Pickup pickup, Collidable collidable){
+        if (collidable instanceof Player){
+            switch (pickup.getPickupType()){
+
+                case BASIC_WEAPON:
+                    break;
+                case BOMB:
+                    //add one bomb to any bomb weapons the player is carrying
+                    if (((Player) collidable).getPrimaryAmmoType() == AmmoType.BOMB)
+                        ((Player) collidable).addPrimaryAmmo(1);
+                    if (((Player) collidable).getSecondaryAmmoType() == AmmoType.BOMB)
+                        ((Player) collidable).addSecondaryAmmo(1);
+                    Log.d(TAG, collidable.getName() + " gained a bomb");
+                    break;
+                case HEALTH:
+                    ((Player) collidable).restoreHealth(50);
+                    Log.d(TAG, collidable.getName() + " gained 50 health");
+                    break;
+            }
+            levelState.removePickup(pickup);
         }
     }
 
