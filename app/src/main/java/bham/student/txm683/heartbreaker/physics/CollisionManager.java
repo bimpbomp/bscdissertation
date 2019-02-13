@@ -93,6 +93,9 @@ public class CollisionManager {
             broadPhaseGrid.addEntityToGrid(pickup);
         }
 
+        //add core
+        broadPhaseGrid.addEntityToGrid(levelState.getCore());
+
         //each element will be a bin from a grid reference with more than one entity in
         bins = new ArrayList<>();
 

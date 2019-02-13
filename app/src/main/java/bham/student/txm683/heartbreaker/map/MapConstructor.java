@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Chaser;
+import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
@@ -488,6 +489,8 @@ public class MapConstructor {
         pickups.add(new Pickup(uniqueID.id()+"", PickupType.HEALTH, new Point(400, 2000).add(centerOffset), tileSize/4));
         pickups.add(new Pickup(uniqueID.id()+"", PickupType.BOMB, new Point(400, 2200).add(centerOffset), tileSize/4));
         map.setPickups(pickups);
+
+        map.setCore(new Core("core", new Point(1800, 600).add(centerOffset), tileSize, 0));
     }
 
     private int generateDoorTileColor(RoomEdge edge){

@@ -7,5 +7,7 @@ public enum ShapeIdentifier {
     RECTANGLE,
     KITE,
     TRAPEZIUM,
+    HEXAGON,
+    OCTAGON,
     PERIMETER
 }

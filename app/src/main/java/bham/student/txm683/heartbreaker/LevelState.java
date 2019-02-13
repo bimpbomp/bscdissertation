@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker;
 
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
+import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Projectile;
@@ -25,6 +26,8 @@ public class LevelState {
     private ArrayList<AIEntity> enemyEntities;
     private CopyOnWriteArrayList<Projectile> bullets;
     private CopyOnWriteArrayList<Explosion> explosions;
+
+    private Core core;
 
     private CopyOnWriteArrayList<Pickup> pickups;
 
@@ -56,6 +59,8 @@ public class LevelState {
         this.debugInfo = new DebugInfo();
 
         this.pickups = new CopyOnWriteArrayList<>(map.getPickups());
+
+        this.core = map.getCore();
     }
 
     /*public LevelState(String stateString) throws ParseException, JSONException {
@@ -81,6 +86,10 @@ public class LevelState {
 
         this.debugInfo = new DebugInfo();
     }*/
+
+    public Core getCore() {
+        return core;
+    }
 
     public CopyOnWriteArrayList<Pickup> getPickups() {
         return pickups;

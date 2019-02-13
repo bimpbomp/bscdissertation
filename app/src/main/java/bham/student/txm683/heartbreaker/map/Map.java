@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.map;
 
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
@@ -29,6 +30,8 @@ public class Map {
     private HashMap<String, Door> doors;
 
     private List<Pickup> pickups;
+
+    private Core core;
 
     private RoomGraph roomGraph;
 
@@ -59,6 +62,14 @@ public class Map {
 
     public List<Pickup> getPickups() {
         return pickups;
+    }
+
+    public Core getCore() {
+        return core;
+    }
+
+    public void setCore(Core core) {
+        this.core = core;
     }
 
     public void setPickups(List<Pickup> pickups) {

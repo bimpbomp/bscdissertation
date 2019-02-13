@@ -15,6 +15,8 @@ public class EntityController {
     public void update(float delta){
         levelState.getPlayer().tick(delta);
 
+        levelState.getCore().tick(delta);
+
         levelState.removeExplosions();
 
         for (Projectile projectile : levelState.getBullets()){

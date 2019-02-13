@@ -53,6 +53,15 @@ public abstract class Polygon implements Shape{
         setForwardUnitVector();
     }
 
+    public void rotateBy(float angle){
+        float cos = (float) Math.cos(angle);
+        float sin = (float) Math.sin(angle);
+
+        for (int i = 0; i < vertexVectors.length; i++){
+            vertexVectors[i] = vertexVectors[i].rotate(cos, sin);
+        }
+    }
+
     /**
      * Translates the vertices of this shape by the given movement vector.
      * @param movementVector Direction and magnitude to translate each vertex by
@@ -146,5 +155,20 @@ public abstract class Polygon implements Shape{
         vertices.add(new Vector(center, new Point(center.getX() - (width / 2), baseY)));
 
         return vertices;
+    }
+
+    public static Vector[] generateVertexVectors(Point center, int armLength, float angleBetweenArms, int numberOfVertices){
+        Vector[] vertexVectors = new Vector[numberOfVertices];
+
+        vertexVectors[0] = new Vector(center, center.add(0, -1 * armLength));
+
+        float cos = (float) Math.cos(angleBetweenArms);
+        float sin = (float) Math.sin(angleBetweenArms);
+
+        for (int i = 1; i < vertexVectors.length; i++){
+            vertexVectors[i] = vertexVectors[i-1].rotate(cos, sin);
+        }
+
+        return vertexVectors;
     }
 }
