@@ -184,7 +184,10 @@ public class InputManager {
         if (!levelState.isPaused()) {
             thumbstick.draw(canvas);
 
+            primaryWeaponButton.setLabel("∞");
             primaryWeaponButton.draw(canvas, textPaint);
+
+            secondaryWeaponButton.setLabel(levelState.getPlayer().getSecondaryAmmo()+"");
             secondaryWeaponButton.draw(canvas, textPaint);
         } else {
             if (debugButtons != null) {

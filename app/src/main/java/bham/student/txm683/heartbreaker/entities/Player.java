@@ -53,7 +53,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
     }
 
     public int getSecondaryAmmo() {
-        return primaryWeapon.getAmmo();
+        return secondaryWeapon.getAmmo();
     }
 
     public void addPrimaryAmmo(int amountToAdd){

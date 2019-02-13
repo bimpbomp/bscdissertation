@@ -18,6 +18,8 @@ public class Button implements InputUIElement {
     private int defaultColor;
     private int pressedColor;
 
+    private int currentColor;
+
     private String label;
 
     private Click buttonFunction;
@@ -37,6 +39,14 @@ public class Button implements InputUIElement {
         this.buttonFunction = buttonFunction;
 
         this.label = label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
     }
 
     @Override
