@@ -2,7 +2,7 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
-import android.util.Pair;
+import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Chaser;
 import bham.student.txm683.heartbreaker.ai.Core;
@@ -14,8 +14,10 @@ import bham.student.txm683.heartbreaker.map.roomGraph.RoomEdge;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
+import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.UniqueID;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import bham.student.txm683.heartbreaker.utils.*;
 
 import java.util.*;
 
@@ -86,10 +88,10 @@ public class MapConstructor {
                 new Point(1,13)
         }, Color.rgb(0, 112, 184)));
 
-        ArrayList<RoomGrid> roomGrids = new ArrayList<>();
+        /*ArrayList<RoomGrid> roomGrids = new ArrayList<>();
         for (Perimeter perimeter : perimeters){
             roomGrids.add(new RoomGrid(populateGrid(perimeter), tileSize));
-        }
+        }*/
 
         HashMap<Integer, Room> rooms = new HashMap<>();
         int count = 0;
@@ -129,7 +131,7 @@ public class MapConstructor {
         RoomEdge door1 = roomGraph.addConnection(1,2, doors.get(1));
         RoomEdge door2 = roomGraph.addConnection(1,3,  doors.get(2));
 
-        //add doors to roomgrid's tilesets
+        /*//add doors to roomgrid's tilesets
         roomGrids.get(0).addToTileSet(doors.get(0).getCenter());
         roomGrids.get(1).addToTileSet(doors.get(0).getCenter());
 
@@ -137,7 +139,7 @@ public class MapConstructor {
         roomGrids.get(2).addToTileSet(doors.get(1).getCenter());
 
         roomGrids.get(1).addToTileSet(doors.get(2).getCenter());
-        roomGrids.get(3).addToTileSet(doors.get(2).getCenter());
+        roomGrids.get(3).addToTileSet(doors.get(2).getCenter());*/
 
         door0.getDoor().setTileBackground(tileSize, generateDoorTileColor(door0));
         door1.getDoor().setTileBackground(tileSize, generateDoorTileColor(door1));
@@ -469,6 +471,18 @@ public class MapConstructor {
             }
         }
 
+        //add all statics to the tileset
+        TileSet tileSet = new TileSet();
+
+        for (Wall wall : walls){
+            tileSet.addPermanentToGrid(wall);
+        }
+
+        for (Door door : doors){
+            tileSet.addPermanentToGrid(door);
+        }
+        map.setTileSet(tileSet);
+
         ArrayList<AIEntity> enemies = new ArrayList<>();
         enemies.add(new Chaser("C:" + uniqueID.id(), new Point(10*tileSize, tileSize).add(centerOffset), map.getTileSize()/2, chaserColor, 300f, 100));
 
@@ -542,7 +556,7 @@ public class MapConstructor {
         return boundary;
     }
 
-    private static ArrayList<Tile> populateGrid(Perimeter perimeter) {
+    /*private static ArrayList<Tile> populateGrid(Perimeter perimeter) {
         ArrayList<Tile> tileSet = new ArrayList<>();
 
         //visited tiles are added here
@@ -592,7 +606,7 @@ public class MapConstructor {
         }
 
         return tileSet;
-    }
+    }*/
 
     private static boolean tileIsInPerimeter(Perimeter perimeter, Tile tile){
 

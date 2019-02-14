@@ -1,6 +1,8 @@
 package bham.student.txm683.heartbreaker;
 
+import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
+import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
@@ -83,8 +85,27 @@ public class Level implements Runnable {
                             }
                         }
                     }*/
+                    levelState.getTileSet().clearTemporaries();
+
+                    for (AIEntity aiEntity : levelState.getEnemyEntities()){
+                        levelState.getTileSet().addTemporaryToGrid(aiEntity);
+                    }
+
+                    levelState.getTileSet().addTemporaryToGrid(levelState.getPlayer());
+
+                    for (Projectile projectile : levelState.getBullets()){
+                        levelState.getTileSet().addTemporaryToGrid(projectile);
+                    }
 
                     entityController.update(gameTickTimeStepInMillis / 1000f);
+
+                    /*StringBuilder stringBuilder = new StringBuilder();
+                    for (Tile tile : TileBFS.getNeighbours(new Tile(levelState.getPlayer().getCenter()), levelState.getMap().getTileSize())){
+                        stringBuilder.append(tile.toString());
+                        stringBuilder.append(" -> ");
+                    }
+                    stringBuilder.append(" END");
+                    Log.d("hb::PLAYER POS", stringBuilder.toString());*/
 
                     levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
 

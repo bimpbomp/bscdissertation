@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -9,6 +8,7 @@ import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class Chaser extends AIEntity implements Damageable, Collidable {
@@ -16,16 +16,32 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
     private Rectangle shape;
     private int health;
 
+    private int currentTargetNodeInPath;
+    private boolean atDestination;
+
     public Chaser(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
         super(name, maxSpeed);
 
         shape = new Rectangle(center, size, size, colorValue);
         this.health = initialHealth;
+        this.atDestination = false;
+        this.currentTargetNodeInPath = 0;
     }
 
     @Override
     public void update() {
-        Log.d(getName(), "updating ai");
+        if (path == null || path.length == 0) {
+            path = applyAStar(getName(), levelState.getGraph().getNode(new Tile(1900, 500)), levelState.getGraph().getNode(new Tile(600, 2000)), 10);
+
+            if (path.length > 1){
+                atDestination = false;
+                currentTargetNodeInPath = 1;
+                setRequestedMovementVector(new Vector(getCenter(), new Point(path[currentTargetNodeInPath])).getUnitVector());
+            } else {
+                atDestination = true;
+            }
+        }
+        /*Log.d(getName(), "updating ai");
         switch (currentBehaviour) {
 
             case CHASE:
@@ -42,7 +58,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
                         setRequestedMovementVector(Vector.ZERO_VECTOR);
                     }
 
-                }/* else {
+                }*//* else {
                     Log.d(getName(), "not in same room");
                     RoomNode[] roomPath = levelState.getMap().getRoomGraph().pathToRoom(this.getRoomID(), target.getRoomID());
                     if (roomPath.length > 1){
@@ -57,13 +73,15 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
                         }
                         setRequestedMovementVector(Vector.ZERO_VECTOR);
                     }
-                }*/
+                }*//*
                 break;
             case HUNT:
                 break;
             case HALTED:
                 break;
-        }
+        }*/
+
+
     }
 
     @Override
@@ -82,6 +100,34 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
 
     @Override
     public void tick(float secondsSinceLastGameTick) {
+
+        /*StringBuilder stringBuilder = new StringBuilder();
+        for (Tile tile : path){
+            stringBuilder.append(tile.toString());
+            stringBuilder.append(" -> ");
+        }
+        stringBuilder.append(" END");
+        Log.d("hb::"+getName(), stringBuilder.toString());*/
+
+        if (atDestination)
+            return;
+
+        //if distance to current node is less than a certain amount, move current node to the next in path
+        //if the next node is out of the length of the path, the destination is reached, stop moving
+        if (calculateEuclideanHeuristic(new Tile(getCenter()), path[currentTargetNodeInPath]) < 75) {
+            currentTargetNodeInPath++;
+
+            if (currentTargetNodeInPath >= path.length){
+                atDestination = true;
+                setRequestedMovementVector(new Vector());
+            } else {
+                setRequestedMovementVector(new Vector(getCenter(), new Point(path[currentTargetNodeInPath])).getUnitVector());
+            }
+        }
+
+        if (getRequestedMovementVector().equals(new Vector()))
+            return;
+
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
 
         shape.translateShape(movementVector);

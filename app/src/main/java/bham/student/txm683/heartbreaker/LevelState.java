@@ -11,6 +11,8 @@ import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
+import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +45,8 @@ public class LevelState {
 
     private DebugInfo debugInfo;
 
+    private Graph<Tile> graph;
+
 
     public LevelState(Map map){
         this.map = map;
@@ -61,6 +65,74 @@ public class LevelState {
         this.pickups = new CopyOnWriteArrayList<>(map.getPickups());
 
         this.core = map.getCore();
+
+        generateGraph();
+
+    }
+
+    private void generateGraph(){
+        this.graph = new Graph<>();
+
+        Tile[] nodeTiles = new Tile[]{
+                //room 0
+                new Tile(500,500),
+
+                //room 1
+                new Tile(1200,1200),
+
+                //room 2
+                new Tile(1900, 500),
+
+                //room 3
+                new Tile(600,2000),
+
+                //door 0
+                new Tile(700,700),
+                new Tile(900,700),
+                new Tile(1100,700),
+
+                //door 1
+                new Tile(1300,700),
+                new Tile(1500,700),
+                new Tile(1700,700),
+
+                //door 2
+                new Tile(700,1700),
+                new Tile(900,1700),
+                new Tile(1100,1700)
+        };
+
+        for (Tile tile : nodeTiles){
+            graph.addNode(tile);
+        }
+
+        addConnection(nodeTiles, 0, 4);
+        addConnection(nodeTiles, 4, 5);
+        addConnection(nodeTiles, 5, 6);
+        addConnection(nodeTiles, 6, 7);
+        addConnection(nodeTiles, 6, 1);
+        addConnection(nodeTiles, 6, 12);
+        addConnection(nodeTiles, 7, 1);
+        addConnection(nodeTiles, 7, 8);
+        addConnection(nodeTiles, 8, 9);
+        addConnection(nodeTiles, 9, 2);
+        addConnection(nodeTiles, 1, 12);
+        addConnection(nodeTiles, 12, 11);
+        addConnection(nodeTiles, 11, 10);
+        addConnection(nodeTiles, 10, 3);
+    }
+
+    private void addConnection(Tile[] nodeTiles, int i, int j){
+        graph.addConnection(graph.getNode(nodeTiles[i]), graph.getNode(nodeTiles[j]),
+                AIEntity.calculateEuclideanHeuristic(nodeTiles[i], nodeTiles[j]));
+    }
+
+    public Graph<Tile> getGraph() {
+        return graph;
+    }
+
+    public TileSet getTileSet(){
+        return map.getTileSet();
     }
 
     /*public LevelState(String stateString) throws ParseException, JSONException {

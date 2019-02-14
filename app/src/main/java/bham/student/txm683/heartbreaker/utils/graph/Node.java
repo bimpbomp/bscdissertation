@@ -24,8 +24,8 @@ public class Node<T> {
         return connections;
     }
 
-    public List<Node> getNeighbours(){
-        ArrayList<Node> neighbours = new ArrayList<>();
+    public List<Node<T>> getNeighbours(){
+        ArrayList<Node<T>> neighbours = new ArrayList<>();
 
         for (Edge<T> connection : connections){
             neighbours.add(connection.traverse(this));

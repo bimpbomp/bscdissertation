@@ -7,8 +7,8 @@ import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Tile;
-import bham.student.txm683.heartbreaker.utils.TileBFS;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.utils.graph.Edge;
+import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +48,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable{
     abstract void chase(MoveableEntity entityToChase);
     abstract void halt();
 
-    public Tile[] applyAStar(String aIName, Tile startTile, Tile targetTile, int depthToPathFind){
+    public Tile[] applyAStar(String aIName, Node<Tile> startTile, Node<Tile> targetTile, int depthToPathFind){
 
         depthToPathFind = Math.abs(depthToPathFind);
 
@@ -57,68 +57,60 @@ public abstract class AIEntity extends MoveableEntity implements Renderable{
             return new Tile[0];
         }
 
-        //creates a priority queue based on a NodeWrapper's fCost (Lowest at head)
-        PriorityQueue<Pair<Tile, Float>> openSet = new PriorityQueue<>(10, (a, b) -> {
+        //creates a priority queue based on a Tile's fCost (Lowest cost at head)
+        PriorityQueue<Pair<Node<Tile>, Integer>> openSet = new PriorityQueue<>(10, (a, b) -> {
             if (a.second < b.second)
                 return -1;
-            else if (Float.compare(a.second,b.second) ==0)
+            else if (a.second == b.second)
                 return 0;
             return 1; });
 
         //each key is the tile coordinate of a tile. It's value is the gcost spent to get to that tile from the start
-        HashMap<Tile, Float> costSoFar = new HashMap<>();
+        HashMap<Node<Tile>, Integer> costSoFar = new HashMap<>();
 
         //each key is the tile coordinate of a tile, it's value is the 'parent' of this tile.
         //i.e. the tile that comes before the key tile in the path
-        HashMap<Tile, Tile> cameFrom = new HashMap<>();
+        HashMap<Node<Tile>, Node<Tile>> cameFrom = new HashMap<>();
 
         //initialise sets by adding the start tile with 0 costs
-        openSet.add(new Pair<>(startTile, 0f));
-        costSoFar.put(startTile, 0f);
-        //has a value of start tile so the tracePath algorithm knows when to stop backtracking
-        cameFrom.put(startTile, startTile);
+        openSet.add(new Pair<>(startTile, 0));
+        costSoFar.put(startTile, 0);
+
+        //has a value of null so the tracePath algorithm knows when to stop backtracking
+        cameFrom.put(startTile, null);
 
         while (!openSet.isEmpty()){
 
-            Pair<Tile, Float> currentPair = openSet.poll();
-            Tile currentTile = currentPair.first;
-            float currentCost = currentPair.second;
+            Pair<Node<Tile>, Integer> currentPair = openSet.poll();
+            Node<Tile> currentNode = currentPair.first;
+            int currentCost = currentPair.second;
 
-            if (depthToPathFind < 1){
-                return tracePath(cameFrom, currentTile);
-            }
+            for (Edge<Tile> connection : currentNode.getConnections()){
 
-            for (Tile neighbour : TileBFS.getNeighbours(currentTile)){
+                Node<Tile> neighbour = connection.traverse(currentNode);
 
-                /*if (levelState.hasEntityAtTile(neighbour))
-                    continue;*/
-
-                Log.d(aIName, "current: " + currentTile.toString() + " neighbour: " + neighbour.toString());
+                Log.d(aIName, "current: " + currentNode.getNodeID().toString() + " neighbour: " + neighbour.getNodeID().toString());
 
                 //if the next tile is the target, add it to the cameFrom map and return the path generated
                 //by tracePath
                 if (targetTile.equals(neighbour)){
                     Log.d(aIName, "Target Reached!");
 
-                    cameFrom.put(neighbour, currentTile);
+                    cameFrom.put(neighbour, currentNode);
                     return tracePath(cameFrom, targetTile);
                 }
 
-                float gCostToNext;
-                if (new Vector(currentTile, neighbour).getLength() > 1)
-                    gCostToNext = currentCost + 1.4f;
-                else
-                    gCostToNext = currentCost + 1;
+                int gCostToNext = currentCost + connection.getWeight();
 
                 //If the tile hasn't been visited before, or the cost to get to this tile is cheaper than the already stored cost
                 //add it to all tracking sets
                 if (!costSoFar.containsKey(neighbour) || costSoFar.get(neighbour) > gCostToNext) {
 
-                    float fCost = gCostToNext + calculateEuclideanHeuristic(currentTile, neighbour);
+                    int fCost = gCostToNext + calculateEuclideanHeuristic(currentNode.getNodeID(), neighbour.getNodeID());
 
                     costSoFar.put(neighbour, gCostToNext);
                     openSet.add(new Pair<>(neighbour, fCost));
-                    cameFrom.put(neighbour, currentTile);
+                    cameFrom.put(neighbour, currentNode);
                 }
             }
             depthToPathFind--;
@@ -132,19 +124,34 @@ public abstract class AIEntity extends MoveableEntity implements Renderable{
      * @param targetNodeName The name of the targeted node (the destination)
      * @return A Tile array containing the path to take, in order
      */
-    public static Tile[] tracePath(HashMap<Tile, Tile> cameFrom, Tile targetNodeName){
+    public static Tile[] tracePath(HashMap<Node<Tile>, Node<Tile>> cameFrom, Node<Tile> targetNodeName){
+
+        /*StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("-------START-------");
+        for (Node<Tile> node : cameFrom.keySet()){
+            stringBuilder.append(node.getNodeID());
+            stringBuilder.append(" came from " );
+            if (cameFrom.get(node) != null)
+                stringBuilder.append(cameFrom.get(node).getNodeID());
+            else
+                stringBuilder.append("NULL");
+            stringBuilder.append("\n");
+        }
+        stringBuilder.append("-------END-------");
+        Log.d("hb:::", stringBuilder.toString());
+        return new Tile[0];*/
 
         if (cameFrom.containsKey(targetNodeName)){
             Stack<Tile> path = new Stack<>();
 
-            Tile previous = targetNodeName;
-            Tile current = cameFrom.get(previous);
+            Node<Tile> previous = targetNodeName;
+            Node<Tile> current = cameFrom.get(targetNodeName);
 
-            path.push(previous);
+            path.push(previous.getNodeID());
 
-            while (!current.equals(previous)){
-
-                path.push(current);
+            while (current != null){
+                Log.d("hb::TRACEPATH", current.getNodeID() + ", prev: " + previous.getNodeID());
+                path.push(current.getNodeID());
                 previous = current;
                 try {
                     current = cameFrom.get(previous);
@@ -168,7 +175,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable{
         }
     }
 
-    private static int calculateEuclideanHeuristic(Tile currentTile, Tile targetTile){
+    public static int calculateEuclideanHeuristic(Tile currentTile, Tile targetTile){
         return (int) Math.sqrt(
                 Math.pow(targetTile.getX() - currentTile.getX(), 2) +
                         Math.pow(targetTile.getY() - currentTile.getY(), 2)

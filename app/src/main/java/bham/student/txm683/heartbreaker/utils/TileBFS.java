@@ -9,7 +9,7 @@ public class TileBFS {
     }
 
     //gets the coordinates of the 8 surrounding cells. Warning: doesn't check if they're valid
-    public static ArrayList<Tile> getNeighbours(Tile coordinates){
+    public static ArrayList<Tile> getNeighbours(Tile coordinates, int tileSize){
         ArrayList<Tile> neighbours = new ArrayList<>();
 
         for (int i = -1; i < 2; i++){
@@ -17,7 +17,7 @@ public class TileBFS {
                 if (i == 0 && j == 0)
                     continue;
 
-                neighbours.add(coordinates.add(i, j));
+                neighbours.add(coordinates.add(i*tileSize, j*tileSize));
             }
         }
         return neighbours;

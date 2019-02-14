@@ -12,6 +12,8 @@ public class AIManager {
 
     private List<AIEntity> controlledAI;
 
+    private boolean update;
+
     public AIManager(LevelState levelState, ArrayList<AIEntity> ais){
         this.levelState = levelState;
         this.controlledAI = new ArrayList<>();
@@ -20,6 +22,8 @@ public class AIManager {
             ai.setLevelState(levelState);
             addAI(ai);
         }
+
+        update = true;
     }
 
     public void addAI(AIEntity newAI){
@@ -34,7 +38,10 @@ public class AIManager {
             return;
 
         for (AIEntity aiEntity : controlledAI){
-            aiEntity.update();
+            if (update) {
+                aiEntity.update();
+                update = false;
+            }
             aiEntity.tick(secondsSinceLastGameTick);
         }
 

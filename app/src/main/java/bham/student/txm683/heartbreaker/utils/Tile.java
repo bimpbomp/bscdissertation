@@ -14,6 +14,11 @@ public class Tile {
         this.y = y;
     }
 
+    public Tile(Point point){
+        this.x = (int) point.getX();
+        this.y = (int) point.getY();
+    }
+
     public Tile(String tileString){
         String[] split = tileString.split(",");
         this.x = Integer.parseInt(split[0]);
@@ -30,6 +35,10 @@ public class Tile {
 
     public Tile add(int xToAdd, int yToAdd){
         return new Tile(x+xToAdd, y + yToAdd);
+    }
+
+    public Tile mapToGrid(int tileSize){
+        return new Tile(x/tileSize, y/tileSize);
     }
 
     @Override

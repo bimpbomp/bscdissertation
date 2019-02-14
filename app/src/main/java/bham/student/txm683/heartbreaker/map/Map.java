@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.map;
 
+import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.Door;
@@ -31,6 +32,8 @@ public class Map {
 
     private List<Pickup> pickups;
 
+    private TileSet tileSet;
+
     private Core core;
 
     private RoomGraph roomGraph;
@@ -41,6 +44,14 @@ public class Map {
         this.name = name;
         this.tileSize = tileSize;
         this.doors = new HashMap<>();
+    }
+
+    public TileSet getTileSet() {
+        return tileSet;
+    }
+
+    public void setTileSet(TileSet tileSet) {
+        this.tileSet = tileSet;
     }
 
     public Point mapTileToGlobalPoint(Tile tile){
