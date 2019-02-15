@@ -46,6 +46,8 @@ public class Graph <T> {
         return nodes.containsKey(id);
     }
 
+    public boolean containsNode(Node<T> node){return nodes.containsKey(node.getNodeID());}
+
     @NonNull
     @Override
     public String toString() {

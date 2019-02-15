@@ -8,12 +8,10 @@ import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.graph.Edge;
+import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.PriorityQueue;
-import java.util.Stack;
+import java.util.*;
 
 public abstract class AIEntity extends MoveableEntity implements Renderable{
 
@@ -180,5 +178,31 @@ public abstract class AIEntity extends MoveableEntity implements Renderable{
                 Math.pow(targetTile.getX() - currentTile.getX(), 2) +
                         Math.pow(targetTile.getY() - currentTile.getY(), 2)
         );
+    }
+
+    public static Node<Tile> getClosestNode(Tile tile, Graph<Tile> graph){
+        int smallestDistance = Integer.MAX_VALUE;
+
+        List<Node<Tile>> nodes = graph.getNodes();
+
+        if (nodes.size() == 0)
+            throw new IllegalArgumentException("Graph has no nodes, cannot compute smallest distance");
+
+        if (tile == null)
+            throw new IllegalArgumentException("Given Tile is null");
+
+        Node<Tile> closestNode = nodes.get(0);
+        int currentDistance;
+
+        for (Node<Tile> node : graph.getNodes()){
+            currentDistance = calculateEuclideanHeuristic(node.getNodeID(), tile);
+
+            if (currentDistance < smallestDistance){
+                closestNode = node;
+                smallestDistance = currentDistance;
+            }
+        }
+
+        return closestNode;
     }
 }

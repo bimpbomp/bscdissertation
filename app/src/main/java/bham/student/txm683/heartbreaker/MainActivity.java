@@ -59,7 +59,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onRestart() {
         super.onRestart();
-        this.levelState.setReadyToRender(true);
+        if (levelState!= null)
+            this.levelState.setReadyToRender(true);
         Log.d(TAG, "onRestart");
     }
 
