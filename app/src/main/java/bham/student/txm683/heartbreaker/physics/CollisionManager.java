@@ -242,7 +242,7 @@ public class CollisionManager {
         }
     }
 
-    private static void resolveProjectileHit(Projectile projectile, Collidable collidable){
+    private void resolveProjectileHit(Projectile projectile, Collidable collidable){
         //if the projectile damages on contact and the collidable can take damage, damage it
         if (!(projectile instanceof Bomb) && collidable instanceof Damageable) {
             //only damage the collidable if the projectile doesn't belong to them
@@ -251,6 +251,9 @@ public class CollisionManager {
             }
             Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
         }
+
+        if (!(projectile instanceof Bomb))
+            levelState.getBullets().remove(projectile);
     }
 
     private void resolveDoorFieldActivation(DoorField doorField){

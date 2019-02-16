@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -123,10 +122,10 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
         if (atDestination) {
             path = new Tile[0];
             update();
-
-            Log.d("hb::Chaser", "reached destination");
-            return;
         }
+
+        if (path.length < 1)
+            return;
 
             //if distance to current node is less than a certain amount, move current node to the next in path
         //if the next node is out of the length of the path, the destination is reached, stop moving
