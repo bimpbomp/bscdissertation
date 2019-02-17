@@ -1,18 +1,29 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
+import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
+import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
+import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
+import bham.student.txm683.heartbreaker.ai.behaviours.decorators.HealthMonitor;
+import bham.student.txm683.heartbreaker.ai.behaviours.decorators.IsTargetVisible;
+import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FireAtTarget;
+import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FleeFromTarget;
+import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Idle;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
+import bham.student.txm683.heartbreaker.entities.Projectile;
+import bham.student.txm683.heartbreaker.entities.Shooter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.physics.Collidable;
-import bham.student.txm683.heartbreaker.physics.Damageable;
+import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
+import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
+import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 
-public class Chaser extends AIEntity implements Damageable, Collidable {
+public class Drone extends AIEntity implements Shooter {
 
     private Rectangle shape;
     private int health;
@@ -20,13 +31,40 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
     private int currentTargetNodeInPath;
     private boolean atDestination;
 
-    public Chaser(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
+    private Weapon weapon;
+    private BNode behaviourTreeRoot;
+
+    public Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
         super(name, maxSpeed);
 
         shape = new Rectangle(center, size, size, colorValue);
         this.health = initialHealth;
         this.atDestination = false;
         this.currentTargetNodeInPath = 0;
+
+        this.weapon = new BasicWeapon(getName());
+
+        this.behaviourTreeRoot = new Selector(
+                new IsTargetVisible(
+                        new Selector(
+                                new HealthMonitor(
+                                        new FleeFromTarget()
+                                ),
+                                new FireAtTarget()
+                        )
+                ),
+                new Idle()
+        );
+    }
+
+    @Override
+    public void rotate(Vector rotationVector) {
+        shape.rotateShape(rotationVector);
+    }
+
+    @Override
+    public void rotateBy(float angle) {
+        shape.rotateBy(angle);
     }
 
     @Override
@@ -51,47 +89,6 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
                 currentTargetNodeInPath = 0;
             }
         }
-        /*Log.d(getName(), "updating ai");
-        switch (currentBehaviour) {
-
-            case CHASE:
-
-                if (levelState.inSameRoom(this, target)){
-                    Log.d(getName(), "in same room");
-                    path = applyAStar(getName(), levelState.getMap().mapGlobalPointToTile(getCenter()),
-                            levelState.getMap().mapGlobalPointToTile(target.getCenter()), 10);
-                    if (path.length > 1){
-                        setRequestedMovementVector(new Vector(getCenter(),
-                                levelState.getMap().mapTileToGlobalPoint(path[1])).getUnitVector());
-                    } else {
-                        Log.d(getName(), "Path length of less than 2");
-                        setRequestedMovementVector(Vector.ZERO_VECTOR);
-                    }
-
-                }*//* else {
-                    Log.d(getName(), "not in same room");
-                    RoomNode[] roomPath = levelState.getMap().getRoomGraph().pathToRoom(this.getRoomID(), target.getRoomID());
-                    if (roomPath.length > 1){
-                        Log.d(getName(), roomPath[0] + " -> " + roomPath[1]);
-                        Point door = levelState.getMap().getRoomGraph().getDoorBetweenRooms(getRoomID(), roomPath[1].getRoom().getId()).getSpawnCoordinates();
-                        Vector movementVector = new Vector(getCenter(),door).getUnitVector();
-
-                        setRequestedMovementVector(movementVector);
-                    } else {
-                        if (roomPath.length == 1){
-                            Log.d(getName(), roomPath[0]+"");
-                        }
-                        setRequestedMovementVector(Vector.ZERO_VECTOR);
-                    }
-                }*//*
-                break;
-            case HUNT:
-                break;
-            case HALTED:
-                break;
-        }*/
-
-
     }
 
     @Override
@@ -119,7 +116,7 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
         stringBuilder.append(" END");
         Log.d("hb::"+getName(), stringBuilder.toString());*/
 
-        if (atDestination) {
+        /*if (atDestination) {
             path = new Tile[0];
             update();
         }
@@ -146,7 +143,53 @@ public class Chaser extends AIEntity implements Damageable, Collidable {
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
 
         shape.translateShape(movementVector);
+        shape.rotateShape(movementVector);*/
+
+        BContext bContext = new BContext();
+        bContext.addPair(BContext.ATTACK_TARGET_KEY, levelState.getPlayer());
+        bContext.addPair(BContext.CONTROLLED_ENTITY_KEY, this);
+        bContext.addPair(BContext.HEALTH_BOUND_KEY, 25);
+        bContext.addPair(BContext.LEVEL_STATE_KEY, levelState);
+        behaviourTreeRoot.process(bContext);
+
+        if (getRequestedMovementVector().equals(new Vector()))
+            return;
+
+        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
+
+        shape.translateShape(movementVector);
         shape.rotateShape(movementVector);
+    }
+
+    @Override
+    public Vector getForwardUnitVector() {
+        return shape.getForwardUnitVector();
+    }
+
+    @Override
+    public int getAmmo() {
+        return weapon.getAmmo();
+    }
+
+    @Override
+    public void addAmmo(int amountToAdd) {
+        weapon.addAmmo(amountToAdd);
+    }
+
+    @Override
+    public AmmoType getAmmoType() {
+        return weapon.getAmmoType();
+    }
+
+    @Override
+    public Projectile[] shoot() {
+        return weapon.shoot(calcBulletPlacement(weapon.getBulletRadius()));
+    }
+
+    @Override
+    public Vector calcBulletPlacement(float bulletRadius) {
+        Vector bulletPlacement = new Vector(getCenter(), shape.getVertices()[0]);
+        return bulletPlacement.sMult((bulletPlacement.getLength() + bulletRadius + (calculateMovementVector(1/25f).getLength()) + 5f)/ bulletPlacement.getLength());
     }
 
     @Override

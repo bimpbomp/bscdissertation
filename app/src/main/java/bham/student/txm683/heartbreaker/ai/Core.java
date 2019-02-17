@@ -26,6 +26,22 @@ public class Core extends AIEntity implements Damageable {
     }
 
     @Override
+    public Vector getForwardUnitVector() {
+        return null;
+    }
+
+    @Override
+    public void rotate(Vector rotationVector) {
+
+    }
+
+    @Override
+    public void rotateBy(float angle) {
+        this.outerShape.rotateBy(angle);
+        this.innerShape.rotateBy(angle);
+    }
+
+    @Override
     void update() {
 
     }

@@ -7,9 +7,9 @@ public abstract class BNode {
         status = Status.FAILURE;
     }
 
-    abstract void init();
+    public abstract void init(BContext context);
 
-    abstract Status process();
+    public abstract Status process(BContext context);
 
     public Status getStatus() {
         return status;

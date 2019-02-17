@@ -48,7 +48,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
         this.secondaryWeapon = new BombThrower(name);
     }
 
-    public int getPrimaryAmmo() {
+    public int getAmmo() {
         return primaryWeapon.getAmmo();
     }
 
@@ -56,7 +56,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
         return secondaryWeapon.getAmmo();
     }
 
-    public void addPrimaryAmmo(int amountToAdd){
+    public void addAmmo(int amountToAdd){
         this.primaryWeapon.addAmmo(amountToAdd);
     }
 
@@ -64,7 +64,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
         this.secondaryWeapon.addAmmo(amountToAdd);
     }
 
-    public AmmoType getPrimaryAmmoType() {
+    public AmmoType getAmmoType() {
         return primaryWeapon.getAmmoType();
     }
 
@@ -72,7 +72,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
         return secondaryWeapon.getAmmoType();
     }
 
-    public Projectile[] shootPrimary(){
+    public Projectile[] shoot(){
         return primaryWeapon.shoot(calcBulletPlacement(primaryWeapon.getBulletRadius()));
     }
 

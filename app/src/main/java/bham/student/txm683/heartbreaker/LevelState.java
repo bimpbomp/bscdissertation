@@ -153,7 +153,7 @@ public class LevelState {
 
         this.enemyEntities = new ArrayList<>();
         for (int i = 0; i < enemies.length(); i++){
-            this.enemyEntities.add(new Chaser(enemies.getString(i)));
+            this.enemyEntities.add(new Drone(enemies.getString(i)));
         }
 
         this.debugInfo = new DebugInfo();

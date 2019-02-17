@@ -4,8 +4,8 @@ import android.annotation.SuppressLint;
 import android.graphics.Color;
 import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.Chaser;
 import bham.student.txm683.heartbreaker.ai.Core;
+import bham.student.txm683.heartbreaker.ai.Drone;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
@@ -484,7 +484,7 @@ public class MapConstructor {
         map.setTileSet(tileSet);
 
         ArrayList<AIEntity> enemies = new ArrayList<>();
-        enemies.add(new Chaser("C:" + uniqueID.id(), new Point(10*tileSize, tileSize).add(centerOffset), map.getTileSize()/2, chaserColor, 300f, 100));
+        enemies.add(new Drone("C:" + uniqueID.id(), new Point(10*tileSize, tileSize).add(centerOffset), map.getTileSize()/2, chaserColor, 300f, 100));
 
         //initialise map with generated contents
         map.setWalls(walls);

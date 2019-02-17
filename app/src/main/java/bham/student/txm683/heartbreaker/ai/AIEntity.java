@@ -5,15 +5,17 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
+import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.Vector;
 import bham.student.txm683.heartbreaker.utils.graph.Edge;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.*;
 
-public abstract class AIEntity extends MoveableEntity implements Renderable{
+public abstract class AIEntity extends MoveableEntity implements Renderable, Damageable {
 
     Tile[] path;
 
@@ -28,6 +30,12 @@ public abstract class AIEntity extends MoveableEntity implements Renderable{
 
         this.currentBehaviour = AIBehaviour.HALTED;
     }
+
+    public abstract Vector getForwardUnitVector();
+
+    public abstract void rotate(Vector rotationVector);
+
+    public abstract void rotateBy(float angle);
 
     @Override
     public CollidableType getCollidableType() {

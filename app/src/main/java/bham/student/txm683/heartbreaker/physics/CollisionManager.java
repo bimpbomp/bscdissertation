@@ -216,8 +216,8 @@ public class CollisionManager {
                     break;
                 case BOMB:
                     //add one bomb to any bomb weapons the player is carrying
-                    if (((Player) collidable).getPrimaryAmmoType() == AmmoType.BOMB)
-                        ((Player) collidable).addPrimaryAmmo(1);
+                    if (((Player) collidable).getAmmoType() == AmmoType.BOMB)
+                        ((Player) collidable).addAmmo(1);
                     if (((Player) collidable).getSecondaryAmmoType() == AmmoType.BOMB)
                         ((Player) collidable).addSecondaryAmmo(1);
                     Log.d(TAG, collidable.getName() + " gained a bomb");

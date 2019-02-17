@@ -99,7 +99,7 @@ public class InputManager {
                     if (thumbstick.hasID(eventID))
                         thumbstick.setActivePosition(coordinatesPressed);
                     else if (primaryWeaponButton.hasID(eventID))
-                        levelState.addBullet(levelState.getPlayer().shootPrimary());
+                        levelState.addBullet(levelState.getPlayer().shoot());
                     else if (secondaryWeaponButton.hasID(eventID))
                         levelState.addBullet(levelState.getPlayer().shootSecondary());
                 }
@@ -136,7 +136,7 @@ public class InputManager {
         } else if (pauseButton.getID() < 0 && pauseButton.containsPoint(coordinatesPressed)){
             pauseButton.setPointerID(eventID);
         } else if (primaryWeaponButton.getID() < 0 && primaryWeaponButton.containsPoint(coordinatesPressed)){
-            levelState.addBullet(levelState.getPlayer().shootPrimary());
+            levelState.addBullet(levelState.getPlayer().shoot());
             primaryWeaponButton.setPointerID(eventID);
         }
     }
