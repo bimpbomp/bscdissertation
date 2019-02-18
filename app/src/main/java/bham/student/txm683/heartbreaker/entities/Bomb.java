@@ -22,6 +22,6 @@ public class Bomb extends Projectile {
     }
 
     public Explosion explode(){
-        return new Explosion(getName(), getOwner(), getCenter(), getRadius()*5, getDamage(), Color.RED);
+        return new Explosion(getName(), getOwner(), getCenter(), getRadius()*10, getDamage(), Color.RED);
     }
 }

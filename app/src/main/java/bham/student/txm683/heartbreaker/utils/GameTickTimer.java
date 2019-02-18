@@ -5,6 +5,7 @@ public class GameTickTimer {
     private boolean active;
     private long lastTick;
     private long currentTime;
+    private long diff;
 
     private int millisBetweenTicks;
 
@@ -22,12 +23,17 @@ public class GameTickTimer {
         active = false;
     }
 
-    public boolean hasTicked(){
+    /**
+     * Returns the number of ticks that have passed or 0 if no ticks/not active
+     * @return ticks that have passed
+     */
+    public int tick(){
         currentTime = System.currentTimeMillis();
-        if (active && (currentTime - lastTick >= millisBetweenTicks)) {
+        diff = currentTime - lastTick;
+        if (active && (diff >= millisBetweenTicks)) {
             lastTick = currentTime;
-            return true;
+            return (int) diff / millisBetweenTicks;
         }
-        return false;
+        return 0;
     }
 }

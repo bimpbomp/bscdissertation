@@ -36,8 +36,8 @@ public abstract class Weapon {
     public abstract Projectile[] shoot(Vector shootVector);
 
     void tickCooldown(){
-        if (inCooldown() && timer.hasTicked()) {
-            currentCooldown--;
+        if (inCooldown()) {
+            currentCooldown -= timer.tick();
 
             if (currentCooldown <= 0)
                 timer.stop();

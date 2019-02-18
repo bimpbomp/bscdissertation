@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.utils.GameTickTimer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,8 @@ public class AIManager {
 
     private boolean update;
 
+    private GameTickTimer timer;
+
     public AIManager(LevelState levelState, ArrayList<AIEntity> ais){
         this.levelState = levelState;
         this.controlledAI = new ArrayList<>();
@@ -24,6 +27,9 @@ public class AIManager {
         }
 
         update = true;
+
+        this.timer = new GameTickTimer(1000/25);
+        timer.start();
     }
 
     public void addAI(AIEntity newAI){
@@ -34,6 +40,7 @@ public class AIManager {
     }
 
     public void update(float secondsSinceLastGameTick){
+        //if AI is turned off, return
         if (!levelState.getDebugInfo().isAIActivated())
             return;
 
@@ -144,10 +151,4 @@ public class AIManager {
         }
         return tracePath(cameFrom, targetNode.getNodeID());
     }*/
-
-    private boolean canSeeTarget(){
-        return false;
-    }
-
-
 }

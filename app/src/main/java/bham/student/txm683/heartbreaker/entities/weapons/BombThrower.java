@@ -20,7 +20,7 @@ public class BombThrower extends Weapon {
 
         bulletRadius = 30f;
         speed = 0f;
-        damage = 50;
+        damage = 200;
         symbolisingColor = Color.BLACK;
         fuseLengthInTicks = 50;
 
