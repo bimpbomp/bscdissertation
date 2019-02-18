@@ -28,7 +28,8 @@ public class AIManager {
 
         update = true;
 
-        this.timer = new GameTickTimer(1000/25);
+        //tick 10 times a second
+        this.timer = new GameTickTimer(100);
         timer.start();
     }
 
@@ -44,12 +45,14 @@ public class AIManager {
         if (!levelState.getDebugInfo().isAIActivated())
             return;
 
-        for (AIEntity aiEntity : controlledAI){
-            if (update) {
-                aiEntity.update();
-                update = false;
+        if (timer.tick() > 0) {
+            for (AIEntity aiEntity : controlledAI) {
+                if (update) {
+                    aiEntity.update();
+                    update = false;
+                }
+                aiEntity.tick(secondsSinceLastGameTick);
             }
-            aiEntity.tick(secondsSinceLastGameTick);
         }
 
         /*if (!levelState.getDebugInfo().isAIActivated()){
