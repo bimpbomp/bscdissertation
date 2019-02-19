@@ -81,7 +81,8 @@ public class LevelState {
         collidables.add(map.getPlayer());
         collidables.addAll(explosions);
         collidables.addAll(bullets);
-        collidables.addAll(map.getPickups());
+        collidables.addAll(pickups);
+        collidables.add(core);
 
         return collidables;
     }
@@ -92,7 +93,7 @@ public class LevelState {
 
         List<Collidable> collidables = new ArrayList<>(map.getDoors().values());
         collidables.addAll(map.getWalls());
-        collidables.add(core);
+
 
         return collidables;
     }

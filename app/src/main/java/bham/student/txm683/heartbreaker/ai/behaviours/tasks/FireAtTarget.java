@@ -38,7 +38,7 @@ public class FireAtTarget extends BNode {
             Vector sightVector = new Vector(controlledEntity.getCenter(), ((Entity) context.getValue(ATTACK_TARGET)).getCenter());
             float dot = sightVector.getUnitVector().dot(controlledEntity.getForwardUnitVector());
 
-            if (dot > 0.8f){
+            if (dot > 0.9f){
                 //if the target is within roughly 10 degrees of the ai's forward vector
                 //controlled entity can see the target
                 Log.d("hb::FireAtTarget", "shooting");

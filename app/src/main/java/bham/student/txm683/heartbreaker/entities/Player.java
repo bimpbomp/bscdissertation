@@ -76,7 +76,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     }
 
     public Projectile[] shootSecondary(){
-        return secondaryWeapon.shoot(calculateMovementVector(secondaryWeapon.getBulletRadius()));
+        return secondaryWeapon.shoot(calcBulletPlacement(secondaryWeapon.getBulletRadius()));
     }
 
     private Vector calcBulletPlacement(float bulletRadius){

@@ -4,6 +4,7 @@ import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.entities.Bomb;
 import bham.student.txm683.heartbreaker.entities.Door;
@@ -86,7 +87,7 @@ public class CollisionManager {
 
                         context.addPair(BContext.SIGHT_BLOCKED, lOSBlocked);
 
-                        Log.d("hb::LOSBLOCKED", lOSBlocked+"");
+                        //Log.d("hb::LOSBLOCKED", lOSBlocked+"");
                     }
                 }
             }
@@ -247,7 +248,9 @@ public class CollisionManager {
                         secondCollidable = bin.get(j);
 
                         //if both entities are static or not solid, skip
-                        if ((!firstCollidable.canMove() && !secondCollidable.canMove()) ||
+                        if (firstCollidable instanceof Core || secondCollidable instanceof Core) {
+                            //do nothing
+                        } else if ((!firstCollidable.canMove() && !secondCollidable.canMove()) ||
                                 (!firstCollidable.isSolid() && !secondCollidable.isSolid())) {
                             continue;
                         }
@@ -280,8 +283,8 @@ public class CollisionManager {
                                 }
                             } else if (nonSolidEntity instanceof DoorField){
                                 pushVector = collisionCheckTwoPolygons(nonSolidEntity, solidEntity);
-                                Log.d("hb::SolidNonSolid", "solid: " + solidEntity.getName() + ", and nonSolid: " + nonSolidEntity.getName() + " with owner " + ((DoorField) nonSolidEntity).getOwner());
-                                Log.d("hb:: DoorCollision", pushVector.relativeToString());
+                                //Log.d("hb::SolidNonSolid", "solid: " + solidEntity.getName() + ", and nonSolid: " + nonSolidEntity.getName() + " with owner " + ((DoorField) nonSolidEntity).getOwner());
+                                //Log.d("hb:: DoorCollision", pushVector.relativeToString());
 
                                 if (!pushVector.equals(Vector.ZERO_VECTOR)){
                                     //collision occurred
@@ -345,7 +348,6 @@ public class CollisionManager {
 
     private static void resolveExplosion(Explosion explosion, Collidable collidable){
         if (collidable instanceof Damageable){
-            Log.d(TAG, "explosion damaged " + collidable.getName());
             if (((Damageable) collidable).inflictDamage(explosion.getDamage())){
                 Log.d(TAG, collidable.getName() + " has died");
             }
@@ -356,6 +358,7 @@ public class CollisionManager {
 
     private void resolveProjectileHit(Projectile projectile, Collidable collidable){
         //if the projectile damages on contact and the collidable can take damage, damage it
+        Log.d(TAG, collidable.getName() + " hit by projectile");
         if (!(projectile instanceof Bomb) && collidable instanceof Damageable) {
             //only damage the collidable if the projectile doesn't belong to them
             if (!projectile.getOwner().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())){
