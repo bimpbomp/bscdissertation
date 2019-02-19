@@ -17,7 +17,6 @@ import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.map.MapConstructor;
 import bham.student.txm683.heartbreaker.map.Room;
-import bham.student.txm683.heartbreaker.physics.Grid;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -43,7 +42,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private BoundingBox visibleBounds;
 
-    private Grid grid;
     private int tileSize;
 
     private DebugInfo debugInfo;
@@ -285,10 +283,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
-            //draw grids (if turned on)
-            if (debugInfo.renderPhysicsGrid())
-                drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset, textPaint);
-
+            //draw grid (if turned on)
             if (debugInfo.renderMapTileGrid())
                 drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset, tilePaint);
 
@@ -298,11 +293,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             //draw ui
-            /*if (!levelState.isPaused()) {
+            if (!levelState.isPaused()) {
                 RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "RenderFPS: " + renderFPS
-                        + ". GameTickFPS: " + gameTickFPS + ". Collisions: " + level.getCollisionManager().collisionCount,
+                        + " GameTickFPS: " + gameTickFPS,
                         new Point(viewWidth/2f, 50), Color.WHITE, 10);
-            } */
+            }
             if (levelState.isPaused()) {
                 canvas.drawARGB(200, 0,0,0);
 
@@ -363,87 +358,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
      * @return True if one or more vertices exist in the screen boundaries, false if none are.
      */
     private boolean isOnScreen(Renderable entity){
-        return visibleBounds.intersecting(entity.getRenderingVertices());
-    }
-
-    public void setGrid(Grid grid){
-        this.grid = grid;
+        return visibleBounds.intersecting(entity.getBoundingBox());
     }
 
     public LevelState getLevelState() {
         return levelState;
     }
 }
-
-/*
-//get visible boundaries relative to world coordinates
-        viewWorldOrigin = levelState.getPlayer().getCenter().add(new Point(-1*viewWidth/2f, -1*viewHeight/2f));
-                viewWorldMax = viewWorldOrigin.add(new Point(viewWidth, viewHeight));
-
-                //Calculate what entities are in view of the player on screen
-
-                ArrayList<Wall> wallsToRender = new ArrayList<>();
-        for (Wall wall: levelState.getMap().getWalls()){
-        if (isOnScreen(wall.getCollisionVertices())){
-        wallsToRender.add(wall);
-        }
-        }
-
-        ArrayList<Renderable> enemiesToRender = new ArrayList<>();
-
-        for (AIEntity enemy: levelState.getEnemyEntities()){
-        if (isOnScreen(enemy.getCollisionVertices())){
-        enemiesToRender.add(enemy);
-        }
-        }
-
-        ArrayList<Projectile> bulletsToRender = new ArrayList<>();
-        ArrayList<Projectile> bulletsInLevel = levelState.getBullets();
-        for (Projectile bullet : bulletsInLevel){
-        if (isOnScreen(bullet.getCollisionVertices())){
-        bulletsToRender.add(bullet);
-        }
-        }
-
-        Canvas canvas = getHolder().lockCanvas();
-
-        Vector interpolationVector = Vector.ZERO_VECTOR;
-
-        if (canvas != null){
-        super.draw(canvas);
-
-        Point renderOffset = viewWorldOrigin.sMult(-1f);
-
-        //draw background
-        canvas.drawRGB(32,32,32);
-
-        //draw room backgrounds
-        for (Room room : levelState.getMap().getRoomPerimeters().values()){
-        room.getPerimeter().draw(canvas, renderOffset, interpolationVector, false);
-        }
-
-        //draw grids
-        if (debugInfo.renderPhysicsGrid())
-        drawGrid(canvas, grid.getGridMinimum(), grid.getGridMaximum(), grid.getCellSize(), renderOffset, textPaint);
-
-        if (debugInfo.renderMapTileGrid())
-        drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset, tilePaint);
-
-        for (Door door : levelState.getMap().getDoors().values()){
-        door.draw(canvas, renderOffset, interpolationVector, debugInfo.renderEntityNames());
-        }
-
-        //draw player and entities
-        levelState.getPlayer().draw(canvas, renderOffset, Vector.ZERO_VECTOR, debugInfo.renderEntityNames());
-
-        for (Renderable entity : enemiesToRender){
-        entity.draw(canvas, renderOffset, interpolationVector, debugInfo.renderEntityNames());
-        }
-
-        for (Wall entity : wallsToRender){
-        entity.draw(canvas, renderOffset, interpolationVector, debugInfo.renderEntityNames());
-        }
-
-        for (Projectile bullet : bulletsToRender){
-        bullet.draw(canvas, renderOffset, secondsSinceLastGameTick);
-        }*/

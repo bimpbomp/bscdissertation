@@ -60,6 +60,8 @@ public abstract class Polygon implements Shape{
         for (int i = 0; i < vertexVectors.length; i++){
             vertexVectors[i] = vertexVectors[i].rotate(cos, sin);
         }
+
+        setForwardUnitVector();
     }
 
     /**

@@ -54,7 +54,7 @@ public class Circle implements Renderable, Shape {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
+    public BoundingBox getBoundingBox() {
         return new BoundingBox(center.add(-1 * radius, -1 * radius), center.add(radius, radius));
     }
 

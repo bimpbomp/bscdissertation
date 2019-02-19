@@ -38,7 +38,7 @@ public class Trapezium extends Polygon implements Renderable {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
+    public BoundingBox getBoundingBox() {
         return new BoundingBox(getVertices());
     }
 

@@ -38,7 +38,7 @@ public class Explosion extends InteractionField implements Renderable, ICircle {
 
     @Override
     public Point[] getCollisionVertices() {
-        BoundingBox bb = shape.getRenderingVertices();
+        BoundingBox bb = shape.getBoundingBox();
         return new Point[]{
                 bb.getTopLeft(),
                 bb.getTopRight(),
@@ -73,8 +73,8 @@ public class Explosion extends InteractionField implements Renderable, ICircle {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
-        return this.shape.getRenderingVertices();
+    public BoundingBox getBoundingBox() {
+        return this.shape.getBoundingBox();
     }
 
     @Override

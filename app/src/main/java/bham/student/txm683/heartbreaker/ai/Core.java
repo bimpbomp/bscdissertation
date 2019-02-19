@@ -132,7 +132,7 @@ public class Core extends AIEntity implements Damageable {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
-        return outerShape.getRenderingVertices();
+    public BoundingBox getBoundingBox() {
+        return outerShape.getBoundingBox();
     }
 }

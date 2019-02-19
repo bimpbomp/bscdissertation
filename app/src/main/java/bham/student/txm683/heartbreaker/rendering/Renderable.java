@@ -11,7 +11,7 @@ public interface Renderable {
 
     void revertToDefaultColor();
 
-    BoundingBox getRenderingVertices();
+    BoundingBox getBoundingBox();
 
     String getName();
 }

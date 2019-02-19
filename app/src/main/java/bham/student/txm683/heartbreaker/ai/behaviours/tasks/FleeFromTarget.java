@@ -17,10 +17,10 @@ public class FleeFromTarget extends BNode {
 
     @Override
     public Status process(BContext context) {
-        if (context.containsKey(BContext.FLEE_FROM_KEY) && context.containsKey(BContext.CONTROLLED_ENTITY_KEY)){
-            Entity entity = (Entity) context.getValue(BContext.FLEE_FROM_KEY);
+        if (context.containsKey(BContext.FLEE_FROM) && context.containsKey(BContext.HOST_ENTITY)){
+            Entity entity = (Entity) context.getValue(BContext.FLEE_FROM);
 
-            AIEntity controlledEntity = ((AIEntity) context.getValue(BContext.CONTROLLED_ENTITY_KEY));
+            AIEntity controlledEntity = ((AIEntity) context.getValue(BContext.HOST_ENTITY));
             Log.d("hb::FleeFromTarget", "fleeing: " + new Vector(controlledEntity.getCenter(), entity.getCenter()).sMult(-1f).toString());
 
             controlledEntity.setRequestedMovementVector(new Vector(controlledEntity.getCenter(), entity.getCenter()).sMult(-1f).getUnitVector());

@@ -8,7 +8,6 @@ import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.BombThrower;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
-import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
@@ -19,7 +18,7 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 import java.util.List;
 
 //TODO fix collision error between Wall 0 and player on the RHS of Wall 0.
-public class Player extends MoveableEntity implements Damageable, Renderable, Collidable {
+public class Player extends MoveableEntity implements Damageable, Renderable {
 
     private Kite shape;
 
@@ -77,7 +76,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
     }
 
     public Projectile[] shootSecondary(){
-        return secondaryWeapon.shoot(calcBulletPlacement(secondaryWeapon.getBulletRadius()));
+        return secondaryWeapon.shoot(calculateMovementVector(secondaryWeapon.getBulletRadius()));
     }
 
     private Vector calcBulletPlacement(float bulletRadius){
@@ -139,8 +138,8 @@ public class Player extends MoveableEntity implements Damageable, Renderable, Co
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
-        return shape.getRenderingVertices();
+    public BoundingBox getBoundingBox() {
+        return shape.getBoundingBox();
     }
 
     @Override

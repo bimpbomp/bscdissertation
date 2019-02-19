@@ -29,7 +29,7 @@ public class AIManager {
         update = true;
 
         //tick 10 times a second
-        this.timer = new GameTickTimer(100);
+        this.timer = new GameTickTimer(50);
         timer.start();
     }
 

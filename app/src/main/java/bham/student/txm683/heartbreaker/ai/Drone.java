@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
+import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
@@ -12,7 +13,8 @@ import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Idle;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.Shooter;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
@@ -23,9 +25,11 @@ import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 
+import java.util.List;
+
 public class Drone extends AIEntity implements Shooter {
 
-    private Rectangle shape;
+    private Kite shape;
     private int health;
 
     private int currentTargetNodeInPath;
@@ -34,10 +38,19 @@ public class Drone extends AIEntity implements Shooter {
     private Weapon weapon;
     private BNode behaviourTreeRoot;
 
+
     public Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
         super(name, maxSpeed);
 
-        shape = new Rectangle(center, size, size, colorValue);
+        List<Vector> vertices = Polygon.createTriangle(center, size*0.9f, size * 0.75f);
+
+        this.shape = new Kite(center, new Vector[]{
+                vertices.get(0),
+                vertices.get(1),
+                new Vector(center, center.add(new Point(0, 0.5f * size))),
+                vertices.get(2)
+        }, colorValue, colorValue);
+
         this.health = initialHealth;
         this.atDestination = false;
         this.currentTargetNodeInPath = 0;
@@ -55,6 +68,10 @@ public class Drone extends AIEntity implements Shooter {
                 ),
                 new Idle()
         );
+
+
+        context = new BContext();
+        context.addPair(BContext.VIEW_RANGE, 600);
     }
 
     @Override
@@ -91,11 +108,13 @@ public class Drone extends AIEntity implements Shooter {
         }
     }
 
+    public void setLevelState(LevelState levelState){
+        this.levelState = levelState;
+    }
+
     @Override
     public void chase(MoveableEntity entityToChase) {
         currentBehaviour = AIBehaviour.CHASE;
-
-        this.target = entityToChase;
     }
 
     @Override
@@ -107,6 +126,20 @@ public class Drone extends AIEntity implements Shooter {
 
     @Override
     public void tick(float secondsSinceLastGameTick) {
+
+        context.addPair(BContext.ATTACK_TARGET, levelState.getPlayer());
+        context.addPair(BContext.HOST_ENTITY, this);
+        context.addPair(BContext.HEALTH_BOUND, 25);
+        context.addPair(BContext.LEVEL_STATE, levelState);
+        behaviourTreeRoot.process(context);
+
+        if (getRequestedMovementVector().equals(new Vector()))
+            return;
+
+        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
+
+        shape.translateShape(movementVector);
+        shape.rotateShape(movementVector);
 
         /*StringBuilder stringBuilder = new StringBuilder();
         for (Tile tile : path){
@@ -144,21 +177,6 @@ public class Drone extends AIEntity implements Shooter {
 
         shape.translateShape(movementVector);
         shape.rotateShape(movementVector);*/
-
-        BContext bContext = new BContext();
-        bContext.addPair(BContext.ATTACK_TARGET_KEY, levelState.getPlayer());
-        bContext.addPair(BContext.CONTROLLED_ENTITY_KEY, this);
-        bContext.addPair(BContext.HEALTH_BOUND_KEY, 25);
-        bContext.addPair(BContext.LEVEL_STATE_KEY, levelState);
-        behaviourTreeRoot.process(bContext);
-
-        if (getRequestedMovementVector().equals(new Vector()))
-            return;
-
-        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
-
-        shape.translateShape(movementVector);
-        shape.rotateShape(movementVector);
     }
 
     @Override
@@ -232,8 +250,8 @@ public class Drone extends AIEntity implements Shooter {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
-        return shape.getRenderingVertices();
+    public BoundingBox getBoundingBox() {
+        return shape.getBoundingBox();
     }
 
     @Override

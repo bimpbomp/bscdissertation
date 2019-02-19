@@ -56,7 +56,7 @@ public class Perimeter implements Renderable, Collidable, Shape {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
+    public BoundingBox getBoundingBox() {
         return new BoundingBox(vertices);
     }
 

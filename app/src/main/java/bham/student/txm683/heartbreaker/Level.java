@@ -111,8 +111,6 @@ public class Level implements Runnable {
 
                     collisionManager.checkCollisions();
 
-                    levelView.setGrid(collisionManager.getBroadPhaseGrid());
-
                     gameFPSMonitor.updateFPS();
 
                     nextScheduledGameTick += gameTickTimeStepInMillis;

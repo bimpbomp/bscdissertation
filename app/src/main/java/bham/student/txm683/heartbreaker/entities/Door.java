@@ -4,7 +4,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.InteractionField;
@@ -13,7 +12,7 @@ import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
-public class Door extends Entity implements Renderable, Collidable {
+public class Door extends Entity implements Renderable {
 
     private Rectangle tileBackground;
 
@@ -58,8 +57,8 @@ public class Door extends Entity implements Renderable, Collidable {
             this.secondaryShape = new Rectangle(center, width * DOOR_RATIO, height, secondaryLocked ? LOCKED_COLOR : UNLOCKED_COLOR);
             this.secondaryShape.translateShape(new Vector(width * TRANSLATION_RATIO, 0));
 
-            this.primaryField = new DoorField(doorID+"", "P", center.add(new Point(-0.5f * width, 0)), width, height, Color.GRAY);
-            this.secondaryField = new DoorField(doorID+"", "S", center.add(new Point(0.5f * width, 0)), width, height, Color.LTGRAY);
+            this.primaryField = new DoorField(doorID+"", "P"+doorID, center.add(new Point(-0.5f * width, 0)), width, height, Color.GRAY);
+            this.secondaryField = new DoorField(doorID+"", "S"+doorID, center.add(new Point(0.5f * width, 0)), width, height, Color.LTGRAY);
 
         } else {
 
@@ -94,8 +93,8 @@ public class Door extends Entity implements Renderable, Collidable {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
-        return tileBackground.getRenderingVertices();
+    public BoundingBox getBoundingBox() {
+        return tileBackground.getBoundingBox();
     }
 
     @Override
@@ -200,9 +199,9 @@ public class Door extends Entity implements Renderable, Collidable {
      * @param fieldName P for primary side or S for secondary side
      */
     public boolean isSideUnlocked(String fieldName){
-        if (fieldName.equals("P") && !primaryLocked)
+        if (fieldName.contains("P") && !primaryLocked)
             return true;
-        return fieldName.equals("S") && !secondaryLocked;
+        return fieldName.contains("S") && !secondaryLocked;
     }
 
     public void close(){

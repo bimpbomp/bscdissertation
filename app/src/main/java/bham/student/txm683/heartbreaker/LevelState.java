@@ -8,8 +8,10 @@ import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.Room;
+import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
+import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
@@ -17,6 +19,7 @@ import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LevelState {
@@ -47,7 +50,6 @@ public class LevelState {
 
     private Graph<Tile> graph;
 
-
     public LevelState(Map map){
         this.map = map;
 
@@ -66,8 +68,40 @@ public class LevelState {
 
         this.core = map.getCore();
 
+        for (AIEntity entity : enemyEntities){
+            entity.setLevelState(this);
+        }
+
         generateGraph();
 
+    }
+
+    public List<Collidable> getNonStaticCollidables(){
+        List<Collidable> collidables = new ArrayList<>(map.getEnemies());
+        collidables.add(map.getPlayer());
+        collidables.addAll(explosions);
+        collidables.addAll(bullets);
+        collidables.addAll(map.getPickups());
+
+        return collidables;
+    }
+
+    public List<Collidable> getStaticCollidables(){
+        //TODO consolidate into one list in LevelState
+        //TODO store as HashMap with id/name as key and the object as the value
+
+        List<Collidable> collidables = new ArrayList<>(map.getDoors().values());
+        collidables.addAll(map.getWalls());
+        collidables.add(core);
+
+        return collidables;
+    }
+
+    public List<Renderable> getRenderables(){
+        //TODO add getRenderPriority() method to LevelState
+        //this will allow renderables to be ordered by their render priority and allow higher priority items to
+        //be rendered on the top (i.e. last)
+        return new ArrayList<>();
     }
 
     private void generateGraph(){

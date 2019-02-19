@@ -45,6 +45,15 @@ public class BoundingBox {
         return this.left < bb.right && this.right > bb.left && this.top < bb.bottom && this.bottom > bb.top;
     }
 
+    public Point[] getCollisionVertices(){
+        return new Point[]{
+                getTopLeft(),
+                getTopRight(),
+                getBottomRight(),
+                getBottomLeft()
+        };
+    }
+
     public Point getTopLeft(){
         return new Point(left, top);
     }

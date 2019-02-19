@@ -65,8 +65,8 @@ public class Pickup extends InteractionField implements Renderable {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
-        return shape.getRenderingVertices();
+    public BoundingBox getBoundingBox() {
+        return shape.getBoundingBox();
     }
 
     @Override

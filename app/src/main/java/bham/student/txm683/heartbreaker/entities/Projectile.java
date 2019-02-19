@@ -92,7 +92,7 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
     }
 
     @Override
-    public BoundingBox getRenderingVertices() {
+    public BoundingBox getBoundingBox() {
         return new BoundingBox(currentCenter.add(-1 * radius, -1 * radius), currentCenter.add(radius, radius));
     }
 
@@ -108,7 +108,7 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
 
     @Override
     public Point[] getCollisionVertices() {
-        BoundingBox bb = getRenderingVertices();
+        BoundingBox bb = getBoundingBox();
         return new Point[]{
                 bb.getTopLeft(),
                 bb.getTopRight(),

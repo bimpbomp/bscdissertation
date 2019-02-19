@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.ai;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
@@ -23,12 +24,16 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     AIBehaviour currentBehaviour;
 
-    MoveableEntity target;
+    BContext context;
 
     public AIEntity(String name, float maxSpeed) {
         super(name, maxSpeed);
 
         this.currentBehaviour = AIBehaviour.HALTED;
+    }
+
+    public BContext getContext() {
+        return context;
     }
 
     public abstract Vector getForwardUnitVector();

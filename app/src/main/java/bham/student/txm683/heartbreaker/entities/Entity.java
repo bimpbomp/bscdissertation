@@ -23,6 +23,10 @@ public abstract class Entity  implements Collidable {
         return name;
     }
 
+    public void drawName(Canvas canvas, Point center){
+        RenderingTools.renderCenteredText(canvas, paint, getName(), center);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -31,10 +35,6 @@ public abstract class Entity  implements Collidable {
             return name.equals(((Entity) o).name);
 
         return false;
-    }
-
-    public void drawName(Canvas canvas, Point center){
-        RenderingTools.renderCenteredText(canvas, paint, getName(), center);
     }
 
     @Override

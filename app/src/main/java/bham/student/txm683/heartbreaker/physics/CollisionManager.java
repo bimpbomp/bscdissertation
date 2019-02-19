@@ -3,6 +3,8 @@ package bham.student.txm683.heartbreaker.physics;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.entities.Bomb;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
@@ -10,6 +12,7 @@ import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
+import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
@@ -18,14 +21,15 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import static bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier.RECTANGLE;
 
 public class CollisionManager {
 
-    private static final float PUSH_VECTOR_ERROR = 0.001f;
+    private List<SpatialBin> spatialBins;
 
-    private Grid broadPhaseGrid;
+    private static final float PUSH_VECTOR_ERROR = 0.001f;
 
     private LevelState levelState;
 
@@ -34,84 +38,191 @@ public class CollisionManager {
 
     private static String TAG = "hb::CollisionManager";
 
-    private ArrayList<Pair<ArrayList<Collidable>, Pair<Integer,Integer>>> bins;
-
     public CollisionManager(LevelState levelState){
         this.levelState = levelState;
+
+        this.spatialBins = new ArrayList<>();
+
+        initSpatPatV2();
     }
 
     public void checkCollisions(){
-        applySpatialPartitioning();
+        applySpatPatV2();
 
-        fineGrainCollisionDetection(bins);
+        fineGrainCollisionDetection();
+
+        checkAIsLineOfSight();
     }
 
-    /**
-     * Inserts each vertex of every entity into their corresponding position in a grid,
-     * returns the cells containing 2 or more entities for more in depth addToCollidedThisTickSet checks.
-     */
-    private void applySpatialPartitioning(){
+    private void checkAIsLineOfSight(){
+        Player player = levelState.getPlayer();
 
-        Point gridMaximum = new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight());
+        //define variables for use in loop
+        Vector vectorToPlayer;
 
-        //initialise empty grid
-        int cellSize = levelState.getMap().getTileSize() * 2;
-        broadPhaseGrid = new Grid(new Point(levelState.getMap().getTileSize()/-2f,levelState.getMap().getTileSize()/-2f), gridMaximum, cellSize);
+        SpatialBin spatialBin;
 
-        //add player
-        broadPhaseGrid.addEntityToGrid(levelState.getPlayer());
+        BContext context;
+        for (AIEntity ai : levelState.getEnemyEntities()){
+            spatialBin = null;
 
-        //add ai
-        for (Collidable enemy : levelState.getEnemyEntities()){
-            broadPhaseGrid.addEntityToGrid(enemy);
-        }
+            for (SpatialBin bin : spatialBins){
+                if (bin.contains(ai) && bin.contains(player)){
+                    //the ai and the player are in the same bin
+                    spatialBin = bin;
+                    break;
+                }
+            }
 
-        //add walls
-        for (Collidable wall : levelState.getMap().getWalls()){
-            broadPhaseGrid.addEntityToGrid(wall);
-        }
+            if (spatialBin != null){
+                vectorToPlayer = new Vector(ai.getCenter(), player.getCenter());
+                context = ai.getContext();
 
-        //add doors
-        for (Door door : levelState.getMap().getDoors().values()){
-            broadPhaseGrid.addEntityToGrid(door);
-            broadPhaseGrid.addEntityToGrid(door.getPrimaryField());
-            broadPhaseGrid.addEntityToGrid(door.getSecondaryField());
-        }
+                if (context.containsKey(BContext.VIEW_RANGE) && context.getValue(BContext.VIEW_RANGE) instanceof Integer) {
+                    //if the context has a view range property
+                    if (vectorToPlayer.getLength() < (int) context.getValue(BContext.VIEW_RANGE)) {
+                        //if the player is within the view range
+                        boolean lOSBlocked = checkIfLOSIsBlocked(vectorToPlayer, spatialBin, player, ai);
 
-        //add projectiles
-        for (Projectile projectile : levelState.getBullets()){
-            broadPhaseGrid.addProjectileToGrid(projectile);
-        }
+                        context.addPair(BContext.SIGHT_BLOCKED, lOSBlocked);
 
-        //add explosions
-        for (Explosion explosion : levelState.getExplosions()){
-            broadPhaseGrid.addEntityToGrid(explosion);
-        }
-
-        //add pickups
-        for (Pickup pickup : levelState.getPickups()){
-            broadPhaseGrid.addEntityToGrid(pickup);
-        }
-
-        //add core
-        broadPhaseGrid.addEntityToGrid(levelState.getCore());
-
-        //each element will be a bin from a grid reference with more than one entity in
-        bins = new ArrayList<>();
-
-        //fetch the bins that have more than one entity in them for the next stage of collision detection
-        for (Integer column : broadPhaseGrid.getColumnKeySet()){
-            for (Integer row : broadPhaseGrid.getRowKeySet(column)){
-                Pair<ArrayList<Collidable>, Pair<Integer, Integer>> bin = new Pair<>(broadPhaseGrid.getBin(column, row), new Pair<>(column, row));
-
-                if (bin.first.size() > 1){
-                    bins.add(bin);
+                        Log.d("hb::LOSBLOCKED", lOSBlocked+"");
+                    }
                 }
             }
         }
     }
 
-    private void fineGrainCollisionDetection(ArrayList<Pair<ArrayList<Collidable>, Pair<Integer, Integer>>> bins){
+    private boolean checkIfLOSIsBlocked(Vector vectorToPlayer, SpatialBin bin, Player player, AIEntity ai){
+        Vector toPlayerNormal = getEdgeNormal(vectorToPlayer);
+        Pair<Float, Float> minMaxAi = projectOntoAxis(toPlayerNormal, ai.getCollisionVertices());
+        Pair<Float, Float> minMaxPlayer = projectOntoAxis(toPlayerNormal, player.getCollisionVertices());
+
+        Pair<Float, Float> sightMinMax = new Pair<>(
+                Math.min(minMaxAi.first, minMaxPlayer.first),
+                Math.max(minMaxPlayer.second, minMaxAi.second)
+        );
+        //will be altered if the collidable intersects the LOS
+        float sightMin = sightMinMax.first;
+        float sightMax = sightMinMax.second;
+
+        //construct viewShape
+        Point[] viewShapeVertices = getViewShape(ai, player, toPlayerNormal);
+
+        Pair<Float, Float> collidableMinMax;
+        for (Collidable collidable : bin.getCollidables()){
+            if (!collidable.isSolid() || collidable.getName().equals(player.getName()) || collidable.getName().equals(ai.getName())){
+                //if the collidable is the ai, the player, or is not solid, skip to next collidable
+                //Log.d("hb::CollidableAiPlayerOrNonSolid", collidable.getName());
+                continue;
+            }
+
+            //if the collidable is not in between the ai and player, skip to next collidable
+            if (applySAT(getEdgeNormals(getEdges(collidable.getShapeIdentifier(), collidable.getCollisionVertices())), viewShapeVertices, collidable.getCollisionVertices()).size() != collidable.getCollisionVertices().length){
+                //Log.d("hb::NotBetweenAIAndPlayer", collidable.getName());
+                continue;
+            }
+
+            collidableMinMax = projectOntoAxis(toPlayerNormal, collidable.getCollisionVertices());
+            //Log.d("hb::AiMinMax", "(" + minMaxAi.first + "," + minMaxAi.second + ")");
+            //Log.d("hb::PlayerMinMax", "(" + minMaxPlayer.first + "," + minMaxPlayer.second + ")");
+            //Log.d("hb::CollidableMinMax", collidable.getName() +  "(" + collidableMinMax.first + "," + collidableMinMax.second + ")");
+
+            if (collidableMinMax.first < sightMin  && collidableMinMax.second > sightMax){
+                //complete intersection
+                //Log.d("hb::CompleteIntersection", collidable.getName());
+                return true;
+            }
+
+            if (collidableMinMax.second < sightMin  || collidableMinMax.first > sightMax) {
+                //Log.d("hb::NoIntersection", collidable.getName());
+                //no intersection
+                continue;
+            } else if (collidableMinMax.first < sightMax && collidableMinMax.second > sightMax){
+                //Log.d("hb::MinPointIntersectsLOS", collidable.getName());
+                //min point intersects LOS
+                sightMax = collidableMinMax.first;
+            } else if (collidableMinMax.second > sightMin && collidableMinMax.first < sightMin){
+                //max point intersects LOS
+                //Log.d("hb::MaxPointIntersectsLOS", collidable.getName());
+                sightMin = collidableMinMax.second;
+            }
+        }
+
+        //Log.d("hb::ReturnValue", (sightMax - sightMin)+"");
+        return Math.abs(sightMax - sightMin) < 1;
+    }
+
+    private Point[] getViewShape(Collidable ai, Collidable player, Vector aiToPlayerNormal){
+
+        Pair<Point, Point> aiMinMax = getMinMaxPointsForAxis(aiToPlayerNormal, ai.getCollisionVertices());
+        Pair<Point, Point> playerMinMax = getMinMaxPointsForAxis(aiToPlayerNormal, player.getCollisionVertices());
+
+        return new Point[]{
+                playerMinMax.second,
+                playerMinMax.first,
+                aiMinMax.first,
+                aiMinMax.second
+        };
+    }
+
+    /**
+     * Adds all the static entities in the game world into any and all spatial bins they overlap's
+     * permanent list
+     */
+    private void initSpatPatV2(){
+        SpatialBin spatialBin;
+
+        for (Room room : levelState.getMap().getRooms().values()){
+            spatialBin = new SpatialBin(room.getId(), room.getPerimeter().getBoundingBox());
+
+            spatialBins.add(spatialBin);
+        }
+
+        //add each static to the permanent list in the correct spatial bin
+        for (Collidable collidable : levelState.getStaticCollidables()){
+
+            for (SpatialBin bin : spatialBins){
+                if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
+
+                    if (collidable instanceof Door){
+                        bin.addPermanent(((Door) collidable).getPrimaryField());
+                        bin.addPermanent(((Door) collidable).getSecondaryField());
+                    }
+
+                    //if the collidable intersects this bin's bounding box, add it to the bin's permanent list
+                    bin.addPermanent(collidable);
+                }
+            }
+        }
+    }
+
+    private void applySpatPatV2(){
+        //clear last tick's collision bins
+        for (SpatialBin bin : spatialBins){
+            bin.clearTemps();
+        }
+
+        boolean addedToBin;
+        for (Collidable collidable : levelState.getNonStaticCollidables()){
+            addedToBin = false;
+
+            for (SpatialBin bin : spatialBins){
+                if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
+                    //if the collidable intersects this bin's bounding box, add it to the bin's temp list
+                    bin.addTemp(collidable);
+                    addedToBin = true;
+                }
+            }
+
+            if (!addedToBin){
+                //TODO add flag for entities that aren't in a room, for correction later on
+                Log.d("hb::CollisionManager", collidable.getName() + " is not in a room");
+            }
+        }
+    }
+
+    private void fineGrainCollisionDetection(){
         checkedPairNames = new HashSet<>();
 
         doorsToOpen = new HashSet<>();
@@ -122,10 +233,9 @@ public class CollisionManager {
         Vector pushVector;
 
         //iterate through bins
-        for (Pair<ArrayList<Collidable>, Pair<Integer, Integer>> binPair : bins){
-
-            ArrayList<Collidable> bin = binPair.first;
-            Pair<Integer, Integer> binGridReference = binPair.second;
+        List<Collidable> bin;
+        for (SpatialBin spatialBin : spatialBins){
+            bin = spatialBin.getCollidables();
 
             if (bin.size() > 1){
 
@@ -170,6 +280,8 @@ public class CollisionManager {
                                 }
                             } else if (nonSolidEntity instanceof DoorField){
                                 pushVector = collisionCheckTwoPolygons(nonSolidEntity, solidEntity);
+                                Log.d("hb::SolidNonSolid", "solid: " + solidEntity.getName() + ", and nonSolid: " + nonSolidEntity.getName() + " with owner " + ((DoorField) nonSolidEntity).getOwner());
+                                Log.d("hb:: DoorCollision", pushVector.relativeToString());
 
                                 if (!pushVector.equals(Vector.ZERO_VECTOR)){
                                     //collision occurred
@@ -190,7 +302,7 @@ public class CollisionManager {
 
                             if (!pushVector.equals(Vector.ZERO_VECTOR)) {
                                 //collision occurred
-                                resolveSolidsCollision(firstCollidable, secondCollidable, pushVector, binGridReference);
+                                resolveSolidsCollision(firstCollidable, secondCollidable, pushVector, bin);
                             }
                         }
                         //add entity names to the checked names set so that they aren't checked twice
@@ -266,7 +378,7 @@ public class CollisionManager {
         }
     }
 
-    private void resolveSolidsCollision(Collidable firstCollidable, Collidable secondCollidable, Vector pushVector, Pair<Integer, Integer> binGridReference){
+    private void resolveSolidsCollision(Collidable firstCollidable, Collidable secondCollidable, Vector pushVector, List<Collidable> bin){
         //true if the entity doesnt collide with any statics after applying
         //pushVector.
         boolean firstAbleToMove;
@@ -282,8 +394,8 @@ public class CollisionManager {
         if (firstCollidable.canMove() && secondCollidable.canMove()) {
 
             //resolve collisions with any statics that share a cell with either entity
-            isEntityAbleToBePushed(firstCollidable, binGridReference, true);
-            isEntityAbleToBePushed(secondCollidable, binGridReference, true);
+            isStaticCollision(firstCollidable, bin, true);
+            isStaticCollision(secondCollidable, bin, true);
 
             //update position of first entity with half of the push vector
             firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
@@ -297,8 +409,8 @@ public class CollisionManager {
             secondCollidable.setCenter(newCenter);
 
             //check if the entities now overlap any statics with their new positions
-            firstAbleToMove = isEntityAbleToBePushed(firstCollidable, binGridReference, false);
-            secondAbleToMove = isEntityAbleToBePushed(secondCollidable, binGridReference, false);
+            firstAbleToMove = isStaticCollision(firstCollidable, bin, false);
+            secondAbleToMove = isStaticCollision(secondCollidable, bin, false);
 
             if (!secondAbleToMove) {
                 //if the second entity now overlaps a static, tick it back to it's original position
@@ -356,8 +468,8 @@ public class CollisionManager {
         Vector pushVector;
         ArrayList<Vector> pushVectors = new ArrayList<>();
         for (Vector axis : orthogonalAxes){
-            pushVector = isSeparatingAxis(axis, convertToVectorsFromOrigin(polygon.getCollisionVertices()),
-                    convertToVectorsFromOrigin(getCircleVerticesForAxis(axis, circle.getCenter(), circle.getRadius())));
+            pushVector = isSeparatingAxis(axis, polygon.getCollisionVertices(),
+                    getCircleVerticesForAxis(axis, circle.getCenter(), circle.getRadius()));
 
             if (pushVector.equals(Vector.ZERO_VECTOR)){
                 return Vector.ZERO_VECTOR;
@@ -371,7 +483,6 @@ public class CollisionManager {
     //Separating axis theorem for two polygons
     //returns the overlap or the empty vector
     public static Vector collisionCheckTwoPolygons(Collidable polygon1, Collidable polygon2){
-        Vector pushVector;
         Point[] firstEntityVertices = polygon1.getCollisionVertices();
         Point[] secondEntityVertices = polygon2.getCollisionVertices();
 
@@ -380,24 +491,29 @@ public class CollisionManager {
 
         Vector[] orthogonalAxes = getEdgeNormals(edges);
 
-        ArrayList<Vector> pushVectors = new ArrayList<>();
-        boolean collided = true;
-        for (Vector axis : orthogonalAxes){
-            pushVector = isSeparatingAxis(axis, convertToVectorsFromOrigin(firstEntityVertices), convertToVectorsFromOrigin(secondEntityVertices));
+        List<Vector> pushVectors = applySAT(orthogonalAxes, firstEntityVertices, secondEntityVertices);
+
+        if (pushVectors.size() == orthogonalAxes.length) {
+            return getMinimumPushVector(pushVectors, polygon1.getCenter(), polygon2.getCenter());
+        }
+        return Vector.ZERO_VECTOR;
+    }
+
+    private static List<Vector> applySAT(Vector[] axes, Point[] firstEntityVertices, Point[] secondEntityVertices){
+        Vector pushVector;
+        List<Vector> pushVectors = new ArrayList<>();
+
+        for (Vector axis : axes){
+            pushVector = isSeparatingAxis(axis, firstEntityVertices, secondEntityVertices);
 
             if (pushVector.equals(Vector.ZERO_VECTOR)){
-                collided = false;
                 break;
             } else {
-                //Log.d(TAG + collisionCount, "push vector: " + pushVector.toString());
                 pushVectors.add(pushVector);
             }
         }
 
-        if (collided) {
-            return getMinimumPushVector(pushVectors, polygon1.getCenter(), polygon2.getCenter());
-        }
-        return Vector.ZERO_VECTOR;
+        return pushVectors;
     }
 
     private static Vector reflectVectorAcrossPushVector(Vector initialVector, Vector pushVector){
@@ -423,7 +539,7 @@ public class CollisionManager {
         checkedPairNames.add(entity2.getName() + entity1.getName());
     }
     
-    private boolean isEntityAbleToBePushed(Collidable entity, Pair<Integer, Integer> binReference, boolean resolveCollision){
+    /*private boolean isEntityAbleToBePushed(Collidable entity, Pair<Integer, Integer> binReference, boolean resolveCollision){
 
         //look at adjacent cells in grid that the entity exists in (if they exist).
         for (int i = binReference.first - 1; i < binReference.first + 2; i++){
@@ -440,12 +556,13 @@ public class CollisionManager {
             }
         }
         return true;
-    }
+    }*/
 
     //checks if the given entity collides with any statics in the given bin.
-    //resolveCollision  determines if a collision is resolved should one be detected or not
-    private boolean isStaticCollision(Collidable entity, ArrayList<Collidable> bin, boolean resolveCollision){
+    //resolveCollision determines if a collision should be resolved if one is detected or not
+    private boolean isStaticCollision(Collidable entity, List<Collidable> bin, boolean resolveCollision){
 
+        //TODO change to include non static entities
         for (Collidable entityInBin : bin) {
             if (!entityInBin.canMove()) {
                 //check if the two entities collide
@@ -467,7 +584,7 @@ public class CollisionManager {
         return false;
     }
 
-    private static Vector getMinimumPushVector(ArrayList<Vector> pushVectors, Point center1, Point center2){
+    private static Vector getMinimumPushVector(List<Vector> pushVectors, Point center1, Point center2){
         Vector minPushVector = Vector.ZERO_VECTOR;
         if (pushVectors.size() > 0) {
             minPushVector = pushVectors.get(0);
@@ -493,7 +610,27 @@ public class CollisionManager {
 
     //checks if the max and min points on the given direction axis overlap, returns the overlap
     //this function is the variation for checking TWO polygons
-    private static Vector isSeparatingAxis(Vector axis, Vector[] firstEntityVertices, Vector[] secondEntityVertices){
+    private static Vector isSeparatingAxis(Vector axis, Point[] firstEntityVertices, Point[] secondEntityVertices){
+        Pair<Float, Float> minMaxResult = projectOntoAxis(axis, firstEntityVertices);
+
+        float firstEntityMinLength = minMaxResult.first;
+        float firstEntityMaxLength = minMaxResult.second;
+
+        minMaxResult = projectOntoAxis(axis, secondEntityVertices);
+        float secondEntityMinLength = minMaxResult.first;
+        float secondEntityMaxLength = minMaxResult.second;
+
+        if (firstEntityMaxLength >= secondEntityMinLength && secondEntityMaxLength >= firstEntityMinLength) {
+            float pushVectorLength = Math.min((secondEntityMaxLength - firstEntityMinLength), (firstEntityMaxLength - secondEntityMinLength));
+
+            //push a bit more than needed so they dont overlap in future tests to compensate for float precision error
+            pushVectorLength += PUSH_VECTOR_ERROR;
+
+            return axis.getUnitVector().sMult(pushVectorLength);
+        }
+        return Vector.ZERO_VECTOR;
+    }
+    /*private static Vector isSeparatingAxis(Vector axis, Vector[] firstEntityVertices, Vector[] secondEntityVertices){
         float firstEntityMinLength = Float.POSITIVE_INFINITY;
         float firstEntityMaxLength = Float.NEGATIVE_INFINITY;
 
@@ -524,6 +661,48 @@ public class CollisionManager {
             return axis.getUnitVector().sMult(pushVectorLength);
         }
         return Vector.ZERO_VECTOR;
+    }*/
+
+    private static Pair<Float, Float> projectOntoAxis(Vector axis, Point... vertices){
+        float minLength = Float.POSITIVE_INFINITY;
+        float maxLength = Float.NEGATIVE_INFINITY;
+
+        float projection;
+
+        for (Vector vertexVector : convertToVectorsFromOrigin(vertices)){
+            projection = vertexVector.dot(axis);
+
+            minLength = Math.min(minLength, projection);
+            maxLength = Math.max(maxLength, projection);
+        }
+
+        return new Pair<>(minLength, maxLength);
+    }
+
+    private static Pair<Point, Point> getMinMaxPointsForAxis(Vector axis, Point... vertices){
+        float minLength = Float.POSITIVE_INFINITY;
+        float maxLength = Float.NEGATIVE_INFINITY;
+
+        Point maxVertex = new Point();
+        Point minVertex = new Point();
+
+        float projection;
+
+        for (Vector vertexVector : convertToVectorsFromOrigin(vertices)){
+            projection = vertexVector.dot(axis);
+
+            if (projection < minLength){
+                minVertex = vertexVector.getHead();
+                minLength = projection;
+            }
+
+            if (projection > maxLength){
+                maxVertex = vertexVector.getHead();
+                maxLength = projection;
+            }
+        }
+
+        return new Pair<>(minVertex, maxVertex);
     }
 
     //Returns the unit normals for the given edges.
@@ -532,9 +711,13 @@ public class CollisionManager {
         Vector[] orthogonals = new Vector[edges.size()];
 
         for (int i = 0; i < edges.size(); i++){
-            orthogonals[i] = edges.get(i).rotateAntiClockwise90().getUnitVector();
+            orthogonals[i] = getEdgeNormal(edges.get(i));
         }
         return orthogonals;
+    }
+
+    private static Vector getEdgeNormal(Vector edge){
+        return edge.rotateAntiClockwise90().getUnitVector();
     }
 
     //joins the vertices together to form edge vectors.
@@ -555,9 +738,5 @@ public class CollisionManager {
         }
 
         return edges;
-    }
-
-    public Grid getBroadPhaseGrid() {
-        return broadPhaseGrid;
     }
 }
