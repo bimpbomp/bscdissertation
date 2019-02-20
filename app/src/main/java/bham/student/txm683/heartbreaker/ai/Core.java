@@ -17,8 +17,8 @@ public class Core extends AIEntity implements Damageable {
 
     private int health;
 
-    public Core(String name, Point center, int size, float maxSpeed) {
-        super(name, maxSpeed);
+    public Core(String name, Point center, int size) {
+        super(name, 0);
         health = 500;
 
         this.innerShape = new Octagon(center, size/2, Color.WHITE);
@@ -113,6 +113,7 @@ public class Core extends AIEntity implements Damageable {
     @Override
     public void setCenter(Point newCenter) {
         innerShape.translateShape(new Vector(innerShape.getCenter(), newCenter));
+        outerShape.translateShape(new Vector(outerShape.getCenter(), newCenter));
     }
 
     @Override

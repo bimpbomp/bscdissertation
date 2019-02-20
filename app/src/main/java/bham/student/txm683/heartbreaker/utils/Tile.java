@@ -37,8 +37,8 @@ public class Tile {
         return new Tile(x+xToAdd, y + yToAdd);
     }
 
-    public Tile mapToGrid(int tileSize){
-        return new Tile(x/tileSize, y/tileSize);
+    public static Tile mapToTile(Point point, int tileSize){
+        return new Tile(((int) point.getX()/tileSize) * tileSize, ((int) point.getY()/tileSize) * tileSize);
     }
 
     @Override

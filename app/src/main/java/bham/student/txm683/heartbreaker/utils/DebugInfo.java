@@ -10,11 +10,11 @@ public class DebugInfo {
     public DebugInfo(){
     }
 
-    public boolean renderPhysicsGrid() {
+    public boolean renderVisSet() {
         return renderPhysicsGrid;
     }
 
-    public void invertRenderPhysicsGrid() {
+    public void invertRenderVisSet() {
         this.renderPhysicsGrid = !renderPhysicsGrid;
     }
 

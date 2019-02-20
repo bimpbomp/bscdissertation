@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.physics;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
@@ -18,6 +19,7 @@ import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
@@ -53,6 +55,74 @@ public class CollisionManager {
         fineGrainCollisionDetection();
 
         checkAIsLineOfSight();
+
+        generatePlayerVisibleSet();
+    }
+
+    private void generatePlayerVisibleSet(){
+
+        Player player = levelState.getPlayer();
+        int tileSize = levelState.getMap().getTileSize();
+        TileSet tileSet = levelState.getTileSet();
+
+        //clear previous tick's visibility set
+        tileSet.clearVisibleSet();
+
+        //get the center of the tile that the player's center lies in
+        Tile playerTile = Tile.mapToTile(player.getCenter(), tileSize).add(tileSize/2, tileSize/2);
+
+        tileSet.addVisibleTile(Tile.mapToTile(player.getCenter(), tileSize));
+
+        Log.d("hb::TilePlayer", "playercenter: " + player.getCenter() + ", playertile: " + playerTile);
+        int numberOfRays = 20;
+
+        //6.3f roughly equals 2Pi.
+        float angleBetweenRays = 6.3f / 20;
+        float cos = (float) Math.cos(angleBetweenRays);
+        float sin = (float) Math.sin(angleBetweenRays);
+
+        //generate rays
+        Vector[] rays = new Vector[numberOfRays];
+
+        rays[0] = new Vector(0,-1);
+        Log.d("hb::RayStart", rays[0].getRelativeToTailPoint()+"");
+        for (int i = 1; i < rays.length; i++){
+            rays[i] = rays[i-1].rotate(cos,sin);
+            Log.d("hb::Ray", "" + rays[i].getRelativeToTailPoint());
+        }
+
+        //loop through rays, adding any empty tiles they cross to the visibility set
+        Point rayCurrentPoint;
+        Tile rayCurrentTile;
+        boolean blocked;
+
+        for (Vector ray : rays){
+            ray = ray.sMult(tileSize);
+            rayCurrentPoint = new Point(playerTile);
+
+            blocked = false;
+            Log.d("hb::Ray", ray.getRelativeToTailPoint().toString());
+
+            //add on a tileSize to the ray to move to the next tile in it's path
+            while(!blocked){
+                rayCurrentPoint = rayCurrentPoint.add(ray.getRelativeToTailPoint());
+                rayCurrentTile = Tile.mapToTile(rayCurrentPoint, tileSize);
+
+                if (rayCurrentPoint.getX() < 0 || rayCurrentPoint.getX() > levelState.getMap().getWidth()
+                        || rayCurrentPoint.getY() < 0 || rayCurrentPoint.getY() > levelState.getMap().getHeight())
+                    break;
+
+                Log.d("hb::Tile", "ray point: " + rayCurrentPoint + ", tile: " + rayCurrentTile);
+
+                if (!tileSet.tileContainsViewBlockingObject(rayCurrentTile)){
+                    tileSet.addVisibleTile(rayCurrentTile);
+                    //Log.d("hb::Ray", rayCurrentTile.toString() + " is not blocked");
+                } else {
+                    //Log.d("hb::Ray", rayCurrentTile.toString() + " is blocked");
+                    blocked = true;
+                }
+            }
+        }
     }
 
     private void checkAIsLineOfSight(){

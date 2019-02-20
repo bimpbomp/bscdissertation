@@ -156,8 +156,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         int debugButtonDiameter = viewHeight/6;
         int debugButtonRadius = debugButtonDiameter / 2;
         Button[] debugButtons = {
-                new Button("PHYS", new Point(viewWidth-debugButtonRadius, debugButtonRadius),
-                        debugButtonRadius, buttonColor, () -> debugInfo.invertRenderPhysicsGrid()),
+                new Button("VIS", new Point(viewWidth-debugButtonRadius, debugButtonRadius),
+                        debugButtonRadius, buttonColor, () -> debugInfo.invertRenderVisSet()),
 
                 new Button("ENGRID", new Point(viewWidth-debugButtonRadius, debugButtonDiameter +
                         debugButtonRadius), debugButtonRadius, buttonColor, () -> debugInfo.invertRenderMapTileGrid()),
@@ -281,6 +281,16 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             for (Renderable bullet : levelState.getBullets()){
                 if (isOnScreen(bullet))
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+            }
+
+            //draw vis set (if turned on)
+            if (debugInfo.renderVisSet()){
+                Point center;
+                for (Tile tile : levelState.getTileSet().getTilesVisibleToPlayer()){
+                    Log.d("hb::DrawingVis", tile.toString());
+                    center = new Point(tile.add(tileSize/2, tileSize/2)).add(renderOffset);
+                    canvas.drawCircle(center.getX(), center.getY(), 20, tilePaint);
+                }
             }
 
             //draw grid (if turned on)
