@@ -26,6 +26,18 @@ public class TileSet {
         this.tilesVisibleToPlayer = new HashSet<>();
     }
 
+    public List<Collidable> getTileBin(Tile tile){
+        List<Collidable> returnValue = new ArrayList<>();
+
+        if (permanents.containsKey(tile))
+            returnValue.addAll(permanents.get(tile));
+
+        if (temporaries.containsKey(tile))
+            returnValue.addAll(temporaries.get(tile));
+
+        return returnValue;
+    }
+
     public void clearVisibleSet(){
         this.tilesVisibleToPlayer.clear();
     }
@@ -42,7 +54,7 @@ public class TileSet {
         this.tilesVisibleToPlayer.add(tile);
     }
 
-    public List<Collidable> tileContainsViewBlockingObject(Tile tile){
+    public List<Collidable> getViewBlockingObjectsAtTile(Tile tile){
         List<Collidable> solids = new ArrayList<>();
         if (permanents.containsKey(tile)){
             for (Collidable collidable : permanents.get(tile)){
@@ -113,5 +125,9 @@ public class TileSet {
             map.put(tile, new ArrayList<>());
             map.get(tile).add(collidable);
         }
+    }
+
+    public int getTileSize() {
+        return tileSize;
     }
 }

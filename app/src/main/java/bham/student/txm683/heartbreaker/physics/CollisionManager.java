@@ -73,7 +73,7 @@ public class CollisionManager {
 
         tileSet.addVisibleTile(Tile.mapToTile(player.getCenter(), tileSize));
 
-        Log.d("hb::TilePlayer", "playercenter: " + player.getCenter() + ", playertile: " + playerTile);
+        //Log.d("hb::TilePlayer", "playercenter: " + player.getCenter() + ", playertile: " + playerTile);
         int numberOfRays = 20;
 
         //6.3f roughly equals 2Pi.
@@ -85,10 +85,10 @@ public class CollisionManager {
         Vector[] rays = new Vector[numberOfRays];
 
         rays[0] = new Vector(0,-1);
-        Log.d("hb::RayStart", rays[0].getRelativeToTailPoint()+"");
+        //Log.d("hb::RayStart", rays[0].getRelativeToTailPoint()+"");
         for (int i = 1; i < rays.length; i++){
             rays[i] = rays[i-1].rotate(cos,sin);
-            Log.d("hb::Ray", "" + rays[i].getRelativeToTailPoint());
+            //Log.d("hb::Ray", "" + rays[i].getRelativeToTailPoint());
         }
 
         //loop through rays, adding any empty tiles they cross to the visibility set
@@ -102,7 +102,7 @@ public class CollisionManager {
             rayCurrentPoint = new Point(playerTile);
 
             blocked = false;
-            Log.d("hb::Ray", ray.getRelativeToTailPoint().toString());
+            //Log.d("hb::Ray", ray.getRelativeToTailPoint().toString());
 
             //add on a tileSize to the ray to move to the next tile in it's path
             while(!blocked){
@@ -115,17 +115,17 @@ public class CollisionManager {
                         || rayCurrentPoint.getY() < 0 || rayCurrentPoint.getY() > levelState.getMap().getHeight())
                     break;
 
-                Log.d("hb::Tile", "ray point: " + rayCurrentPoint + ", tile: " + rayCurrentTile);
+                //Log.d("hb::Tile", "ray point: " + rayCurrentPoint + ", tile: " + rayCurrentTile);
 
                 //get list of solid objects (currently walls, doors, cores) present in this tile
-                blockingObjects = tileSet.tileContainsViewBlockingObject(rayCurrentTile);
+                blockingObjects = tileSet.getViewBlockingObjectsAtTile(rayCurrentTile);
 
                 //iterate through the blocking objects for this tile, if any of them occupy the center of a tile,
                 //consider it blocked
                 for (Collidable collidable : blockingObjects){
-                    Log.d("hb::BlockingObject", collidable.getName());
+                    //Log.d("hb::BlockingObject", collidable.getName());
                     if (collidable.getBoundingBox().intersecting(new Point(rayCurrentTile.add(tileSize/2, tileSize/2)))){
-                        Log.d("hb::Ray", rayCurrentTile.toString() + " is blocked");
+                        //Log.d("hb::Ray", rayCurrentTile.toString() + " is blocked");
                         blocked = true;
                         break;
                     }
@@ -150,7 +150,12 @@ public class CollisionManager {
         for (AIEntity ai : levelState.getEnemyEntities()){
             spatialBin = null;
 
-            for (SpatialBin bin : spatialBins){
+            if (levelState.getTileSet().tileIsVisibleToPlayer(Tile.mapToTile(ai.getCenter(), levelState.getTileSet().getTileSize()))){
+                ai.getContext().addPair(BContext.SIGHT_BLOCKED, false);
+            } else {
+                ai.getContext().addPair(BContext.SIGHT_BLOCKED, true);
+            }
+            /*for (SpatialBin bin : spatialBins){
                 if (bin.contains(ai) && bin.contains(player)){
                     //the ai and the player are in the same bin
                     spatialBin = bin;
@@ -173,7 +178,7 @@ public class CollisionManager {
                         //Log.d("hb::LOSBLOCKED", lOSBlocked+"");
                     }
                 }
-            }
+            }*/
         }
     }
 

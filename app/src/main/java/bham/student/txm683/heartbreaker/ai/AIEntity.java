@@ -8,13 +8,16 @@ import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.PathFinding;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import bham.student.txm683.heartbreaker.utils.graph.Edge;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.PriorityQueue;
 
 public abstract class AIEntity extends MoveableEntity implements Renderable, Damageable {
 
@@ -55,6 +58,10 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         return path;
     }
 
+    public void setPath(Tile[] path) {
+        this.path = path;
+    }
+
     abstract void update();
     abstract void chase(MoveableEntity entityToChase);
     abstract void halt();
@@ -72,7 +79,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         PriorityQueue<Pair<Node<Tile>, Integer>> openSet = new PriorityQueue<>(10, (a, b) -> {
             if (a.second < b.second)
                 return -1;
-            else if (a.second == b.second)
+            else if (a.second.equals(b.second))
                 return 0;
             return 1; });
 
@@ -108,7 +115,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
                     Log.d(aIName, "Target Reached!");
 
                     cameFrom.put(neighbour, currentNode);
-                    return tracePath(cameFrom, targetTile);
+                    return PathFinding.tracePath(PathFinding.formPathStack(cameFrom, targetTile));
                 }
 
                 int gCostToNext = currentCost + connection.getWeight();
@@ -126,64 +133,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
             }
             depthToPathFind--;
         }
-        return tracePath(cameFrom, targetTile);
-    }
-
-    /**
-     * Constructs a path for the AI to take to get to it's target
-     * @param cameFrom A map containing the visited nodes, and their parents
-     * @param targetNodeName The name of the targeted node (the destination)
-     * @return A Tile array containing the path to take, in order
-     */
-    public static Tile[] tracePath(HashMap<Node<Tile>, Node<Tile>> cameFrom, Node<Tile> targetNodeName){
-
-        /*StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("-------START-------");
-        for (Node<Tile> node : cameFrom.keySet()){
-            stringBuilder.append(node.getNodeID());
-            stringBuilder.append(" came from " );
-            if (cameFrom.get(node) != null)
-                stringBuilder.append(cameFrom.get(node).getNodeID());
-            else
-                stringBuilder.append("NULL");
-            stringBuilder.append("\n");
-        }
-        stringBuilder.append("-------END-------");
-        Log.d("hb:::", stringBuilder.toString());
-        return new Tile[0];*/
-
-        if (cameFrom.containsKey(targetNodeName)){
-            Stack<Tile> path = new Stack<>();
-
-            Node<Tile> previous = targetNodeName;
-            Node<Tile> current = cameFrom.get(targetNodeName);
-
-            path.push(previous.getNodeID());
-
-            while (current != null){
-                Log.d("hb::TRACEPATH", current.getNodeID() + ", prev: " + previous.getNodeID());
-                path.push(current.getNodeID());
-                previous = current;
-                try {
-                    current = cameFrom.get(previous);
-                } catch (NullPointerException e){
-                    return new Tile[0];
-                }
-            }
-
-            ArrayList<Tile> pathArray = new ArrayList<>();
-
-            while (!path.empty()){
-                Tile nextStep = path.pop();
-
-                pathArray.add(nextStep);
-            }
-            return pathArray.toArray(new Tile[0]);
-
-        } else {
-            Log.d("hb::TileBFS", "tracePath: target tile not found in path");
-            return new Tile[0];
-        }
+        return PathFinding.tracePath(PathFinding.formPathStack(cameFrom, targetTile));
     }
 
     public static int calculateEuclideanHeuristic(Tile currentTile, Tile targetTile){
