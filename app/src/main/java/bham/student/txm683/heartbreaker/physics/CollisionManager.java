@@ -69,7 +69,7 @@ public class CollisionManager {
         tileSet.clearVisibleSet();
 
         //get the center of the tile that the player's center lies in
-        Tile playerTile = Tile.mapToTile(player.getCenter(), tileSize).add(tileSize/2, tileSize/2);
+        Tile playerTile = Tile.mapToCenterOfTile(player.getCenter(), tileSize);
 
         tileSet.addVisibleTile(Tile.mapToTile(player.getCenter(), tileSize));
 
@@ -95,6 +95,7 @@ public class CollisionManager {
         Point rayCurrentPoint;
         Tile rayCurrentTile;
         boolean blocked;
+        List<Collidable> blockingObjects;
 
         for (Vector ray : rays){
             ray = ray.sMult(tileSize);
@@ -105,22 +106,34 @@ public class CollisionManager {
 
             //add on a tileSize to the ray to move to the next tile in it's path
             while(!blocked){
+                //get center of the tile that the ray currently lies in
                 rayCurrentPoint = rayCurrentPoint.add(ray.getRelativeToTailPoint());
                 rayCurrentTile = Tile.mapToTile(rayCurrentPoint, tileSize);
 
+                //if ray is definitely out of map bounds, break
                 if (rayCurrentPoint.getX() < 0 || rayCurrentPoint.getX() > levelState.getMap().getWidth()
                         || rayCurrentPoint.getY() < 0 || rayCurrentPoint.getY() > levelState.getMap().getHeight())
                     break;
 
                 Log.d("hb::Tile", "ray point: " + rayCurrentPoint + ", tile: " + rayCurrentTile);
 
-                if (!tileSet.tileContainsViewBlockingObject(rayCurrentTile)){
-                    tileSet.addVisibleTile(rayCurrentTile);
-                    //Log.d("hb::Ray", rayCurrentTile.toString() + " is not blocked");
-                } else {
-                    //Log.d("hb::Ray", rayCurrentTile.toString() + " is blocked");
-                    blocked = true;
+                //get list of solid objects (currently walls, doors, cores) present in this tile
+                blockingObjects = tileSet.tileContainsViewBlockingObject(rayCurrentTile);
+
+                //iterate through the blocking objects for this tile, if any of them occupy the center of a tile,
+                //consider it blocked
+                for (Collidable collidable : blockingObjects){
+                    Log.d("hb::BlockingObject", collidable.getName());
+                    if (collidable.getBoundingBox().intersecting(new Point(rayCurrentTile.add(tileSize/2, tileSize/2)))){
+                        Log.d("hb::Ray", rayCurrentTile.toString() + " is blocked");
+                        blocked = true;
+                        break;
+                    }
                 }
+
+                //if the tile is not considered blocked, add it to the visible set
+                if (!blocked)
+                    tileSet.addVisibleTile(rayCurrentTile);
             }
         }
     }

@@ -1,5 +1,7 @@
 package bham.student.txm683.heartbreaker.utils;
 
+import android.util.Log;
+
 public class BoundingBox {
     private int top;
     private int bottom;
@@ -43,6 +45,12 @@ public class BoundingBox {
 
     public boolean intersecting(BoundingBox bb){
         return this.left < bb.right && this.right > bb.left && this.top < bb.bottom && this.bottom > bb.top;
+    }
+
+    public boolean intersecting(Point p){
+        Log.d("hb::BoundingBox", left + ", " + right + ", " + top + ", " + bottom + ": " + p.getX() + ", " + p.getY());
+        Log.d("hb::BoundingBox", (this.left < p.getX()) + "," + (this.right > p.getX()) + ", " + (this.top < p.getY()) + "," + (this.bottom > p.getY()));
+        return this.left < p.getX() && this.right > p.getX() && this.top < p.getY() && this.bottom > p.getY();
     }
 
     public Point[] getCollisionVertices(){

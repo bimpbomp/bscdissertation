@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker;
 
 import bham.student.txm683.heartbreaker.ai.Core;
+import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -41,14 +42,22 @@ public class TileSet {
         this.tilesVisibleToPlayer.add(tile);
     }
 
-    public boolean tileContainsViewBlockingObject(Tile tile){
+    public List<Collidable> tileContainsViewBlockingObject(Tile tile){
+        List<Collidable> solids = new ArrayList<>();
         if (permanents.containsKey(tile)){
             for (Collidable collidable : permanents.get(tile)){
                 if (collidable instanceof Core || collidable instanceof Wall)
-                    return true;
+                    solids.add(collidable);
             }
         }
-        return false;
+
+        if (temporaries.containsKey(tile)){
+            for (Collidable collidable : temporaries.get(tile)){
+                if (collidable instanceof Door)
+                    solids.add(collidable);
+            }
+        }
+        return solids;
     }
 
     public void addPermanentToGrid(Collidable collidable){

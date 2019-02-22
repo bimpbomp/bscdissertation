@@ -41,6 +41,10 @@ public class Tile {
         return new Tile(((int) point.getX()/tileSize) * tileSize, ((int) point.getY()/tileSize) * tileSize);
     }
 
+    public static Tile mapToCenterOfTile(Point point, int tileSize){
+        return mapToTile(point, tileSize).add(tileSize/2, tileSize/2);
+    }
+
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj == this)
