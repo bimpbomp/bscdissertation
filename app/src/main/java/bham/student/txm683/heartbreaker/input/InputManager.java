@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.input;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.Log;
@@ -7,8 +8,6 @@ import android.view.MotionEvent;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.utils.Point;
 
-
-//TODO issue with input when thumbstick has pointer and first finger was activating other button
 public class InputManager {
     private static final String TAG = "hb::InputManager";
 
@@ -18,6 +17,8 @@ public class InputManager {
 
     private Button pauseButton;
 
+    private Button returnToMenuButton;
+
     private Button secondaryWeaponButton;
     private Button primaryWeaponButton;
 
@@ -25,8 +26,11 @@ public class InputManager {
 
     private LevelState levelState;
 
-    public InputManager(LevelState levelState){
+    private Context context;
+
+    public InputManager(LevelState levelState, Context context){
         this.levelState = levelState;
+        this.context = context;
     }
 
     public boolean onTouchEvent(MotionEvent event){
@@ -44,7 +48,6 @@ public class InputManager {
             eventHandled = handleWhilePaused(event, eventID, eventIndex, coordinatesPressed);
         }
 
-
         return eventHandled;
     }
 
@@ -57,6 +60,9 @@ public class InputManager {
                     pauseButton.setPointerID(eventID);
                 } else {
                     checkDebugButtonsOnDown(eventID, coordinatesPressed);
+
+                    if (returnToMenuButton.containsPoint(coordinatesPressed))
+                        returnToMenuButton.setPointerID(eventID);
                 }
                 break;
 
@@ -102,9 +108,9 @@ public class InputManager {
 
                     coordinatesPressed = new Point(event.getX(eventIndex), event.getY(eventIndex));
 
-                    Log.d("hb::INPUT", "index: " + eventIndex + ", id: " + eventID);
+                    //Log.d("hb::INPUT", "index: " + eventIndex + ", id: " + eventID);
 
-                    Log.d("hb::INPUTIDS", "thumb: " + thumbstick.getID() + ", rot: " + rotationThumbstick.getID());
+                    //Log.d("hb::INPUTIDS", "thumb: " + thumbstick.getID() + ", rot: " + rotationThumbstick.getID());
                     if (thumbstick.hasID(eventID))
                         thumbstick.setActivePosition(coordinatesPressed);
                     /*else if (primaryWeaponButton.hasID(eventID))
@@ -169,11 +175,16 @@ public class InputManager {
                     button.cancel();
                 }
             }
+
+            returnToMenuButton.cancel();
         } else {
             for (Button button : debugButtons) {
                 if (button.hasID(eventID))
                     button.onClick();
             }
+
+            if (returnToMenuButton.hasID(eventID))
+                returnToMenuButton.onClick();
         }
     }
 
@@ -213,6 +224,8 @@ public class InputManager {
 
             rotationThumbstick.draw(canvas);
         } else {
+            returnToMenuButton.draw(canvas, textPaint);
+
             if (debugButtons != null) {
                 for (Button button : debugButtons) {
                     button.draw(canvas, textPaint);
@@ -256,4 +269,12 @@ public class InputManager {
     }
 
     public void setPrimaryWeaponButton(Button primaryWeaponButton){this.primaryWeaponButton = primaryWeaponButton;}
+
+    public Button getReturnToMenuButton() {
+        return returnToMenuButton;
+    }
+
+    public void setReturnToMenuButton(Button returnToMenuButton) {
+        this.returnToMenuButton = returnToMenuButton;
+    }
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Heartbreaker</string>
+    <string name="launch">LAUNCH</string>
+    <string name="level_result">Level Result:</string>
 </resources>

@@ -44,7 +44,12 @@ public class MenuView extends SurfaceView implements SurfaceHolder.Callback {
         Point coordinatesPressed = new Point(event.getX(eventIndex), event.getY(eventIndex));
 
         switch(event.getActionMasked()){
-
+            case (MotionEvent.ACTION_DOWN):
+                break;
+            case (MotionEvent.ACTION_UP):
+                break;
+            default:
+                return false;
         }
 
         return super.onTouchEvent(event);

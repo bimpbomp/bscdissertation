@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.rendering;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -10,6 +11,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.MenuActivity;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
@@ -17,10 +19,7 @@ import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.map.MapConstructor;
 import bham.student.txm683.heartbreaker.map.Room;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
-import bham.student.txm683.heartbreaker.utils.DebugInfo;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.*;
 
 public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -46,6 +45,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private DebugInfo debugInfo;
 
+    private Context context;
+
     /**
      * Creates a new Level view with the given context
      * @param context The context to create the view.
@@ -63,6 +64,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         tilePaint = new Paint();
         tilePaint.setStrokeWidth(8f);
         tilePaint.setColor(Color.MAGENTA);
+
+        this.context = context;
     }
 
     /**
@@ -119,7 +122,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             this.levelState.setScreenDimensions(viewWidth, viewHeight);
 
-            this.inputManager = new InputManager(levelState);
+            this.inputManager = new InputManager(levelState, context);
 
             this.level.setInputManager(inputManager);
             this.level.setLevelState(levelState);
@@ -147,6 +150,19 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         int pauseButtonRadius = 75;
         Click pauseButtonFunction = () -> levelState.setPaused(!levelState.isPaused());
         this.inputManager.setPauseButton(new Button("PAUSE", new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, buttonColor, pauseButtonFunction));
+
+        int returnToMenuButtonRadius = 100;
+        Click menuButtonFunction = () -> {
+            Intent intent = new Intent(context, MenuActivity.class);
+
+            LevelEnder levelEnder = new LevelEnder();
+            levelEnder.setSuccess(false);
+
+            intent.putExtra("bundle", levelEnder.createBundle());
+
+            context.startActivity(intent);
+        };
+        this.inputManager.setReturnToMenuButton(new Button("QUIT", new Point(pauseButtonRadius*2 + 40 + returnToMenuButtonRadius, returnToMenuButtonRadius + 20), returnToMenuButtonRadius, buttonColor, menuButtonFunction));
 
         int attackButtonRadius = 100;
         this.inputManager.setSecondaryWeaponButton(new Button("BOMB", new Point(viewWidth-(attackButtonRadius + thumbstickMaxRadius*2) - 20, viewHeight-attackButtonRadius -10), attackButtonRadius, Color.RED, null));
