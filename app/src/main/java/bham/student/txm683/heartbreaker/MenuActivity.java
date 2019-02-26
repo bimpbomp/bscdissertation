@@ -11,6 +11,10 @@ import android.widget.TextView;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelLauncher;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 public class MenuActivity extends Activity {
     public static final String BUNDLE_EXTRA = "bundle_extra";
     private LevelLauncher levelLauncher;
@@ -23,6 +27,7 @@ public class MenuActivity extends Activity {
         Intent intent = getIntent();
         Bundle bundle = intent.getBundleExtra("bundle");
 
+        //if the activity was created by the player leaving a level, then display the result of that level
         TextView result = findViewById(R.id.levelResultView);
         if (bundle != null){
             LevelEnder levelEnder = new LevelEnder(bundle);
@@ -33,13 +38,14 @@ public class MenuActivity extends Activity {
             result.setVisibility(View.INVISIBLE);
         }
 
+        //bundle builder for holding parameters needed for level launch
         this.levelLauncher = new LevelLauncher();
 
 
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.text1, listRaw());
 
-        String[] maps = new String[]{"Test map 1", "Test map 2", "Test map 3"};
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.text1, maps);
+        //the below is the R.id value of the given field (gotten from listRaw())
+        //int resourceID=fields[count].getInt(fields[count]);
 
         //set the listview's adapter
         ListView listView = findViewById(R.id.map_list);
@@ -52,5 +58,16 @@ public class MenuActivity extends Activity {
             exitIntent.putExtra(BUNDLE_EXTRA, levelLauncher.createBundle());
             startActivity(exitIntent);
         });
+    }
+
+    public List<String> listRaw(){
+        List<String> list = new ArrayList<>();
+
+        Field[] fields=R.raw.class.getFields();
+
+        for(Field field : fields){
+            list.add(field.getName());
+        }
+        return list;
     }
 }
