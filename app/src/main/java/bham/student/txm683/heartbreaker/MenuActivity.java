@@ -8,7 +8,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import bham.student.txm683.heartbreaker.utils.LevelEnder;
+import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
+import bham.student.txm683.heartbreaker.intentbundleholders.LevelLauncher;
 
 public class MenuActivity extends Activity {
     public static final String BUNDLE_EXTRA = "bundle_extra";
