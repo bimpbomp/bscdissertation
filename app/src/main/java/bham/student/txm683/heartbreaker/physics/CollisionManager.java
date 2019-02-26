@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.physics;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
@@ -18,6 +19,7 @@ import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
@@ -53,6 +55,87 @@ public class CollisionManager {
         fineGrainCollisionDetection();
 
         checkAIsLineOfSight();
+
+        generatePlayerVisibleSet();
+    }
+
+    private void generatePlayerVisibleSet(){
+
+        Player player = levelState.getPlayer();
+        int tileSize = levelState.getMap().getTileSize();
+        TileSet tileSet = levelState.getTileSet();
+
+        //clear previous tick's visibility set
+        tileSet.clearVisibleSet();
+
+        //get the center of the tile that the player's center lies in
+        Tile playerTile = Tile.mapToCenterOfTile(player.getCenter(), tileSize);
+
+        tileSet.addVisibleTile(Tile.mapToTile(player.getCenter(), tileSize));
+
+        //Log.d("hb::TilePlayer", "playercenter: " + player.getCenter() + ", playertile: " + playerTile);
+        int numberOfRays = 20;
+
+        //6.3f roughly equals 2Pi.
+        float angleBetweenRays = 6.3f / 20;
+        float cos = (float) Math.cos(angleBetweenRays);
+        float sin = (float) Math.sin(angleBetweenRays);
+
+        //generate rays
+        Vector[] rays = new Vector[numberOfRays];
+
+        rays[0] = new Vector(0,-1);
+        //Log.d("hb::RayStart", rays[0].getRelativeToTailPoint()+"");
+        for (int i = 1; i < rays.length; i++){
+            rays[i] = rays[i-1].rotate(cos,sin);
+            //Log.d("hb::Ray", "" + rays[i].getRelativeToTailPoint());
+        }
+
+        //loop through rays, adding any empty tiles they cross to the visibility set
+        Point rayCurrentPoint;
+        Tile rayCurrentTile;
+        boolean blocked;
+        List<Collidable> blockingObjects;
+
+        for (Vector ray : rays){
+            ray = ray.sMult(tileSize);
+            rayCurrentPoint = new Point(playerTile);
+
+            blocked = false;
+            //Log.d("hb::Ray", ray.getRelativeToTailPoint().toString());
+
+            //add on a tileSize to the ray to move to the next tile in it's path
+            while(!blocked){
+                //get center of the tile that the ray currently lies in
+                rayCurrentPoint = rayCurrentPoint.add(ray.getRelativeToTailPoint());
+                rayCurrentTile = Tile.mapToTile(rayCurrentPoint, tileSize);
+
+                //if ray is definitely out of map bounds, break
+                if (rayCurrentPoint.getX() < 0 || rayCurrentPoint.getX() > levelState.getMap().getWidth()
+                        || rayCurrentPoint.getY() < 0 || rayCurrentPoint.getY() > levelState.getMap().getHeight())
+                    break;
+
+                //Log.d("hb::Tile", "ray point: " + rayCurrentPoint + ", tile: " + rayCurrentTile);
+
+                //get list of solid objects (currently walls, doors, cores) present in this tile
+                blockingObjects = tileSet.getViewBlockingObjectsAtTile(rayCurrentTile);
+
+                //iterate through the blocking objects for this tile, if any of them occupy the center of a tile,
+                //consider it blocked
+                for (Collidable collidable : blockingObjects){
+                    //Log.d("hb::BlockingObject", collidable.getName());
+                    if (collidable.getBoundingBox().intersecting(new Point(rayCurrentTile.add(tileSize/2, tileSize/2)))){
+                        //Log.d("hb::Ray", rayCurrentTile.toString() + " is blocked");
+                        blocked = true;
+                        break;
+                    }
+                }
+
+                //if the tile is not considered blocked, add it to the visible set
+                if (!blocked)
+                    tileSet.addVisibleTile(rayCurrentTile);
+            }
+        }
     }
 
     private void checkAIsLineOfSight(){
@@ -67,7 +150,12 @@ public class CollisionManager {
         for (AIEntity ai : levelState.getEnemyEntities()){
             spatialBin = null;
 
-            for (SpatialBin bin : spatialBins){
+            if (levelState.getTileSet().tileIsVisibleToPlayer(Tile.mapToTile(ai.getCenter(), levelState.getTileSet().getTileSize()))){
+                ai.getContext().addPair(BContext.SIGHT_BLOCKED, false);
+            } else {
+                ai.getContext().addPair(BContext.SIGHT_BLOCKED, true);
+            }
+            /*for (SpatialBin bin : spatialBins){
                 if (bin.contains(ai) && bin.contains(player)){
                     //the ai and the player are in the same bin
                     spatialBin = bin;
@@ -90,7 +178,7 @@ public class CollisionManager {
                         //Log.d("hb::LOSBLOCKED", lOSBlocked+"");
                     }
                 }
-            }
+            }*/
         }
     }
 

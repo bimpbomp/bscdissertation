@@ -90,6 +90,11 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
         if (!movementVector.equals(Vector.ZERO_VECTOR)) {
             shape.translateShape(movementVector);
+        }
+
+        if (!getRotationVector().equals(Vector.ZERO_VECTOR)){
+            shape.rotateShape(getRotationVector());
+        } else if (!movementVector.equals(Vector.ZERO_VECTOR)) {
             shape.rotateShape(movementVector);
         }
 

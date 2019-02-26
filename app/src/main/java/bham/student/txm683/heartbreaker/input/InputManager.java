@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.input;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -12,6 +13,9 @@ public class InputManager {
     private static final String TAG = "hb::InputManager";
 
     private Thumbstick thumbstick;
+
+    private Thumbstick rotationThumbstick;
+
     private Button pauseButton;
 
     private Button secondaryWeaponButton;
@@ -96,12 +100,20 @@ public class InputManager {
                     eventIndex = i;
                     eventID = event.getPointerId(eventIndex);
 
+                    coordinatesPressed = new Point(event.getX(eventIndex), event.getY(eventIndex));
+
+                    Log.d("hb::INPUT", "index: " + eventIndex + ", id: " + eventID);
+
+                    Log.d("hb::INPUTIDS", "thumb: " + thumbstick.getID() + ", rot: " + rotationThumbstick.getID());
                     if (thumbstick.hasID(eventID))
                         thumbstick.setActivePosition(coordinatesPressed);
-                    else if (primaryWeaponButton.hasID(eventID))
-                        levelState.addBullet(levelState.getPlayer().shoot());
+                    /*else if (primaryWeaponButton.hasID(eventID))
+                        levelState.addBullet(levelState.getPlayer().shoot());*/
                     else if (secondaryWeaponButton.hasID(eventID))
                         levelState.addBullet(levelState.getPlayer().shootSecondary());
+                    else if (rotationThumbstick.hasID(eventID)){
+                        rotationThumbstick.setActivePosition(coordinatesPressed);
+                    }
                 }
                 break;
 
@@ -126,6 +138,7 @@ public class InputManager {
     }
 
     private void handleDownResumed(int eventID, Point coordinatesPressed){
+        Log.d("hb::INPUTDOWN", "down: " + eventID);
         if (thumbstick.getID() < 0 && thumbstick.containsPoint(coordinatesPressed)){
             thumbstick.setActivePosition(coordinatesPressed);
             thumbstick.setPointerID(eventID);
@@ -134,10 +147,14 @@ public class InputManager {
             levelState.addBullet(levelState.getPlayer().shootSecondary());
             secondaryWeaponButton.setPointerID(eventID);
         } else if (pauseButton.getID() < 0 && pauseButton.containsPoint(coordinatesPressed)){
-            pauseButton.setPointerID(eventID);
+            pauseButton.setPointerID(eventID);/*
         } else if (primaryWeaponButton.getID() < 0 && primaryWeaponButton.containsPoint(coordinatesPressed)){
             levelState.addBullet(levelState.getPlayer().shoot());
-            primaryWeaponButton.setPointerID(eventID);
+            primaryWeaponButton.setPointerID(eventID);*/
+        } else if (rotationThumbstick.getID() < 0 && rotationThumbstick.containsPoint(coordinatesPressed)){
+            rotationThumbstick.setActivePosition(coordinatesPressed);
+            rotationThumbstick.setPointerID(eventID);
+            levelState.addBullet(levelState.getPlayer().shoot());
         }
     }
 
@@ -161,6 +178,7 @@ public class InputManager {
     }
 
     private void handleUpResumed(int eventID){
+        Log.d("hb::INPUTUP", "up: " + eventID);
 
         if (pauseButton.hasID(eventID)) {
             //cancel any outstanding pressed buttons
@@ -174,8 +192,11 @@ public class InputManager {
         } else if (secondaryWeaponButton.hasID(eventID)){
             //levelState.getPlayer().meleeAttack();
             secondaryWeaponButton.cancel();
-        } else if (primaryWeaponButton.hasID(eventID)){
+        }/* else if (primaryWeaponButton.hasID(eventID)){
             primaryWeaponButton.cancel();
+        }*/
+        else if (rotationThumbstick.hasID(eventID)){
+            rotationThumbstick.cancel();
         }
 
     }
@@ -184,11 +205,13 @@ public class InputManager {
         if (!levelState.isPaused()) {
             thumbstick.draw(canvas);
 
-            primaryWeaponButton.setLabel("∞");
-            primaryWeaponButton.draw(canvas, textPaint);
+            /*primaryWeaponButton.setLabel("∞");
+            primaryWeaponButton.draw(canvas, textPaint);*/
 
             secondaryWeaponButton.setLabel(levelState.getPlayer().getSecondaryAmmo()+"");
             secondaryWeaponButton.draw(canvas, textPaint);
+
+            rotationThumbstick.draw(canvas);
         } else {
             if (debugButtons != null) {
                 for (Button button : debugButtons) {
@@ -206,6 +229,14 @@ public class InputManager {
 
     public void setThumbstick(Thumbstick thumbstick) {
         this.thumbstick = thumbstick;
+    }
+
+    public Thumbstick getRotationThumbstick() {
+        return rotationThumbstick;
+    }
+
+    public void setRotationThumbstick(Thumbstick rotationThumbstick) {
+        this.rotationThumbstick = rotationThumbstick;
     }
 
     public Button getPauseButton() {

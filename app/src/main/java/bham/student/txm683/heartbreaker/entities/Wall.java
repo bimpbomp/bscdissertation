@@ -28,6 +28,13 @@ public class Wall extends Entity implements Renderable {
         }, colorValue);
     }
 
+    public Wall(String name, Point center, int size, int colorValue){
+        super(name);
+
+        this.shape = new Rectangle(center, size, size, colorValue);
+        this.collisionVertices = shape.getVertices();
+    }
+
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName){
 

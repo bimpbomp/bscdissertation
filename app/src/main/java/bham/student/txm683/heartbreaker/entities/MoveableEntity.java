@@ -6,11 +6,22 @@ public abstract class MoveableEntity extends Entity {
     private Vector requestedMovementVector;
     private float maxSpeed;
 
+    private Vector rotationVector;
+
     public MoveableEntity(String name, float maxSpeed){
         super(name);
 
         this.maxSpeed = maxSpeed;
         this.requestedMovementVector = Vector.ZERO_VECTOR;
+        this.rotationVector = Vector.ZERO_VECTOR;
+    }
+
+    public Vector getRotationVector() {
+        return rotationVector;
+    }
+
+    public void setRotationVector(Vector rotationVector) {
+        this.rotationVector = rotationVector;
     }
 
     public abstract void tick(float secondsSinceLastGameTick);

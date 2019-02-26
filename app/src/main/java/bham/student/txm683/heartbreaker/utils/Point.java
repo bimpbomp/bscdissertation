@@ -84,20 +84,6 @@ public class Point implements SaveableState {
                 ')';
     }
 
-    /*public static Path getPathWithPoints(Point[] points){
-        Path path = new Path();
-
-        if (points.length > 0) {
-            path.moveTo(points[0].x, points[0].y);
-
-            for (Point point : points) {
-                path.lineTo(point.x, point.y);
-            }
-        }
-        path.close();
-        return path;
-    }*/
-
     @Override
     public JSONObject getStateObject() throws JSONException {
         JSONObject jsonObject = new JSONObject();

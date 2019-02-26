@@ -142,22 +142,24 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         float thumbstickMaxRadius = 150f;
         this.inputManager.setThumbstick(new Thumbstick(new Point(thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), thumbstickMaxRadius/3f, thumbstickMaxRadius));
 
+        this.inputManager.setRotationThumbstick(new Thumbstick(new Point(viewWidth - thumbstickMaxRadius, viewHeight-thumbstickMaxRadius), thumbstickMaxRadius/3f, thumbstickMaxRadius));
+
         int pauseButtonRadius = 75;
         Click pauseButtonFunction = () -> levelState.setPaused(!levelState.isPaused());
         this.inputManager.setPauseButton(new Button("PAUSE", new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, buttonColor, pauseButtonFunction));
 
         int attackButtonRadius = 100;
-        this.inputManager.setSecondaryWeaponButton(new Button("BOMB", new Point(viewWidth-(attackButtonRadius*3) - 20, viewHeight-attackButtonRadius -10), attackButtonRadius, Color.RED, null));
+        this.inputManager.setSecondaryWeaponButton(new Button("BOMB", new Point(viewWidth-(attackButtonRadius + thumbstickMaxRadius*2) - 20, viewHeight-attackButtonRadius -10), attackButtonRadius, Color.RED, null));
 
-        this.inputManager.setPrimaryWeaponButton(new Button("PEW", new Point(viewWidth-attackButtonRadius -10, viewHeight-attackButtonRadius-10), attackButtonRadius, Color.MAGENTA, null));
+        //this.inputManager.setPrimaryWeaponButton(new Button("PEW", new Point(viewWidth-attackButtonRadius -10, viewHeight-attackButtonRadius-10), attackButtonRadius, Color.MAGENTA, null));
 
         textPaint.setTextSize(36f);
         //gives space for 8 debug buttons
         int debugButtonDiameter = viewHeight/6;
         int debugButtonRadius = debugButtonDiameter / 2;
         Button[] debugButtons = {
-                new Button("PHYS", new Point(viewWidth-debugButtonRadius, debugButtonRadius),
-                        debugButtonRadius, buttonColor, () -> debugInfo.invertRenderPhysicsGrid()),
+                new Button("VIS", new Point(viewWidth-debugButtonRadius, debugButtonRadius),
+                        debugButtonRadius, buttonColor, () -> debugInfo.invertRenderVisSet()),
 
                 new Button("ENGRID", new Point(viewWidth-debugButtonRadius, debugButtonDiameter +
                         debugButtonRadius), debugButtonRadius, buttonColor, () -> debugInfo.invertRenderMapTileGrid()),
@@ -281,6 +283,16 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             for (Renderable bullet : levelState.getBullets()){
                 if (isOnScreen(bullet))
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+            }
+
+            //draw vis set (if turned on)
+            if (debugInfo.renderVisSet()){
+                Point center;
+                for (Tile tile : levelState.getTileSet().getTilesVisibleToPlayer()){
+                    Log.d("hb::DrawingVis", tile.toString());
+                    center = new Point(tile.add(tileSize/2, tileSize/2)).add(renderOffset);
+                    canvas.drawCircle(center.getX(), center.getY(), 20, tilePaint);
+                }
             }
 
             //draw grid (if turned on)

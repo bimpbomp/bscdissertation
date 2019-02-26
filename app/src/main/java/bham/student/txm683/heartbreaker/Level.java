@@ -69,6 +69,7 @@ public class Level implements Runnable {
                 while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick) {
 
                     levelState.getPlayer().setRequestedMovementVector(inputManager.getThumbstick().getMovementVector());
+                    levelState.getPlayer().setRotationVector(inputManager.getRotationThumbstick().getMovementVector());
 
                     /*for (Room room : levelState.getMap().getRooms().values()){
                         if (room.isEntityInRoom(levelState.getPlayer())) {

@@ -11,9 +11,7 @@ import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomEdge;
-import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
-import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
@@ -31,12 +29,6 @@ public class MapConstructor {
 
     //spacing between sets of collision points added to wall
     private int gapBetweenPoints;
-
-    private int doorColor = Color.BLUE;
-    private int wallColor = Color.rgb(32,32,32);
-    private int chaserColor = Color.rgb(255, 153, 51);
-    private int upperPlayerColor = Color.WHITE;
-    private int lowerPlayerColor = Color.MAGENTA;
 
     public MapConstructor(){
         this.uniqueID = new UniqueID();
@@ -58,41 +50,50 @@ public class MapConstructor {
     @SuppressLint("UseSparseArrays")
     private void loadTestMap(){
 
+        /*
+         * Specify Map Layout
+         */
+
+        int mapWidth = 10;
+        int mapHeight = 10;
+
         ArrayList<Perimeter> perimeters = new ArrayList<>();
+        ArrayList<Door> doors = new ArrayList<>();
+        List<Pickup> pickups = new ArrayList<>();
+        ArrayList<AIEntity> enemies = new ArrayList<>();
+        List<Wall> obstacles = new ArrayList<>();
+
+        Player player;
+        Core core;
 
         perimeters.add(new Perimeter(new Point[]{
                 new Point(0,0),
-                new Point(5,0),
-                new Point(5, 5),
-                new Point(0, 5)
-        }, Color.rgb(0, 147, 175)));
+                new Point(10,0),
+                new Point(10,10),
+                new Point(0,10)
+        }, Color.GREEN));
 
-        perimeters.add(new Perimeter(new Point[]{
-                new Point(4,1),
-                new Point(8,1),
-                new Point(8,11),
-                new Point(4,11)
-        }, Color.rgb(175, 216, 245)));
+        player = new Player("player", new Point(2*tileSize,2*tileSize), tileSize/2, tileSize*3,
+                ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
 
-        perimeters.add(new Perimeter(new Point[]{
-                new Point(7,0),
-                new Point(12,0),
-                new Point(12,6),
-                new Point(7,6)
-        }, Color.rgb(31, 117, 254)));
+        enemies.add(new Drone("D:"+uniqueID.id(), new Point(5*tileSize, 2*tileSize).add(centerOffset), tileSize/2, ColorScheme.CHASER_COLOR, tileSize*1.5f, 100));
 
-        perimeters.add(new Perimeter(new Point[]{
-                new Point(1,7),
-                new Point(5,7),
-                new Point(5,13),
-                new Point(1,13)
-        }, Color.rgb(0, 112, 184)));
+        core = new Core("core", new Point(8*tileSize,8*tileSize).add(centerOffset), tileSize/2);
 
-        /*ArrayList<RoomGrid> roomGrids = new ArrayList<>();
-        for (Perimeter perimeter : perimeters){
-            roomGrids.add(new RoomGrid(populateGrid(perimeter), tileSize));
-        }*/
+        obstacles.add(new Wall("W"+uniqueID.id(), new Point(6*tileSize,6*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
+        obstacles.add(new Wall("W"+uniqueID.id(), new Point(6*tileSize,5*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
+        obstacles.add(new Wall("W"+uniqueID.id(), new Point(5*tileSize,5*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
+        obstacles.add(new Wall("W"+uniqueID.id(), new Point(4*tileSize,5*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
+        obstacles.add(new Wall("W"+uniqueID.id(), new Point(3*tileSize,5*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
+        obstacles.add(new Wall("W"+uniqueID.id(), new Point(4*tileSize,4*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
+        obstacles.add(new Wall("W"+uniqueID.id(), new Point(4*tileSize,3*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
 
+
+        /*
+         * Generate Map
+         */
+
+        //convert perimeter coordinates to global with tileSize and add them to a room
         HashMap<Integer, Room> rooms = new HashMap<>();
         int count = 0;
         for (Perimeter perimeter : perimeters){
@@ -101,56 +102,61 @@ public class MapConstructor {
             count++;
         }
 
-        RoomGraph roomGraph = new RoomGraph();
+
+        //GenerateBoundaryWalls
+        List<Wall> walls = generateWallsForRooms(rooms, doors);
+        walls.addAll(obstacles);
+
+        //add all statics to the tileset
+        TileSet tileSet = new TileSet(tileSize);
+
+        for (Wall wall : walls){
+            tileSet.addPermanentToGrid(wall);
+        }
+
+        for (Door door : doors){
+            tileSet.addPermanentToGrid(door);
+        }
+
+        //init map object
+        map.setTileSet(tileSet);
+        map.setWalls(walls);
+        map.setWidthInTiles(mapWidth);
+        map.setHeightInTiles(mapHeight);
+
+        map.setRooms(rooms);
+        map.setDoors(doors);
+        map.setPlayer(player);
+
+        map.setEnemies(enemies);
+        map.setPickups(pickups);
+        map.setCore(core);
+
+        /*RoomGraph roomGraph = new RoomGraph();
 
         //initiate room graph and grids
         for (Room room : rooms.values()){
             roomGraph.addNode(room);
         }
 
-        ArrayList<Door> doors = new ArrayList<>();
-
-        //public Door(int doorID, Point center, int width, int height, float fieldWidth,
-        //              boolean primaryLocked, boolean secondaryLocked, boolean vertical, int doorColor){
-
-        doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
-                tileSize/2, tileSize, false, true, true, doorColor));
-        doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset),
-                tileSize/2, tileSize, false, false, true, doorColor));
-        doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset),
-                tileSize/2, tileSize, false, false, true, doorColor));
-
-        /*doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
-                tileSize/2, tileSize, false, Color.BLUE));
-        doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset),
-                tileSize/2, tileSize, false, Color.BLUE));
-        doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset),
-                tileSize/2, tileSize, false, Color.BLUE));*/
-
         RoomEdge door0 = roomGraph.addConnection(0,1, doors.get(0));
         RoomEdge door1 = roomGraph.addConnection(1,2, doors.get(1));
         RoomEdge door2 = roomGraph.addConnection(1,3,  doors.get(2));
-
-        /*//add doors to roomgrid's tilesets
-        roomGrids.get(0).addToTileSet(doors.get(0).getCenter());
-        roomGrids.get(1).addToTileSet(doors.get(0).getCenter());
-
-        roomGrids.get(1).addToTileSet(doors.get(1).getCenter());
-        roomGrids.get(2).addToTileSet(doors.get(1).getCenter());
-
-        roomGrids.get(1).addToTileSet(doors.get(2).getCenter());
-        roomGrids.get(3).addToTileSet(doors.get(2).getCenter());*/
 
         door0.getDoor().setTileBackground(tileSize, generateDoorTileColor(door0));
         door1.getDoor().setTileBackground(tileSize, generateDoorTileColor(door1));
         door2.getDoor().setTileBackground(tileSize, generateDoorTileColor(door2));
 
+        map.setRoomGraph(roomGraph);*/
+    }
+
+    private List<Wall> generateWallsForRooms(HashMap<Integer, Room> rooms, List<Door> doors){
         List<List<Point>> boundaries = new ArrayList<>();
 
         boolean add;
         for (Room room : rooms.values()){
             //generate the boundaries for each room
-            List<List<Point>> newBoundaries = generateBoundaries(room.getPerimeter());
+            List<List<Point>> newBoundaries = generateBoundariesForRoom(room.getPerimeter());
 
 
             //iterates through the new boundaries and only adds points to boundaries that
@@ -224,9 +230,12 @@ public class MapConstructor {
                 }
             }
         }
+        return generateWalls(boundaries);
+    }
 
+    private List<Wall> generateWalls(List<List<Point>> boundaries){
         //generate wall objects
-        ArrayList<Wall> walls = new ArrayList<>();
+        List<Wall> walls = new ArrayList<>();
         //at this point, each list in boundaries should be a continuous vertical/horizontal wall
         for (List<Point> boundary : boundaries){
             //stores the unique points as an outline for the wall in collisions
@@ -310,7 +319,8 @@ public class MapConstructor {
                             pointQueue.add(lastPoint.add(new Point(tileSize, 0)));
                             pointStack.add(lastPoint.add(new Point(tileSize, tileSize)));
 
-                            //Log.d(TAG+"ADDED POINTS AT END (RIGHTMOST)", lastPoint.add(new Point(tileSize, 0)).toString() + ", " + lastPoint.add(new Point(tileSize, tileSize)));
+                            //Log.d(TAG+"ADDED POINTS AT END (RIGHTMOST)", lastPoint.add(new Point(tileSize, 0)).toString()
+                            // + ", " + lastPoint.add(new Point(tileSize, tileSize)));
                         } else {
                             //if the wall grows left, add the leftmost two vertices
                             pointStack.add(lastPoint);
@@ -399,7 +409,8 @@ public class MapConstructor {
                             //if wall grows down, add the bottom two vertices
                             pointStack.add(lastPoint.add(new Point(0, tileSize)));
                             pointQueue.add(lastPoint.add(new Point(tileSize, tileSize)));
-                            //Log.d(TAG+"ADDED POINTS AT END (BOTTOM)", lastPoint.add(new Point(0, tileSize)).toString() + ", " + lastPoint.add(new Point(tileSize, tileSize)));
+                            //Log.d(TAG+"ADDED POINTS AT END (BOTTOM)", lastPoint.add(new Point(0, tileSize)).toString()
+                            // + ", " + lastPoint.add(new Point(tileSize, tileSize)));
                         } else {
                             //if the wall grows up, add the top two vertices
                             pointQueue.add(lastPoint);
@@ -465,46 +476,12 @@ public class MapConstructor {
                             bottomRight.getY()-topLeft.getY()).sMult(0.5f));
 
                     Wall wall = new Wall("W:"+uniqueID.id(), collisionPoints.toArray(new Point[0]),
-                            topLeft, bottomRight, center, wallColor);
+                            topLeft, bottomRight, center, ColorScheme.WALL_COLOR);
                     walls.add(wall);
                 }
             }
         }
-
-        //add all statics to the tileset
-        TileSet tileSet = new TileSet();
-
-        for (Wall wall : walls){
-            tileSet.addPermanentToGrid(wall);
-        }
-
-        for (Door door : doors){
-            tileSet.addPermanentToGrid(door);
-        }
-        map.setTileSet(tileSet);
-
-        ArrayList<AIEntity> enemies = new ArrayList<>();
-        enemies.add(new Drone("C:" + uniqueID.id(), new Point(10*tileSize, tileSize).add(centerOffset), map.getTileSize()/2, chaserColor, 300f, 100));
-
-        //initialise map with generated contents
-        map.setWalls(walls);
-        map.setWidthInTiles(12);
-        map.setHeightInTiles(13);
-        map.setRoomGraph(roomGraph);
-        map.setRooms(rooms);
-        map.setDoors(doors);
-        map.setPlayer(new Player("player", new Point(tileSize, tileSize).add(centerOffset), tileSize/2,
-                tileSize*2, upperPlayerColor, lowerPlayerColor, 100));
-
-        map.setEnemies(enemies);
-
-        List<Pickup> pickups = new ArrayList<>();
-
-        pickups.add(new Pickup(uniqueID.id()+"", PickupType.HEALTH, new Point(400, 2000).add(centerOffset), tileSize/4));
-        pickups.add(new Pickup(uniqueID.id()+"", PickupType.BOMB, new Point(400, 2200).add(centerOffset), tileSize/4));
-        map.setPickups(pickups);
-
-        map.setCore(new Core("core", new Point(1800, 600).add(centerOffset), tileSize, 0));
+        return walls;
     }
 
     private int generateDoorTileColor(RoomEdge edge){
@@ -519,7 +496,7 @@ public class MapConstructor {
         return Color.rgb(red, green, blue);
     }
 
-    private List<List<Point>> generateBoundaries(Perimeter perimeter){
+    private List<List<Point>> generateBoundariesForRoom(Perimeter perimeter){
         List<List<Point>> boundaries = new ArrayList<>();
 
         Point[] vertices = perimeter.getCollisionVertices();
@@ -619,4 +596,57 @@ public class MapConstructor {
         }
         return false;
     }
+
+
 }
+
+/*perimeters.add(new Perimeter(new Point[]{
+        new Point(0,0),
+                new Point(5,0),
+                new Point(5, 5),
+                new Point(0, 5)
+    }, Color.rgb(0, 147, 175)));
+
+        perimeters.add(new Perimeter(new Point[]{
+        new Point(4,1),
+                new Point(8,1),
+                new Point(8,11),
+                new Point(4,11)
+    }, Color.rgb(175, 216, 245)));
+
+        perimeters.add(new Perimeter(new Point[]{
+        new Point(7,0),
+                new Point(12,0),
+                new Point(12,6),
+                new Point(7,6)
+    }, Color.rgb(31, 117, 254)));
+
+        perimeters.add(new Perimeter(new Point[]{
+        new Point(1,7),
+                new Point(5,7),
+                new Point(5,13),
+                new Point(1,13)
+    }, Color.rgb(0, 112, 184)));
+
+
+
+        doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
+    tileSize/2, tileSize, false, true, true, ColorScheme.DOOR_COLOR));
+        doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset),
+    tileSize/2, tileSize, false, false, true, ColorScheme.DOOR_COLOR));
+        doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset),
+    tileSize/2, tileSize, false, false, true, ColorScheme.DOOR_COLOR));
+
+
+
+        pickups.add(new Pickup(uniqueID.id()+"", PickupType.HEALTH, new Point(400, 2000).add(centerOffset), tileSize/4));
+        pickups.add(new Pickup(uniqueID.id()+"", PickupType.BOMB, new Point(400, 2200).add(centerOffset), tileSize/4));
+
+    core = new Core("core", new Point(1800, 600).add(centerOffset), tileSize, 0);
+
+    player = new Player("player", new Point(tileSize, tileSize).add(centerOffset), tileSize/2,
+    tileSize*2, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
+
+
+        enemies.add(new Drone("C:" + uniqueID.id(), new Point(10*tileSize, tileSize).add(centerOffset),
+                map.getTileSize()/2, ColorScheme.CHASER_COLOR, 300f, 100));*/
