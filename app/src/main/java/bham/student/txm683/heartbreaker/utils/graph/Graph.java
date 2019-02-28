@@ -28,10 +28,22 @@ public class Graph <T> {
     public Edge<T> addConnection(Node<T> first, Node<T> second, int weight){
         Edge<T> connection = new Edge<>(first, second, weight);
 
+        //dont connect two nodes that are already connected
+        if (first.isConnectedToNode(second))
+            return null;
+
         first.addConnection(connection);
         second.addConnection(connection);
 
         return connection;
+    }
+
+    public Edge<T> addConnection(T first, T second, int weight){
+        if (containsNode(first) && containsNode(second)){
+            return addConnection(getNode(first), getNode(second), weight);
+        }
+
+        return null;
     }
 
     public Node<T> getNode(T requestedID){
