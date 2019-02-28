@@ -17,8 +17,16 @@ public class MeshConstructorTest {
 
         List<List<Integer>> testTileList = new ArrayList<>();
 
-        testTileList.add(Arrays.asList(-1, -1, -1, -1, -1, -1, -1));
+        /*testTileList.add(Arrays.asList(-1, -1, -1, -1, -1, -1, -1));
         testTileList.add(Arrays.asList(-1, 0, 0, -1, 0, 0, -1));
+        testTileList.add(Arrays.asList(-1, 0, 0, -1, -1, 0, -1));
+        testTileList.add(Arrays.asList(-1, 0, 0, 0, 0, 0, -1));
+        testTileList.add(Arrays.asList(-1, 0, -1, 0, -1, -1, -1));
+        testTileList.add(Arrays.asList(-1, 0, 0, 0, 0, 0, -1));
+        testTileList.add(Arrays.asList(-1, -1, -1, -1, -1, -1, -1));*/
+
+        testTileList.add(Arrays.asList(-1, -1, -1, -1, -1, -1, -1));
+        testTileList.add(Arrays.asList(-1, 0, 0, -1, 0, -1));
         testTileList.add(Arrays.asList(-1, 0, 0, -1, -1, 0, -1));
         testTileList.add(Arrays.asList(-1, 0, 0, 0, 0, 0, -1));
         testTileList.add(Arrays.asList(-1, 0, -1, 0, -1, -1, -1));
