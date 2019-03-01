@@ -257,6 +257,7 @@ public class Drone extends AIEntity implements Shooter {
     @Override
     public void setColor(int color) {
         shape.setColor(color);
+        shape.setUpperTriColor(color);
     }
 
     @Override

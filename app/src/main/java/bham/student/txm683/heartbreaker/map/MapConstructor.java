@@ -131,23 +131,6 @@ public class MapConstructor {
         map.setEnemies(enemies);
         map.setPickups(pickups);
         map.setCore(core);
-
-        /*RoomGraph roomGraph = new RoomGraph();
-
-        //initiate room graph and grids
-        for (Room room : rooms.values()){
-            roomGraph.addNode(room);
-        }
-
-        RoomEdge door0 = roomGraph.addConnection(0,1, doors.get(0));
-        RoomEdge door1 = roomGraph.addConnection(1,2, doors.get(1));
-        RoomEdge door2 = roomGraph.addConnection(1,3,  doors.get(2));
-
-        door0.getDoor().setTileBackground(tileSize, generateDoorTileColor(door0));
-        door1.getDoor().setTileBackground(tileSize, generateDoorTileColor(door1));
-        door2.getDoor().setTileBackground(tileSize, generateDoorTileColor(door2));
-
-        map.setRoomGraph(roomGraph);*/
     }
 
     private List<Wall> generateWallsForRooms(HashMap<Integer, Room> rooms, List<Door> doors){

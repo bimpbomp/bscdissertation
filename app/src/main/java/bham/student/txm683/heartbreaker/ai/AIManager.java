@@ -17,12 +17,11 @@ public class AIManager {
 
     private GameTickTimer timer;
 
-    public AIManager(LevelState levelState, ArrayList<AIEntity> ais){
+    public AIManager(LevelState levelState, List<AIEntity> ais){
         this.levelState = levelState;
         this.controlledAI = new ArrayList<>();
 
         for (AIEntity ai : ais){
-            ai.setLevelState(levelState);
             addAI(ai);
         }
 
@@ -33,11 +32,15 @@ public class AIManager {
         timer.start();
     }
 
-    public void addAI(AIEntity newAI){
-        if (!controlledAI.contains(newAI)) {
-            newAI.chase(levelState.getPlayer());
-            this.controlledAI.add(newAI);
+    public void addAI(AIEntity ai){
+        if (!controlledAI.contains(ai)) {
+            this.controlledAI.add(ai);
+            ai.setLevelState(levelState);
         }
+    }
+
+    public void removeAI(AIEntity ai){
+        controlledAI.remove(ai);
     }
 
     public void update(float secondsSinceLastGameTick){

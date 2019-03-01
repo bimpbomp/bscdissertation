@@ -1,35 +1,40 @@
 package bham.student.txm683.heartbreaker.intentbundleholders;
 
 import android.os.Bundle;
+import bham.student.txm683.heartbreaker.LevelEndStatus;
+
+import static bham.student.txm683.heartbreaker.LevelEndStatus.ERROR;
 
 public class LevelEnder {
 
-    private boolean success;
+    private LevelEndStatus status;
 
     public LevelEnder(){
-
+        status = ERROR;
     }
 
     public LevelEnder(Bundle bundle){
-        if (bundle.containsKey("success"))
-            success = bundle.getBoolean("success");
-        else
-            throw new IllegalArgumentException("Bundle does not contain success boolean");
+
+        if (bundle.containsKey("status")){
+            status = LevelEndStatus.valueOf(bundle.getString("status"));
+        } else {
+            status = ERROR;
+        }
     }
 
     public Bundle createBundle(){
         Bundle bundle = new Bundle();
 
-        bundle.putBoolean("success", success);
+        bundle.putString("status", status.name());
 
         return bundle;
     }
 
-    public boolean isSuccess() {
-        return success;
+    public LevelEndStatus getStatus() {
+        return status;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public void setStatus(LevelEndStatus status) {
+        this.status = status;
     }
 }

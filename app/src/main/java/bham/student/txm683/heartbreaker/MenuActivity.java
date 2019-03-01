@@ -32,7 +32,27 @@ public class MenuActivity extends Activity {
         if (bundle != null){
             LevelEnder levelEnder = new LevelEnder(bundle);
 
-            String msg = "Result: " + levelEnder.isSuccess();
+            String msg;
+
+            switch (levelEnder.getStatus()){
+
+                case USER_QUIT:
+                    msg = "User Quit";
+                    break;
+                case PLAYER_DIED:
+                    msg = "Level Failed...";
+                    break;
+                case CORE_DESTROYED:
+                    msg = "Level Complete!";
+                    break;
+                case ERROR:
+                    msg = "Error Occurred";
+                    break;
+                default:
+                    msg = "Something went wrong :o";
+                    break;
+            }
+
             result.setText(msg);
         } else {
             result.setVisibility(View.INVISIBLE);

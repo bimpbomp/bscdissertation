@@ -1,11 +1,14 @@
 package bham.student.txm683.heartbreaker;
 
+import android.graphics.Color;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Projectile;
+import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.Collidable;
@@ -28,7 +31,10 @@ public class LevelState {
     private Map map;
 
     private Player player;
-    private ArrayList<AIEntity> enemyEntities;
+
+    private List<AIEntity> aliveAIEntities;
+    private List<AIEntity> deadAIEntities;
+
     private CopyOnWriteArrayList<Projectile> bullets;
     private CopyOnWriteArrayList<Explosion> explosions;
 
@@ -50,10 +56,16 @@ public class LevelState {
 
     private Graph<Tile> graph;
 
+    private LevelEnder levelEnder;
+
     public LevelState(Map map){
         this.map = map;
 
-        this.enemyEntities = new ArrayList<>();
+        this.player = map.getPlayer();
+
+        this.aliveAIEntities = map.getEnemies();
+        this.deadAIEntities = new ArrayList<>();
+
         this.bullets = new CopyOnWriteArrayList<>();
 
         this.explosions = new CopyOnWriteArrayList<>();
@@ -68,16 +80,35 @@ public class LevelState {
 
         this.core = map.getCore();
 
-        for (AIEntity entity : enemyEntities){
+        for (AIEntity entity : aliveAIEntities){
             entity.setLevelState(this);
         }
 
         generateGraph();
 
+        levelEnder = new LevelEnder();
+
+    }
+
+    public LevelEnder getLevelEnder(){
+        return levelEnder;
+    }
+
+    public List<AIEntity> getDeadAI(){
+        return deadAIEntities;
+    }
+
+    public void aiDied(AIEntity aiEntity){
+        Log.d(TAG, aiEntity.getName() + " died");
+
+        aiEntity.setColor(Color.argb(150, 0, 0, 0));
+        aliveAIEntities.remove(aiEntity);
+        deadAIEntities.add(aiEntity);
+        aiManager.removeAI(aiEntity);
     }
 
     public List<Collidable> getNonStaticCollidables(){
-        List<Collidable> collidables = new ArrayList<>(map.getEnemies());
+        List<Collidable> collidables = new ArrayList<>(aliveAIEntities);
         collidables.add(map.getPlayer());
         collidables.addAll(explosions);
         collidables.addAll(bullets);
@@ -219,10 +250,6 @@ public class LevelState {
         this.screenHeight = screenHeight;
     }
 
-    public void removeEnemy(AIEntity entity){
-        enemyEntities.remove(entity);
-    }
-
     public CopyOnWriteArrayList<Explosion> getExplosions() {
         return explosions;
     }
@@ -257,7 +284,7 @@ public class LevelState {
     }
 
     public Player getPlayer(){
-        return map.getPlayer();
+        return player;
     }
 
     public Map getMap() {
@@ -272,8 +299,8 @@ public class LevelState {
         return screenHeight;
     }
 
-    public ArrayList<AIEntity> getEnemyEntities() {
-        return map.getEnemies();
+    public List<AIEntity> getAliveAIEntities() {
+        return this.aliveAIEntities;
     }
 
     public boolean isReadyToRender() {

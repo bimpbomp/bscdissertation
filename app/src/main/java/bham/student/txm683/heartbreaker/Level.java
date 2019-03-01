@@ -55,7 +55,7 @@ public class Level implements Runnable {
 
         nextScheduledGameTick = System.currentTimeMillis();
 
-        levelState.setAiManager(new AIManager(levelState, levelState.getEnemyEntities()));
+        levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
 
         //levelState.setPaused(false);
         while (running){
@@ -78,7 +78,7 @@ public class Level implements Runnable {
                         }
                     }
 
-                    for (AIEntity aiEntity : levelState.getEnemyEntities()){
+                    for (AIEntity aiEntity : levelState.getAliveAIEntities()){
                         for (Room room : levelState.getMap().getRooms().values()){
                             if (room.isEntityInRoom(aiEntity)){
                                 aiEntity.setRoomID(room.getId());
@@ -88,7 +88,7 @@ public class Level implements Runnable {
                     }*/
                     levelState.getTileSet().clearTemporaries();
 
-                    for (AIEntity aiEntity : levelState.getEnemyEntities()){
+                    for (AIEntity aiEntity : levelState.getAliveAIEntities()){
                         levelState.getTileSet().addTemporaryToGrid(aiEntity);
                     }
 
@@ -100,14 +100,6 @@ public class Level implements Runnable {
 
                     entityController.update(gameTickTimeStepInMillis / 1000f);
 
-                    /*StringBuilder stringBuilder = new StringBuilder();
-                    for (Tile tile : TileBFS.getNeighbours(new Tile(levelState.getPlayer().getCenter()), levelState.getMap().getTileSize())){
-                        stringBuilder.append(tile.toString());
-                        stringBuilder.append(" -> ");
-                    }
-                    stringBuilder.append(" END");
-                    Log.d("hb::PLAYER POS", stringBuilder.toString());*/
-
                     levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
 
                     collisionManager.checkCollisions();
@@ -118,6 +110,15 @@ public class Level implements Runnable {
                     loops++;
 
                     levelState.setReadyToRender(true);
+
+                    //check level end conditions
+                    if (levelState.getPlayer().getHealth() < 1){
+                        levelState.getLevelEnder().setStatus(LevelEndStatus.PLAYER_DIED);
+                        levelView.returnToMenu();
+                    } else if (levelState.getCore().getHealth() < 1) {
+                        levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
+                        levelView.returnToMenu();
+                    }
                 }
             } else {
                 nextScheduledGameTick = System.currentTimeMillis();

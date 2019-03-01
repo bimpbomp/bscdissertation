@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import bham.student.txm683.heartbreaker.Level;
+import bham.student.txm683.heartbreaker.LevelEndStatus;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.MenuActivity;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
@@ -17,7 +18,6 @@ import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
-import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.map.MapConstructor;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
@@ -70,6 +70,14 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         tilePaint.setColor(Color.MAGENTA);
 
         this.context = context;
+    }
+
+    public void returnToMenu(){
+        Intent intent = new Intent(context, MenuActivity.class);
+
+        intent.putExtra("bundle", levelState.getLevelEnder().createBundle());
+
+        context.startActivity(intent);
     }
 
     /**
@@ -156,16 +164,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.inputManager.setPauseButton(new Button("PAUSE", new Point(pauseButtonRadius + 20, pauseButtonRadius + 20), pauseButtonRadius, buttonColor, pauseButtonFunction));
 
         int returnToMenuButtonRadius = 100;
+
+
         Click menuButtonFunction = () -> {
-            Intent intent = new Intent(context, MenuActivity.class);
-
-            LevelEnder levelEnder = new LevelEnder();
-            levelEnder.setSuccess(false);
-
-            intent.putExtra("bundle", levelEnder.createBundle());
-
-            context.startActivity(intent);
+            levelState.getLevelEnder().setStatus(LevelEndStatus.USER_QUIT);
+            returnToMenu();
         };
+
         this.inputManager.setReturnToMenuButton(new Button("QUIT", new Point(pauseButtonRadius*2 + 40 + returnToMenuButtonRadius, returnToMenuButtonRadius + 20), returnToMenuButtonRadius, buttonColor, menuButtonFunction));
 
         int attackButtonRadius = 100;
@@ -274,11 +279,18 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     pickup.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
+            //draw dead ai
+            for (AIEntity deadAI : levelState.getDeadAI()){
+                if (isOnScreen(deadAI)){
+                    deadAI.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+                }
+            }
+
             //draw player
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
 
-            //draw enemies
-            for (Renderable entity : levelState.getEnemyEntities()){
+            //draw alive ai
+            for (Renderable entity : levelState.getAliveAIEntities()){
                 if (isOnScreen(entity))
                     entity.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
@@ -357,7 +369,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
                 int tileColor = Color.WHITE;
 
-                for (AIEntity entity : levelState.getEnemyEntities()){
+                for (AIEntity entity : levelState.getAliveAIEntities()){
                     if (entity.getPath() != null) {
                         for (Tile tile : entity.getPath()) {
                             if (tile.equals(new Tile(i, j))) {

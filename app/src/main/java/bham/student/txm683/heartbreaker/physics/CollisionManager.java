@@ -139,50 +139,17 @@ public class CollisionManager {
     }
 
     private void checkAIsLineOfSight(){
-        Player player = levelState.getPlayer();
-
-        //define variables for use in loop
-        Vector vectorToPlayer;
-
-        SpatialBin spatialBin;
-
-        BContext context;
-        for (AIEntity ai : levelState.getEnemyEntities()){
-            spatialBin = null;
+        for (AIEntity ai : levelState.getAliveAIEntities()){
 
             if (levelState.getTileSet().tileIsVisibleToPlayer(Tile.mapToTile(ai.getCenter(), levelState.getTileSet().getTileSize()))){
                 ai.getContext().addPair(BContext.SIGHT_BLOCKED, false);
             } else {
                 ai.getContext().addPair(BContext.SIGHT_BLOCKED, true);
             }
-            /*for (SpatialBin bin : spatialBins){
-                if (bin.contains(ai) && bin.contains(player)){
-                    //the ai and the player are in the same bin
-                    spatialBin = bin;
-                    break;
-                }
-            }
-
-            if (spatialBin != null){
-                vectorToPlayer = new Vector(ai.getCenter(), player.getCenter());
-                context = ai.getContext();
-
-                if (context.containsKey(BContext.VIEW_RANGE) && context.getValue(BContext.VIEW_RANGE) instanceof Integer) {
-                    //if the context has a view range property
-                    if (vectorToPlayer.getLength() < (int) context.getValue(BContext.VIEW_RANGE)) {
-                        //if the player is within the view range
-                        boolean lOSBlocked = checkIfLOSIsBlocked(vectorToPlayer, spatialBin, player, ai);
-
-                        context.addPair(BContext.SIGHT_BLOCKED, lOSBlocked);
-
-                        //Log.d("hb::LOSBLOCKED", lOSBlocked+"");
-                    }
-                }
-            }*/
         }
     }
 
-    private boolean checkIfLOSIsBlocked(Vector vectorToPlayer, SpatialBin bin, Player player, AIEntity ai){
+   /* private boolean checkIfLOSIsBlocked(Vector vectorToPlayer, SpatialBin bin, Player player, AIEntity ai){
         Vector toPlayerNormal = getEdgeNormal(vectorToPlayer);
         Pair<Float, Float> minMaxAi = projectOntoAxis(toPlayerNormal, ai.getCollisionVertices());
         Pair<Float, Float> minMaxPlayer = projectOntoAxis(toPlayerNormal, player.getCollisionVertices());
@@ -240,9 +207,9 @@ public class CollisionManager {
 
         //Log.d("hb::ReturnValue", (sightMax - sightMin)+"");
         return Math.abs(sightMax - sightMin) < 1;
-    }
+    }*/
 
-    private Point[] getViewShape(Collidable ai, Collidable player, Vector aiToPlayerNormal){
+    /*private Point[] getViewShape(Collidable ai, Collidable player, Vector aiToPlayerNormal){
 
         Pair<Point, Point> aiMinMax = getMinMaxPointsForAxis(aiToPlayerNormal, ai.getCollisionVertices());
         Pair<Point, Point> playerMinMax = getMinMaxPointsForAxis(aiToPlayerNormal, player.getCollisionVertices());
@@ -253,7 +220,7 @@ public class CollisionManager {
                 aiMinMax.first,
                 aiMinMax.second
         };
-    }
+    }*/
 
     /**
      * Adds all the static entities in the game world into any and all spatial bins they overlap's
@@ -434,10 +401,14 @@ public class CollisionManager {
         }
     }
 
-    private static void resolveExplosion(Explosion explosion, Collidable collidable){
+    private void resolveExplosion(Explosion explosion, Collidable collidable){
         if (collidable instanceof Damageable){
             if (((Damageable) collidable).inflictDamage(explosion.getDamage())){
                 Log.d(TAG, collidable.getName() + " has died");
+
+                if (collidable instanceof AIEntity){
+                    levelState.aiDied((AIEntity) collidable);
+                }
             }
             Log.d(TAG, "explosion hit " + collidable.getName() + " and dealt " + explosion.getDamage() + " damage. " +
                     "health now at " + ((Damageable) collidable).getHealth());
@@ -446,11 +417,16 @@ public class CollisionManager {
 
     private void resolveProjectileHit(Projectile projectile, Collidable collidable){
         //if the projectile damages on contact and the collidable can take damage, damage it
-        Log.d(TAG, collidable.getName() + " hit by projectile");
+
         if (!(projectile instanceof Bomb) && collidable instanceof Damageable) {
+
             //only damage the collidable if the projectile doesn't belong to them
             if (!projectile.getOwner().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())){
                 Log.d(TAG, collidable.getName() + " has died");
+
+                if (collidable instanceof AIEntity){
+                    levelState.aiDied((AIEntity) collidable);
+                }
             }
             Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
         }

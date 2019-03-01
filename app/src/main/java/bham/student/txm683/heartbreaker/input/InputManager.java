@@ -119,6 +119,7 @@ public class InputManager {
                         levelState.addBullet(levelState.getPlayer().shootSecondary());
                     else if (rotationThumbstick.hasID(eventID)){
                         rotationThumbstick.setActivePosition(coordinatesPressed);
+                        levelState.addBullet(levelState.getPlayer().shoot());
                     }
                 }
                 break;
