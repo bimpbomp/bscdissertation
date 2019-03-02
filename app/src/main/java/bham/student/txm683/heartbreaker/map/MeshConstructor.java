@@ -96,7 +96,7 @@ public class MeshConstructor {
         }
     }
 
-    private void printTileList(){
+    public void printTileList(){
         System.out.println();
         for (List<Integer> row : tileList){
             System.out.println();
@@ -108,6 +108,24 @@ public class MeshConstructor {
             System.out.println();
         }
         System.out.println();
+    }
+
+    public String tileListToString(){
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (List<Integer> row : tileList){
+            stringBuilder.append("\n");
+
+            for (int cell : row){
+                stringBuilder.append(cell);
+                stringBuilder.append(", ");
+            }
+
+            stringBuilder.append("END \n");
+        }
+        stringBuilder.append("\n");
+
+        return stringBuilder.toString();
     }
 
     private Tile findStartingTile(){
