@@ -10,6 +10,7 @@ import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,10 +41,30 @@ public class Map {
 
     private HashMap<Integer, RoomGrid> roomGrids;
 
+    private Graph<Integer> meshGraph;
+
+    private HashMap<Integer, NSet> nSetMap;
+
     public Map(String name, int tileSize){
         this.name = name;
         this.tileSize = tileSize;
         this.doors = new HashMap<>();
+    }
+
+    public HashMap<Integer, NSet> getNSetMap() {
+        return nSetMap;
+    }
+
+    public void setNSetMap(HashMap<Integer, NSet> nSetMap) {
+        this.nSetMap = nSetMap;
+    }
+
+    public Graph<Integer> getMeshGraph() {
+        return meshGraph;
+    }
+
+    public void setMeshGraph(Graph<Integer> meshGraph) {
+        this.meshGraph = meshGraph;
     }
 
     public TileSet getTileSet() {

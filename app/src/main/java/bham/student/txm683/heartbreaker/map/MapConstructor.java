@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
@@ -27,11 +28,29 @@ public class MapConstructor {
 
     private UniqueID uniqueID;
 
+    private Queue<Tile> wallsToCheck;
+
+    //hardcoded mesh tileList for now till algorithm implemented
+    public static List<List<Integer>> tileList = new ArrayList<>();
+    static {
+        tileList.add(Arrays.asList(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1));
+        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,0,-1,0,0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,0,-1,0,0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,-1,-1,-1,-1,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,0,0,0,-1,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
+        tileList.add(Arrays.asList(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1));
+    }
+
     //spacing between sets of collision points added to wall
     private int gapBetweenPoints;
 
     public MapConstructor(){
         this.uniqueID = new UniqueID();
+        this.wallsToCheck = new LinkedList<>();
     }
 
     public Map loadMap(String name, int tileSize){
@@ -93,6 +112,12 @@ public class MapConstructor {
          * Generate Map
          */
 
+        MeshConstructor meshConstructor = new MeshConstructor();
+        meshConstructor.constructMesh(tileList);
+
+        map.setMeshGraph(meshConstructor.getMeshGraph());
+        map.setNSetMap(meshConstructor.getExistingSets());
+
         //convert perimeter coordinates to global with tileSize and add them to a room
         HashMap<Integer, Room> rooms = new HashMap<>();
         int count = 0;
@@ -104,8 +129,9 @@ public class MapConstructor {
 
 
         //GenerateBoundaryWalls
-        List<Wall> walls = generateWallsForRooms(rooms, doors);
-        walls.addAll(obstacles);
+        /*List<Wall> walls = generateWallsForRooms(rooms, doors);
+        walls.addAll(obstacles);*/
+        List<Wall> walls = generateWallsV2(tileList);
 
         //add all statics to the tileset
         TileSet tileSet = new TileSet(tileSize);
@@ -131,6 +157,144 @@ public class MapConstructor {
         map.setEnemies(enemies);
         map.setPickups(pickups);
         map.setCore(core);
+    }
+
+    public List<Wall> generateWallsV2(List<List<Integer>> tileList){
+
+        List<Wall> walls = new ArrayList<>();
+
+        wallsToCheck = new LinkedList<>(findWallTiles(tileList));
+
+        Tile currentTile;
+
+        List<Tile> currentWall;
+        while (!wallsToCheck.isEmpty()){
+            currentTile = wallsToCheck.poll();
+
+            currentWall = new ArrayList<>();
+            currentWall.add(currentTile);
+
+            List<Tile> neighbours = getNeighbours(currentTile, tileList);
+
+            if (neighbours.get(0) != null || neighbours.get(2) != null){
+                currentWall.addAll(walkInDirection(currentTile, new Tile(0, 1), tileList));
+                currentWall.addAll(walkInDirection(currentTile, new Tile(0, -1), tileList));
+                currentWall.sort((a,b) -> {
+                    if (a.getY() < b.getY())
+                        return -1;
+                    else if (a.getY() > b.getY())
+                        return 1;
+                    else
+                        return 0;
+                });
+
+            } else if (neighbours.get(1) != null || neighbours.get(3) != null){
+                currentWall.addAll(walkInDirection(currentTile, new Tile(1, 0), tileList));
+                currentWall.addAll(walkInDirection(currentTile, new Tile(-1, 0), tileList));
+
+                currentWall.sort((a,b) -> {
+                    if (a.getX() < b.getX())
+                        return -1;
+                    else if (a.getX() > b.getX())
+                        return 1;
+                    else
+                        return 0;
+                });
+            }
+
+            Log.d("hb::GenWall", listToString(currentWall));
+
+            walls.add(createWall(new Point(currentWall.get(0)), new Point(currentWall.get(currentWall.size()-1).add(1,1))));
+
+            //remove any checked wall tiles from the wallsToCheck queue
+            for (Tile tile : currentWall){
+                wallsToCheck.remove(tile);
+            }
+        }
+
+        return walls;
+    }
+
+    public static <T> String listToString(List<T> list){
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (Object object : list){
+            stringBuilder.append(object.toString());
+            stringBuilder.append(", ");
+        }
+        stringBuilder.append("END");
+
+        return stringBuilder.toString();
+    }
+
+    private Wall createWall(Point topLeft, Point bottomRight){
+        topLeft = topLeft.sMult(tileSize);
+        bottomRight = bottomRight.sMult(tileSize);
+
+        Point center = topLeft.add((bottomRight.getX()-topLeft.getX())/2f, (bottomRight.getY()-topLeft.getY())/2f);
+        Log.d("hb::Wall", topLeft.toString() + ", " + bottomRight.toString() + ", " + center.toString());
+        return new Wall("W"+uniqueID.id(), topLeft, bottomRight, center, ColorScheme.WALL_COLOR);
+    }
+
+    private List<Tile> walkInDirection(Tile start, Tile direction, List<List<Integer>> tileList){
+        List<Tile> wallPieces = new ArrayList<>();
+
+        Tile nextTile = start.add(direction);
+
+        while (isWallTile(nextTile, tileList)){
+            wallPieces.add(nextTile);
+            nextTile = nextTile.add(direction);
+        }
+
+        return wallPieces;
+    }
+
+    /**
+     * returns 4-way neighbours in a clockwise fashion
+     * @param tile
+     * @param tileList
+     * @return neighbours
+     */
+    private List<Tile> getNeighbours(Tile tile, List<List<Integer>> tileList){
+        List<Tile> list = new ArrayList<>();
+
+        addIfWall(tile.add(0,-1), list, tileList);
+        addIfWall(tile.add(1,0), list, tileList);
+        addIfWall(tile.add(0,1), list, tileList);
+        addIfWall(tile.add(-1,0), list, tileList);
+
+        return list;
+    }
+
+    private void addIfWall(Tile x, List<Tile> addToList, List<List<Integer>> tileList){
+        if (isWallTile(x, tileList)){
+            addToList.add(x);
+        } else {
+            addToList.add(null);
+        }
+    }
+
+    private boolean isWallTile(Tile tile, List<List<Integer>> tileList){
+        try {
+            return (tileList.get(tile.getY()).get(tile.getX()) == -1) && wallsToCheck.contains(tile);
+        } catch (IndexOutOfBoundsException e){
+            return false;
+        }
+    }
+
+    private List<Tile> findWallTiles(List<List<Integer>> tileList){
+        List<Tile> wallTiles = new ArrayList<>();
+
+        for (int i = 0; i < tileList.size(); i++){
+            List<Integer> row = tileList.get(i);
+
+            for (int j = 0; j < row.size(); j++){
+                if (row.get(j) == -1){
+                    wallTiles.add(new Tile(j, i));
+                }
+            }
+        }
+        return wallTiles;
     }
 
     private List<Wall> generateWallsForRooms(HashMap<Integer, Room> rooms, List<Door> doors){

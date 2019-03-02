@@ -28,6 +28,17 @@ public class Wall extends Entity implements Renderable {
         }, colorValue);
     }
 
+    public Wall(String name, Point topLeft, Point bottomRight, Point center, int colorValue){
+        super(name);
+
+        this.shape = new Rectangle(center, new Vector[]{
+                new Vector(center, topLeft),
+                new Vector(center, new Point(bottomRight.getX(), topLeft.getY())),
+                new Vector(center, bottomRight),
+                new Vector(center, new Point(topLeft.getX(), bottomRight.getY()))
+        }, colorValue);
+    }
+
     public Wall(String name, Point center, int size, int colorValue){
         super(name);
 
@@ -74,7 +85,11 @@ public class Wall extends Entity implements Renderable {
     }
 
     public Point[] getCollisionVertices(){
-        return collisionVertices;
+        if (collisionVertices == null){
+            return shape.getVertices();
+        } else {
+            return collisionVertices;
+        }
     }
 
     @Override
