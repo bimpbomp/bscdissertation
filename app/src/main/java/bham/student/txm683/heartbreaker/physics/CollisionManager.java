@@ -17,6 +17,7 @@ import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
+import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
@@ -243,7 +244,6 @@ public class CollisionManager {
 
                     if (collidable instanceof Door){
                         bin.addPermanent(((Door) collidable).getPrimaryField());
-                        bin.addPermanent(((Door) collidable).getSecondaryField());
                     }
 
                     //if the collidable intersects this bin's bounding box, add it to the bin's permanent list
@@ -343,7 +343,7 @@ public class CollisionManager {
 
                                 if (!pushVector.equals(Vector.ZERO_VECTOR)){
                                     //collision occurred
-                                    resolveDoorFieldActivation((DoorField) nonSolidEntity);
+                                    resolveDoorFieldActivation((DoorField) nonSolidEntity, solidEntity);
                                 }
                             } else if (nonSolidEntity instanceof Pickup){
                                 pushVector = collisionCheckTwoPolygons(nonSolidEntity, solidEntity);
@@ -371,18 +371,48 @@ public class CollisionManager {
         }
 
         for (Door door : levelState.getMap().getDoors().values()){
-            if (doorsToOpen.contains(door.getName()))
+            if (doorsToOpen.contains(door.getName())) {
                 door.setOpen(true);
-            else
+            }else
                 door.setOpen(false);
         }
+
+        /*int doorSetID = 0;
+        int side1set = 0;
+        int side2set = 0;
+        for (MeshSet meshSet : map.getRootMeshSets().values()){
+            if (meshSet.getContainedTiles().contains(new Tile(8,5))){
+                doorSetID = meshSet.getId();
+
+                List<Edge<Integer>> neighbours = map.getMeshGraph().getNode(doorSetID).getConnections();
+
+                side1set = neighbours.get(0).traverse().getNodeID();
+                side2set = neighbours.get(1).traverse().getNodeID();
+            }
+        }
+
+        final int doorId = doorSetID;
+        final int side1 = side1set;
+        final int side2 = side2set;
+        LockDoor doorFunction = (locked) -> {
+            if (locked){
+                map.getMeshGraph().removeConnection(side1, doorId);
+                map.getMeshGraph().removeConnection(side2, doorId);
+            } else {
+                map.getMeshGraph().addConnection(side1, doorId);
+                map.getMeshGraph().addConnection(side2, doorId);
+            }
+        };*/
     }
 
     private void resolvePickupActivation(Pickup pickup, Collidable collidable){
         if (collidable instanceof Player){
             switch (pickup.getPickupType()){
 
-                case BASIC_WEAPON:
+                case KEY:
+                    if (pickup instanceof Key)
+                        levelState.getPlayer().addKey((Key) pickup);
+                    Log.d(TAG, collidable.getName() + " picked up a key");
                     break;
                 case BOMB:
                     //add one bomb to any bomb weapons the player is carrying
@@ -435,12 +465,24 @@ public class CollisionManager {
             levelState.getBullets().remove(projectile);
     }
 
-    private void resolveDoorFieldActivation(DoorField doorField){
+    private void resolveDoorFieldActivation(DoorField doorField, Collidable collidable){
         Door fieldOwner = levelState.getMap().getDoors().get(doorField.getOwner());
 
-        if (fieldOwner != null && fieldOwner.isSideUnlocked(doorField.getName())) {
-            //if the interaction field belongs to a door
-            //isSideUnlocked it if the side the field is on is unlocked
+        if (fieldOwner != null && collidable instanceof Player){
+            //if it's locked and the player has the key, then unlock it
+            if (fieldOwner.isLocked()){
+                for (Key key : ((Player) collidable).getKeys()){
+
+                    if (key.getUnlocks().equals(fieldOwner.getName())) {
+                        fieldOwner.setLocked(false);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (fieldOwner != null && fieldOwner.isUnlocked()) {
+            //if the interaction field belongs to a door, and it's unlocked
             doorsToOpen.add(fieldOwner.getName());
         }
     }

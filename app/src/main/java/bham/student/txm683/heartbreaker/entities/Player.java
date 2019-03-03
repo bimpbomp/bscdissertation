@@ -10,11 +10,13 @@ import bham.student.txm683.heartbreaker.entities.weapons.BombThrower;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
+import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 //TODO fix collision error between Wall 0 and player on the RHS of Wall 0.
@@ -26,6 +28,8 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     private Weapon primaryWeapon;
     private Weapon secondaryWeapon;
+
+    private List<Key> keys;
 
     public Player(String name, Point center, int size, float maxSpeed, int upperTriColor, int lowerTriColor, int initialHealth) {
         super(name, maxSpeed);
@@ -45,6 +49,16 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
         this.primaryWeapon = new BasicWeapon(name);
         this.secondaryWeapon = new BombThrower(name);
+
+        this.keys = new ArrayList<>();
+    }
+
+    public void addKey(Key key){
+        this.keys.add(key);
+    }
+
+    public List<Key> getKeys(){
+        return keys;
     }
 
     public int getAmmo() {

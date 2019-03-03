@@ -48,6 +48,10 @@ public class Graph <T> {
         return null;
     }
 
+    public Edge<T> addConnection(T first, T second){
+        return addConnection(first, second, 1);
+    }
+
     public void removeConnection(T from, T to){
         Node<T> fromNode = getNode(from);
         Node<T> toNode = getNode(to);

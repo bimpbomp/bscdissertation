@@ -67,6 +67,10 @@ public class Map {
         }
     }
 
+    public HashMap<Integer, MeshSet> getRootMeshSets() {
+        return rootMeshSets;
+    }
+
     public TileSet getTileSet() {
         return tileSet;
     }
