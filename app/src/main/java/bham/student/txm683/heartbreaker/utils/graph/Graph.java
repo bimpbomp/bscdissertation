@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.NonNull;
+import bham.student.txm683.heartbreaker.utils.UniqueID;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,9 +9,11 @@ import java.util.Map;
 
 public class Graph <T> {
     private Map<T, Node<T>> nodes;
+    private UniqueID uniqueID;
 
     public Graph(){
         this.nodes = new HashMap<>();
+        this.uniqueID = new UniqueID();
     }
 
     public Node<T> addNode(T id){
@@ -25,15 +28,14 @@ public class Graph <T> {
         return null;
     }
 
-    public Edge<T> addConnection(Node<T> first, Node<T> second, int weight){
-        Edge<T> connection = new Edge<>(first, second, weight);
+    public Edge<T> addConnection(Node<T> from, Node<T> to, int weight){
+        Edge<T> connection = new Edge<>(uniqueID.id(), from, to, weight);
 
         //dont connect two nodes that are already connected
-        if (first.isConnectedToNode(second))
-            return null;
+        if (from.hasConnectionToNode(to))
+            return from.getConnectionTo(to);
 
-        first.addConnection(connection);
-        second.addConnection(connection);
+        from.addConnection(connection);
 
         return connection;
     }
@@ -44,6 +46,13 @@ public class Graph <T> {
         }
 
         return null;
+    }
+
+    public void removeConnection(T from, T to){
+        Node<T> fromNode = getNode(from);
+        Node<T> toNode = getNode(to);
+
+        fromNode.removeConnectionTo(toNode);
     }
 
     public Node<T> getNode(T requestedID){
@@ -73,7 +82,7 @@ public class Graph <T> {
             if (node.getConnections().size() > 0){
                 stringBuilder.append(" has neighbours: ");
                 for (Edge<T> connection : node.getConnections()){
-                    stringBuilder.append(connection.traverse(node).getNodeID().toString());
+                    stringBuilder.append(connection.traverse().getNodeID().toString());
                     stringBuilder.append(" (");
                     stringBuilder.append(connection.getWeight());
                     stringBuilder.append("), ");
