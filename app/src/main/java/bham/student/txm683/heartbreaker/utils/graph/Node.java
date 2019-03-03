@@ -41,7 +41,7 @@ public class Node<T> {
         return 0;
     }
 
-    public boolean isConnectedToNode(Node<T> node){
+    public boolean hasConnectionToNode(Node<T> node){
         for (Edge<T> connection : connections){
             if (connection.hasNode(node))
                 return true;

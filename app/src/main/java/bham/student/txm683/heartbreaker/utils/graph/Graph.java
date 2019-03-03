@@ -25,15 +25,14 @@ public class Graph <T> {
         return null;
     }
 
-    public Edge<T> addConnection(Node<T> first, Node<T> second, int weight){
-        Edge<T> connection = new Edge<>(first, second, weight);
+    public Edge<T> addConnection(Node<T> from, Node<T> to, int weight){
+        Edge<T> connection = new Edge<>(from, to, weight);
 
         //dont connect two nodes that are already connected
-        if (first.isConnectedToNode(second))
+        if (from.hasConnectionToNode(to))
             return null;
 
-        first.addConnection(connection);
-        second.addConnection(connection);
+        from.addConnection(connection);
 
         return connection;
     }
@@ -44,6 +43,10 @@ public class Graph <T> {
         }
 
         return null;
+    }
+
+    public void removeConnection(T from){
+
     }
 
     public Node<T> getNode(T requestedID){

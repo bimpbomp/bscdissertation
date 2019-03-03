@@ -24,8 +24,6 @@ public class Edge <T>{
     public Node<T> traverse(Node<T> startNode){
         if (startNode.equals(firstNode))
             return secondNode;
-        else if (startNode.equals(secondNode))
-            return firstNode;
 
         return null;
     }

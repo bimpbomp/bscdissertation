@@ -55,13 +55,81 @@ public class MeshConstructorV2 {
         currentScan = Scan.VERTICAL;
         vScan();
 
-        meshSetListPrint("HSCAN",hScan);
+        meshSetListPrint("hb::HSCAN",hScan);
 
-        meshSetListPrint("VSCAN", vScan);
+        meshSetListPrint("hb::VSCAN", vScan);
 
         intersectScans(hScan, vScan);
 
-        meshSetListPrint("INTERSECTION", meshIntersectionSets);
+        meshSetListPrint("hb::INTERSECTION", meshIntersectionSets);
+
+        constructGraph();
+
+        Log.d("hb::MESHGRAPH", meshGraph.toString());
+    }
+
+    private void constructGraph(){
+
+        //change tileList to store id of the set they belong to
+        for (int rowIdx = 0; rowIdx < tileList.size(); rowIdx++){
+            List<Integer> row = tileList.get(rowIdx);
+
+            for (int columnIdx = 0; columnIdx < row.size(); columnIdx++){
+                //makeConnectionsToVisitedNeighbours(new Tile(columnIdx, rowIdx));
+                for (MeshSet meshSet : meshIntersectionSets){
+                    Tile tile = new Tile(columnIdx, rowIdx);
+                    if (meshSet.hasTile(tile))
+                        setTileInt(tile, meshSet.getId());
+                }
+            }
+        }
+
+        //form connections between neighbouring sets
+        for (int rowIdx = 0; rowIdx < tileList.size(); rowIdx++){
+            List<Integer> row = tileList.get(rowIdx);
+
+            for (int columnIdx = 0; columnIdx < row.size(); columnIdx++){
+                makeConnectionsToVisitedNeighbours(new Tile(columnIdx, rowIdx));
+            }
+        }
+    }
+
+    private void makeConnectionsToVisitedNeighbours(Tile tile){
+
+        Tile x = tile.add(0,1);
+        addIfVisited(tile, x);
+
+        x = tile.add(0,-1);
+        addIfVisited(tile, x);
+
+        x = tile.add(1,0);
+        addIfVisited(tile, x);
+
+        x = tile.add(-1,0);
+        addIfVisited(tile, x);
+    }
+
+    private void addIfVisited(Tile tile, Tile neighbour){
+        int tileInt = getTileInt(tile);
+        int neighbourInt = getTileInt(neighbour);
+
+        if (neighbourInt > 0 && tileInt != neighbourInt){
+            //if neighbour has been visited, add a connection both ways
+            meshGraph.addConnection(tileInt, neighbourInt,1);
+            meshGraph.addConnection(neighbourInt, tileInt, 1);
+        }
+    }
+
+    private int getTileInt(Tile tile){
+        int tileInt = Integer.MIN_VALUE;
+
+        try {
+            tileInt = tileList.get(tile.getY()).get(tile.getX());
+        } catch (Exception e){
+            //do nothing, tile must not exist, return blocked value
+        }
+
+        return tileInt;
     }
 
     private void meshSetListPrint(String tag, List<MeshSet> meshSets){
@@ -117,7 +185,7 @@ public class MeshConstructorV2 {
 
                     if (currentCell == 0) {
                         //is empty, add to activeMeshSet
-                        activeMeshSet.add(new Tile(columnIdx, rowIdx));
+                        addToMeshSet(activeMeshSet, new Tile(columnIdx, rowIdx));
                     } else {
                         //is not empty, break
                         break;
@@ -136,6 +204,14 @@ public class MeshConstructorV2 {
             //iteration is finished, moving onto next row. save state of this row
             previousMeshSets = currentMeshSets;
         }
+    }
+
+    private void addToMeshSet(MeshSet meshSet, Tile tile){
+        meshSet.add(tile);
+    }
+
+    private void setTileInt(Tile tile, int id){
+        tileList.get(tile.getY()).set(tile.getX(), id);
     }
 
     private void hScan(){
@@ -174,7 +250,7 @@ public class MeshConstructorV2 {
 
                     if (currentCell == 0) {
                         //is empty, add to activeMeshSet
-                        activeMeshSet.add(new Tile(columnIdx, rowIdx));
+                        addToMeshSet(activeMeshSet, new Tile(columnIdx, rowIdx));
                     } else {
                         //is not empty, break
                         break;
@@ -315,8 +391,11 @@ public class MeshConstructorV2 {
             for (MeshSet secondMeshSet : scanMesh2){
                 List<Tile> intersection = meshSet.intersection(secondMeshSet);
 
-                if (intersection.size() > 0)
-                    meshIntersectionSets.add(new MeshSet(meshIdGen.id(), intersection));
+                if (intersection.size() > 0) {
+                    int newId = meshIdGen.id();
+                    meshIntersectionSets.add(new MeshSet(newId, intersection));
+                    meshGraph.addNode(newId);
+                }
             }
         }
     }
@@ -344,6 +423,10 @@ public class MeshConstructorV2 {
 
             this.startTile = new Tile(0,0);
             this.distanceToWall = 0;
+        }
+
+        public boolean hasTile(Tile tile){
+            return containedTiles.contains(tile);
         }
 
         public int getId() {
