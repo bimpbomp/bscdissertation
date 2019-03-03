@@ -2,7 +2,6 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
@@ -98,23 +97,26 @@ public class MapConstructor {
         List<List<Integer>> tileList = new ArrayList<>();
 
         tileList.add(Arrays.asList(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,-1,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,-1,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,-1,-1,-1,-1,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,-1,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,  0, 0, 0, 0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,  0, 0, 0, 0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,  0,-1, 0, 0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,  0,-1, 0, 0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0, -1,-1,-1,-1,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,  0, 0, 0,-1,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,  0, 0, 0, 0,0,0,-1));
+        tileList.add(Arrays.asList(-1,0,0,  0, 0, 0, 0,0,0,-1));
         tileList.add(Arrays.asList(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1));
 
-        MeshConstructor meshConstructor = new MeshConstructor();
+        /*MeshConstructor meshConstructor = new MeshConstructor();
+        meshConstructor.constructMesh(tileList);*/
+
+        MeshConstructorV2 meshConstructor = new MeshConstructorV2();
         meshConstructor.constructMesh(tileList);
 
-        Log.d("hb::Mesh", meshConstructor.tileListToString());
+        //Log.d("hb::Mesh", meshConstructor.tileListToString());
 
-        map.setMeshGraph(meshConstructor.getMeshGraph());
-        map.setNSetMap(meshConstructor.getExistingSets());
+        /*map.setMeshGraph(meshConstructor.getMeshGraph());
+        map.setNSetMap(meshConstructor.getExistingSets());*/
 
         //convert perimeter coordinates to global with tileSize and add them to a room
         HashMap<Integer, Room> rooms = new HashMap<>();
