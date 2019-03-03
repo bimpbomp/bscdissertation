@@ -199,6 +199,20 @@ public class MapConstructor {
                     new Point(6*tileSize, 8*tileSize).add(centerOffset), tileSize/4));
         }
 
+
+        //initialise meshgraph with door states
+        for (Door door : doors){
+            sideSets = door.getSideSets();
+
+            if (door.isLocked()){
+                meshConstructor.getMeshGraph().removeConnection(sideSets.getX(), door.getDoorSet());
+                meshConstructor.getMeshGraph().removeConnection(sideSets.getY(), door.getDoorSet());
+            } else {
+                meshConstructor.getMeshGraph().addConnection(sideSets.getX(), door.getDoorSet());
+                meshConstructor.getMeshGraph().addConnection(sideSets.getY(), door.getDoorSet());
+            }
+        }
+
         //init map object
         map.setTileSet(tileSet);
         map.setWalls(walls);
