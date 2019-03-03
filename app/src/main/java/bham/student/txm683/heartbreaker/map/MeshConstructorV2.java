@@ -41,6 +41,14 @@ public class MeshConstructorV2 {
         uniqueID = new UniqueID(1);
     }
 
+    public List<MeshSet> getMeshIntersectionSets() {
+        return meshIntersectionSets;
+    }
+
+    public Graph<Integer> getMeshGraph() {
+        return meshGraph;
+    }
+
     /**
      * Constructs meshSets from given tileList.
      * Assumes that the tileList is properly padded so all columns are aligned
@@ -281,11 +289,11 @@ public class MeshConstructorV2 {
             //can be a part of it
 
             for (MeshSet meshSet : previousMeshSets){
-                if (meshSet.distanceToWall == distanceToWall){
+                if (meshSet.getDistanceToWall() == distanceToWall){
 
                     //checks different component of MeshSet depending on orientation of scan
-                    if (currentScan == Scan.HORIZONTAL && meshSet.startTile.getX() == startingTile.getX() ||
-                            currentScan == Scan.VERTICAL && meshSet.startTile.getY() == startingTile.getY()) {
+                    if (currentScan == Scan.HORIZONTAL && meshSet.getStartTile().getX() == startingTile.getX() ||
+                            currentScan == Scan.VERTICAL && meshSet.getStartTile().getY() == startingTile.getY()) {
 
                         activeMeshSet = meshSet;
                         setAlreadyExists = true;
@@ -397,67 +405,6 @@ public class MeshConstructorV2 {
                     meshGraph.addNode(newId);
                 }
             }
-        }
-    }
-
-    class MeshSet {
-        private int id;
-        private List<Tile> containedTiles;
-
-        private Tile startTile;
-        private int distanceToWall;
-
-        MeshSet(int id, Tile initialTile, int distanceToWall){
-            this.id = id;
-            this.distanceToWall = distanceToWall;
-
-            this.startTile = initialTile;
-
-            this.containedTiles = new ArrayList<>();
-            this.containedTiles.add(initialTile);
-        }
-
-        MeshSet(int id, List<Tile> containedTiles){
-            this.id = id;
-            this.containedTiles = containedTiles;
-
-            this.startTile = new Tile(0,0);
-            this.distanceToWall = 0;
-        }
-
-        public boolean hasTile(Tile tile){
-            return containedTiles.contains(tile);
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public Tile getStart(){
-            return startTile;
-        }
-
-        public boolean sameDistanceToWall(int distToWall){
-            return this.distanceToWall == distToWall;
-        }
-
-        public List<Tile> getContainedTiles() {
-            return containedTiles;
-        }
-
-        public void add(Tile tile){
-            if (!containedTiles.contains(tile))
-                containedTiles.add(tile);
-        }
-
-        public List<Tile> intersection(MeshSet b){
-            List<Tile> intersectionSet = new ArrayList<>();
-
-            for (Tile tile : containedTiles){
-                if (b.containedTiles.contains(tile))
-                    intersectionSet.add(tile);
-            }
-            return intersectionSet;
         }
     }
 }

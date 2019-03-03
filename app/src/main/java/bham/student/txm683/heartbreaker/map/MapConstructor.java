@@ -88,7 +88,6 @@ public class MapConstructor {
         obstacles.add(new Wall("W"+uniqueID.id(), new Point(4*tileSize,4*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
         obstacles.add(new Wall("W"+uniqueID.id(), new Point(4*tileSize,3*tileSize).add(centerOffset), tileSize, ColorScheme.WALL_COLOR));
 
-
         /*
          * Generate Map
          */
@@ -156,6 +155,9 @@ public class MapConstructor {
         map.setEnemies(enemies);
         map.setPickups(pickups);
         map.setCore(core);
+
+        map.setMeshGraph(meshConstructor.getMeshGraph());
+        map.setRootMeshSets(meshConstructor.getMeshIntersectionSets());
     }
 
     private List<Wall> generateWallsForRooms(HashMap<Integer, Room> rooms, List<Door> doors){
@@ -541,58 +543,6 @@ public class MapConstructor {
         return boundary;
     }
 
-    /*private static ArrayList<Tile> populateGrid(Perimeter perimeter) {
-        ArrayList<Tile> tileSet = new ArrayList<>();
-
-        //visited tiles are added here
-        HashSet<Tile> closedSet = new HashSet<>();
-
-        Tile startingPosition = new Tile((int)perimeter.getCollisionVertices()[0].getX(),(int)perimeter.getCollisionVertices()[0].getY());
-
-        //contains tiles that are valid and have been seen (as a neighbour) but not visited.
-        //ordered by the integer cost to get to that tile from the starting position
-        PriorityQueue<Pair<Tile, Integer>> openSet = new PriorityQueue<>(10, (a, b) -> {
-            if (a.second < b.second)
-                return -1;
-            else if (a.second.equals(b.second))
-                return 0;
-            return 1; });
-        openSet.add(new Pair<>(startingPosition, 0));
-
-        //initialise variables needed in loop
-        Pair<Tile, Integer> tileAndCost;
-        Tile currentTile;
-        int currentCost;
-        while (!openSet.isEmpty()) {
-
-            //get the tile with the lowest cost
-            tileAndCost = openSet.poll();
-            currentTile = tileAndCost.first;
-            currentCost = tileAndCost.second;
-
-            //add it to the closed set so it isn't inspected again
-            closedSet.add(currentTile);
-
-            ArrayList<Tile> neighbours = TileBFS.getNeighbours(currentTile);
-
-            for (Tile neighbour : neighbours) {
-
-                if (closedSet.contains(neighbour) || !tileIsInPerimeter(perimeter, neighbour)) {
-                    //if the tile is out of bounds, or has already been inspected, tick on
-                    continue;
-                }
-
-                //neighbour is a valid tile but not target, calc it's cost and add to openset
-                int neighbourCost = currentCost + 1;
-                openSet.add(new Pair<>(neighbour, neighbourCost));
-
-                tileSet.add(neighbour);
-            }
-        }
-
-        return tileSet;
-    }*/
-
     private static boolean tileIsInPerimeter(Perimeter perimeter, Tile tile){
 
         if (perimeter.getCollisionVertices().length > 3) {
@@ -604,57 +554,4 @@ public class MapConstructor {
         }
         return false;
     }
-
-
 }
-
-/*perimeters.add(new Perimeter(new Point[]{
-        new Point(0,0),
-                new Point(5,0),
-                new Point(5, 5),
-                new Point(0, 5)
-    }, Color.rgb(0, 147, 175)));
-
-        perimeters.add(new Perimeter(new Point[]{
-        new Point(4,1),
-                new Point(8,1),
-                new Point(8,11),
-                new Point(4,11)
-    }, Color.rgb(175, 216, 245)));
-
-        perimeters.add(new Perimeter(new Point[]{
-        new Point(7,0),
-                new Point(12,0),
-                new Point(12,6),
-                new Point(7,6)
-    }, Color.rgb(31, 117, 254)));
-
-        perimeters.add(new Perimeter(new Point[]{
-        new Point(1,7),
-                new Point(5,7),
-                new Point(5,13),
-                new Point(1,13)
-    }, Color.rgb(0, 112, 184)));
-
-
-
-        doors.add(new Door(0, new Point(4*tileSize,3*tileSize).add(centerOffset),
-    tileSize/2, tileSize, false, true, true, ColorScheme.DOOR_COLOR));
-        doors.add(new Door(1, new Point(7*tileSize,3*tileSize).add(centerOffset),
-    tileSize/2, tileSize, false, false, true, ColorScheme.DOOR_COLOR));
-        doors.add(new Door(2, new Point(4*tileSize,8*tileSize).add(centerOffset),
-    tileSize/2, tileSize, false, false, true, ColorScheme.DOOR_COLOR));
-
-
-
-        pickups.add(new Pickup(uniqueID.id()+"", PickupType.HEALTH, new Point(400, 2000).add(centerOffset), tileSize/4));
-        pickups.add(new Pickup(uniqueID.id()+"", PickupType.BOMB, new Point(400, 2200).add(centerOffset), tileSize/4));
-
-    core = new Core("core", new Point(1800, 600).add(centerOffset), tileSize, 0);
-
-    player = new Player("player", new Point(tileSize, tileSize).add(centerOffset), tileSize/2,
-    tileSize*2, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
-
-
-        enemies.add(new Drone("C:" + uniqueID.id(), new Point(10*tileSize, tileSize).add(centerOffset),
-                map.getTileSize()/2, ColorScheme.CHASER_COLOR, 300f, 100));*/
