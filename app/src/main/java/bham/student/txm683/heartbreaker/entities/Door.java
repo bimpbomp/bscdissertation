@@ -10,6 +10,7 @@ import bham.student.txm683.heartbreaker.physics.fields.InteractionField;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
 
 public class Door extends Entity implements Renderable {
 
@@ -23,15 +24,21 @@ public class Door extends Entity implements Renderable {
 
     private DoorField field;
 
+    private int doorSet;
+    private Tile sideSets;
+
     private static final int LOCKED_COLOR = Color.argb(50, 255, 0 ,0);
     private static final int UNLOCKED_COLOR = Color.argb(50, 0, 255, 0);
 
     private static final float DOOR_RATIO = 0.5f;
 
     public Door(int doorID, Point center, int width, int height, boolean locked,
-                boolean vertical, int doorColor){
+                boolean vertical, int doorColor, int doorSet, Tile sideSets){
 
         super("D"+doorID);
+
+        this.doorSet = doorSet;
+        this.sideSets = sideSets;
 
         this.locked = locked;
         this.lockedSymbol = new Rectangle(center, width * 0.25f, height * 0.25f, locked? LOCKED_COLOR : UNLOCKED_COLOR);
@@ -47,6 +54,14 @@ public class Door extends Entity implements Renderable {
         }
 
         this.field = new DoorField(getName(), "F"+doorID, center, width, height, Color.GRAY);
+    }
+
+    public int getDoorSet() {
+        return doorSet;
+    }
+
+    public Tile getSideSets() {
+        return sideSets;
     }
 
     @Override
