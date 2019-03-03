@@ -55,14 +55,11 @@ public class MeshConstructor {
             visitedNeighbours = getNeighbours(currentTile);
 
             if (visitedNeighbours.size() == 0){
-                System.out.println("create nset");
                 createNSet(currentTile, null);
             } else {
-                System.out.println("has neighbours");
                 boolean cellDealtWith = false;
 
                 for (Tile visitedNeighbour : visitedNeighbours){
-                    System.out.println("visited neighbour: " + visitedNeighbour);
                     List<List<Tile>> squaresWN = getSquaresWithNeighbour(visitedNeighbour, squares);
 
                     boolean addToNeighbour = true;
@@ -83,7 +80,6 @@ public class MeshConstructor {
                 }
 
                 if (!cellDealtWith){
-                    System.out.println(currentTile + " not dealt with");
                     createNSet(currentTile, visitedNeighbours);
                 }
 
@@ -92,7 +88,7 @@ public class MeshConstructor {
 
             addEmptyNeighboursToFrontier(surround);
 
-            printTileList();
+            //printTileList();
         }
     }
 
