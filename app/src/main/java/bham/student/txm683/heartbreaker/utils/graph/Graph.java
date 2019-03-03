@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.NonNull;
+import bham.student.txm683.heartbreaker.utils.UniqueID;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,9 +9,11 @@ import java.util.Map;
 
 public class Graph <T> {
     private Map<T, Node<T>> nodes;
+    private UniqueID uniqueID;
 
     public Graph(){
         this.nodes = new HashMap<>();
+        this.uniqueID = new UniqueID();
     }
 
     public Node<T> addNode(T id){
@@ -26,11 +29,11 @@ public class Graph <T> {
     }
 
     public Edge<T> addConnection(Node<T> from, Node<T> to, int weight){
-        Edge<T> connection = new Edge<>(from, to, weight);
+        Edge<T> connection = new Edge<>(uniqueID.id(), from, to, weight);
 
         //dont connect two nodes that are already connected
         if (from.hasConnectionToNode(to))
-            return null;
+            return from.getConnectionTo(to);
 
         from.addConnection(connection);
 
@@ -45,8 +48,11 @@ public class Graph <T> {
         return null;
     }
 
-    public void removeConnection(T from){
+    public void removeConnection(T from, T to){
+        Node<T> fromNode = getNode(from);
+        Node<T> toNode = getNode(to);
 
+        fromNode.removeConnectionTo(toNode);
     }
 
     public Node<T> getNode(T requestedID){
@@ -76,7 +82,7 @@ public class Graph <T> {
             if (node.getConnections().size() > 0){
                 stringBuilder.append(" has neighbours: ");
                 for (Edge<T> connection : node.getConnections()){
-                    stringBuilder.append(connection.traverse(node).getNodeID().toString());
+                    stringBuilder.append(connection.traverse().getNodeID().toString());
                     stringBuilder.append(" (");
                     stringBuilder.append(connection.getWeight());
                     stringBuilder.append("), ");

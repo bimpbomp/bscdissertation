@@ -2,18 +2,26 @@ package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.NonNull;
 import android.util.Pair;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class Edge <T>{
-    private Node<T> firstNode;
-    private Node<T> secondNode;
+    private int edgeId;
+    private Node<T> fromNode;
+    private Node<T> toNode;
 
     private int weight;
 
-    public Edge(Node<T> firstNode, Node<T> secondNode, int weight){
-        this.firstNode = firstNode;
-        this.secondNode = secondNode;
+    public Edge(int edgeId, Node<T> fromNode, Node<T> toNode, int weight){
+        this.edgeId = edgeId;
+
+        this.fromNode = fromNode;
+        this.toNode = toNode;
 
         this.weight = weight;
+    }
+
+    public int getEdgeId(){
+        return this.edgeId;
     }
 
     /**
@@ -21,20 +29,30 @@ public class Edge <T>{
      * @param startNode Node at one end of edge.
      * @return Node at other end of edge, or null if startNode isn't one of the connectedNodes
      */
-    public Node<T> traverse(Node<T> startNode){
-        if (startNode.equals(firstNode))
-            return secondNode;
-
-        return null;
+    public Node<T> traverse(){
+        return toNode;
     }
 
     public Pair<Node<T>, Node<T>> getConnectedNodes(){
-        return new Pair<>(firstNode, secondNode);
+        return new Pair<>(fromNode, toNode);
     }
 
-    public boolean hasNode(Node<T> node){
-        return (node.equals(firstNode) || node.equals(secondNode));
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Edge<?> edge = (Edge<?>) o;
+        return edgeId == edge.edgeId;
     }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(7,17).append(edgeId).toHashCode();
+    }
+
+    /*public boolean hasNode(Node<T> node){
+        return (node.equals(fromNode) || node.equals(toNode));
+    }*/
 
     public int getWeight() {
         return weight;
@@ -44,8 +62,8 @@ public class Edge <T>{
     @Override
     public String toString() {
         return "Edge{" +
-                "firstNode=" + firstNode.getNodeID().toString() +
-                ", secondNode=" + secondNode.getNodeID().toString() +
+                "fromNode=" + fromNode.getNodeID().toString() +
+                ", toNode=" + toNode.getNodeID().toString() +
                 ", weight=" + weight +
                 '}';
     }

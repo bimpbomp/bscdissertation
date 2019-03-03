@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.utils.graph;
 
 import android.support.annotation.Nullable;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,21 @@ public class Node<T> {
         this.connections.add(newConnection);
     }
 
+    public void removeConnectionTo(Node<T> node){
+        Edge edgeToRemove = null;
+
+        for (Edge<T> edge : connections){
+            if (edge.traverse().equals(node)){
+                edgeToRemove = edge;
+                break;
+            }
+        }
+
+        if (edgeToRemove != null){
+            connections.remove(edgeToRemove);
+        }
+    }
+
     public List<Edge<T>> getConnections() {
         return connections;
     }
@@ -28,14 +44,14 @@ public class Node<T> {
         ArrayList<Node<T>> neighbours = new ArrayList<>();
 
         for (Edge<T> connection : connections){
-            neighbours.add(connection.traverse(this));
+            neighbours.add(connection.traverse());
         }
         return neighbours;
     }
 
     public int costToNeighbour(Node<T> neighbour){
         for (Edge<T> connection : connections){
-            if (connection.hasNode(neighbour))
+            if (connection.traverse().equals(neighbour))
                 return connection.getWeight();
         }
         return 0;
@@ -43,10 +59,18 @@ public class Node<T> {
 
     public boolean hasConnectionToNode(Node<T> node){
         for (Edge<T> connection : connections){
-            if (connection.hasNode(node))
+            if (connection.traverse().equals(node))
                 return true;
         }
         return false;
+    }
+
+    public Edge<T> getConnectionTo(Node<T> node){
+        for (Edge<T> connection : connections){
+            if (connection.traverse().equals(node))
+                return connection;
+        }
+        return null;
     }
 
     public T getNodeID() {
@@ -66,5 +90,10 @@ public class Node<T> {
             return false;
 
         return ((Node) obj).nodeID.equals(this.nodeID);
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(11,19).append(nodeID).toHashCode();
     }
 }
