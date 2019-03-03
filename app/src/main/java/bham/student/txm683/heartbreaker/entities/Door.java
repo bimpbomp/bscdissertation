@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.map.LockDoor;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.InteractionField;
@@ -30,6 +31,9 @@ public class Door extends Entity implements Renderable {
     private DoorField primaryField;
     private DoorField secondaryField;
 
+    private LockDoor side1LockFun;
+    private LockDoor side2LockFun;
+
     private static final int LOCKED_COLOR = Color.argb(150, 255, 0 ,0);
     private static final int UNLOCKED_COLOR = Color.argb(150, 0, 255, 0);
 
@@ -37,7 +41,7 @@ public class Door extends Entity implements Renderable {
     private static final float TRANSLATION_RATIO = 0.25f;
 
     public Door(int doorID, Point center, int width, int height, boolean primaryLocked,
-                boolean secondaryLocked, boolean vertical, int doorColor){
+                boolean secondaryLocked, boolean vertical, int doorColor, LockDoor side1, LockDoor side2){
 
         super(doorID+"");
 
@@ -73,6 +77,9 @@ public class Door extends Entity implements Renderable {
             this.primaryField = new DoorField(doorID+"", "P", center.add(new Point(0, -0.5f * height)), width, height, Color.GRAY);
             this.secondaryField = new DoorField(doorID+"", "S", center.add(new Point(0, 0.5f * height)), width, height, Color.LTGRAY);
         }
+
+        this.side1LockFun = side1;
+        this.side2LockFun = side2;
     }
 
     public void setTileBackground(int tileSize, int backgroundColor) {
