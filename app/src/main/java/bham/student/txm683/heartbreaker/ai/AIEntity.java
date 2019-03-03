@@ -105,7 +105,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
             for (Edge<Tile> connection : currentNode.getConnections()){
 
-                Node<Tile> neighbour = connection.traverse(currentNode);
+                Node<Tile> neighbour = connection.traverse();
 
                 Log.d(aIName, "current: " + currentNode.getNodeID().toString() + " neighbour: " + neighbour.getNodeID().toString());
 
