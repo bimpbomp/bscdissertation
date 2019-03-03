@@ -43,20 +43,11 @@ public class Map {
 
     private Graph<Integer> meshGraph;
 
-    private HashMap<Integer, NSet> nSetMap;
 
     public Map(String name, int tileSize){
         this.name = name;
         this.tileSize = tileSize;
         this.doors = new HashMap<>();
-    }
-
-    public HashMap<Integer, NSet> getNSetMap() {
-        return nSetMap;
-    }
-
-    public void setNSetMap(HashMap<Integer, NSet> nSetMap) {
-        this.nSetMap = nSetMap;
     }
 
     public Graph<Integer> getMeshGraph() {
