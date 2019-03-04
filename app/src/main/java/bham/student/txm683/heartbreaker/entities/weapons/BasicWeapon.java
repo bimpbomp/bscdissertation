@@ -31,6 +31,11 @@ public class BasicWeapon extends Weapon {
         this.damage = damage;
     }
 
+    public BasicWeapon(String owner, int cooldownTicks){
+        this(owner);
+        setAfterFiringCooldownInTicks(cooldownTicks);
+    }
+
     @Override
     public Projectile[] shoot(Vector shootVector) {
 

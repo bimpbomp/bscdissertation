@@ -5,7 +5,6 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.entities.Bomb;
 import bham.student.txm683.heartbreaker.entities.Door;
@@ -303,7 +302,7 @@ public class CollisionManager {
                         secondCollidable = bin.get(j);
 
                         //if both entities are static or not solid, skip
-                        if (firstCollidable instanceof Core || secondCollidable instanceof Core) {
+                        if (firstCollidable instanceof Damageable || secondCollidable instanceof Damageable){
                             //do nothing
                         } else if ((!firstCollidable.canMove() && !secondCollidable.canMove()) ||
                                 (!firstCollidable.isSolid() && !secondCollidable.isSolid())) {

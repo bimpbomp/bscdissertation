@@ -27,8 +27,8 @@ public class Door extends Entity implements Renderable {
     private int doorSet;
     private Tile sideSets;
 
-    private static final int LOCKED_COLOR = Color.argb(50, 255, 0 ,0);
-    private static final int UNLOCKED_COLOR = Color.argb(50, 0, 255, 0);
+    private static final int LOCKED_COLOR = Color.rgb( 255, 0 ,0);
+    private static final int UNLOCKED_COLOR = Color.rgb( 0, 255, 0);
 
     private static final float DOOR_RATIO = 0.5f;
 

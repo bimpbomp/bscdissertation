@@ -54,7 +54,7 @@ public class Drone extends AIEntity implements Shooter {
         this.atDestination = false;
         this.currentTargetNodeInPath = 0;
 
-        this.weapon = new BasicWeapon(getName());
+        this.weapon = new BasicWeapon(getName(), 7);
 
         this.behaviourTreeRoot = new Selector(
                 new IsTargetVisible(

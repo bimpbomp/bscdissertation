@@ -41,6 +41,16 @@ public class MeshConstructorV2 {
         uniqueID = new UniqueID(1);
     }
 
+    public List<MeshPolygon> getMeshPolygons(int tileSize){
+        List<MeshPolygon> meshPolygons = new ArrayList<>();
+
+        for (MeshSet meshSet : meshIntersectionSets){
+            meshPolygons.add(new MeshPolygon(meshSet, tileSize));
+        }
+
+        return meshPolygons;
+    }
+
     public List<MeshSet> getMeshIntersectionSets() {
         return meshIntersectionSets;
     }

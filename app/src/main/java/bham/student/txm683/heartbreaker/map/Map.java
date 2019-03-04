@@ -42,7 +42,7 @@ public class Map {
     private HashMap<Integer, RoomGrid> roomGrids;
 
     private Graph<Integer> meshGraph;
-    private HashMap<Integer, MeshSet> rootMeshSets;
+    private HashMap<Integer, MeshPolygon> rootMeshPolygons;
 
 
     public Map(String name, int tileSize){
@@ -50,7 +50,7 @@ public class Map {
         this.tileSize = tileSize;
         this.doors = new HashMap<>();
 
-        this.rootMeshSets = new HashMap<>();
+        this.rootMeshPolygons = new HashMap<>();
     }
 
     public Graph<Integer> getMeshGraph() {
@@ -61,14 +61,14 @@ public class Map {
         this.meshGraph = meshGraph;
     }
 
-    public void setRootMeshSets(List<MeshSet> meshSets){
-        for (MeshSet meshSet : meshSets){
-            rootMeshSets.put(meshSet.getId(), meshSet);
+    public void setRootMeshPolygons(List<MeshPolygon> meshSets){
+        for (MeshPolygon meshSet : meshSets){
+            rootMeshPolygons.put(meshSet.getId(), meshSet);
         }
     }
 
-    public HashMap<Integer, MeshSet> getRootMeshSets() {
-        return rootMeshSets;
+    public HashMap<Integer, MeshPolygon> getRootMeshPolygons() {
+        return rootMeshPolygons;
     }
 
     public TileSet getTileSet() {
