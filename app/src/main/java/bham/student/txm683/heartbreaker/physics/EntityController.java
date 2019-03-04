@@ -40,7 +40,7 @@ public class EntityController {
             if (projectile.outOfLife()){
                 levelState.removeBullet(projectile);
 
-                //if it's a bomb, spawn it's explosion
+                //if it's a bomb, spawn its explosion
                 if (projectile instanceof Bomb){
                     levelState.addExplosion(((Bomb) projectile).explode());
                 }

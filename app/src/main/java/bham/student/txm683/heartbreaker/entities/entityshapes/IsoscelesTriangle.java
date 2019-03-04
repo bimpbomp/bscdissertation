@@ -20,6 +20,8 @@ public class IsoscelesTriangle extends Polygon implements Renderable {
         this.defaultColor = colorValue;
 
         this.paint = new Paint();
+
+        setForwardUnitVector();
     }
 
     @Override

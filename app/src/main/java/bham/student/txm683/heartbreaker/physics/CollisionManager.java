@@ -421,21 +421,27 @@ public class CollisionManager {
     private void resolveProjectileHit(Projectile projectile, Collidable collidable){
         //if the projectile damages on contact and the collidable can take damage, damage it
 
-        if (!(projectile instanceof Bomb) && collidable instanceof Damageable) {
+        if (!(projectile instanceof Bomb)) {
 
-            //only damage the collidable if the projectile doesn't belong to them
-            if (!projectile.getOwner().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())){
-                Log.d(TAG, collidable.getName() + " has died");
+            if (collidable instanceof Damageable) {
+                //only damage the collidable if the projectile doesn't belong to them
+                if (!projectile.getOwner().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())) {
+                    Log.d(TAG, collidable.getName() + " has died");
 
-                if (collidable instanceof AIEntity){
-                    levelState.aiDied((AIEntity) collidable);
+                    if (collidable instanceof AIEntity) {
+                        levelState.aiDied((AIEntity) collidable);
+                    }
+                } else {
+                    Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
                 }
             }
-            Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
+
+            if (!projectile.getOwner().equals(collidable.getName()))
+                levelState.getBullets().remove(projectile);
+
+
         }
 
-        if (!(projectile instanceof Bomb))
-            levelState.getBullets().remove(projectile);
     }
 
     private void resolveDoorFieldActivation(DoorField doorField, Collidable collidable){

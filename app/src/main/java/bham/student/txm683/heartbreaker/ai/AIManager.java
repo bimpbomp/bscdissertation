@@ -50,10 +50,6 @@ public class AIManager {
 
         if (timer.tick() > 0) {
             for (AIEntity aiEntity : controlledAI) {
-                if (update) {
-                    aiEntity.update();
-                    update = false;
-                }
                 aiEntity.tick(secondsSinceLastGameTick);
             }
         }

@@ -10,7 +10,6 @@ import bham.student.txm683.heartbreaker.ai.behaviours.decorators.IsTargetVisible
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FireAtTarget;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FleeFromTarget;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Idle;
-import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.Shooter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
@@ -84,7 +83,6 @@ public class Drone extends AIEntity implements Shooter {
         shape.rotateBy(angle);
     }
 
-    @Override
     public void update() {
         if (path == null || path.length == 0) {
 
@@ -113,18 +111,6 @@ public class Drone extends AIEntity implements Shooter {
     }
 
     @Override
-    public void chase(MoveableEntity entityToChase) {
-        currentBehaviour = AIBehaviour.CHASE;
-    }
-
-    @Override
-    public void halt() {
-        currentBehaviour = AIBehaviour.HALTED;
-
-        setRequestedMovementVector(Vector.ZERO_VECTOR);
-    }
-
-    @Override
     public void tick(float secondsSinceLastGameTick) {
 
         context.addPair(BContext.ATTACK_TARGET, levelState.getPlayer());
@@ -140,43 +126,6 @@ public class Drone extends AIEntity implements Shooter {
 
         shape.translateShape(movementVector);
         shape.rotateShape(movementVector);
-
-        /*StringBuilder stringBuilder = new StringBuilder();
-        for (Tile tile : path){
-            stringBuilder.append(tile.toString());
-            stringBuilder.append(" -> ");
-        }
-        stringBuilder.append(" END");
-        Log.d("hb::"+getName(), stringBuilder.toString());*/
-
-        /*if (atDestination) {
-            path = new Tile[0];
-            update();
-        }
-
-        if (path.length < 1)
-            return;
-
-            //if distance to current node is less than a certain amount, move current node to the next in path
-        //if the next node is out of the length of the path, the destination is reached, stop moving
-        if (calculateEuclideanHeuristic(new Tile(getCenter()), path[currentTargetNodeInPath]) < 75) {
-            currentTargetNodeInPath++;
-
-            if (currentTargetNodeInPath >= path.length){
-                atDestination = true;
-                setRequestedMovementVector(new Vector());
-            } else {
-                setRequestedMovementVector(new Vector(getCenter(), new Point(path[currentTargetNodeInPath])).getUnitVector());
-            }
-        }
-
-        if (getRequestedMovementVector().equals(new Vector()))
-            return;
-
-        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
-
-        shape.translateShape(movementVector);
-        shape.rotateShape(movementVector);*/
     }
 
     @Override

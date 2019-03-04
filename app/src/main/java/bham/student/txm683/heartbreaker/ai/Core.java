@@ -2,7 +2,6 @@ package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Hexagon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Octagon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -39,21 +38,6 @@ public class Core extends AIEntity implements Damageable {
     public void rotateBy(float angle) {
         this.outerShape.rotateBy(angle);
         this.innerShape.rotateBy(angle);
-    }
-
-    @Override
-    void update() {
-
-    }
-
-    @Override
-    void chase(MoveableEntity entityToChase) {
-
-    }
-
-    @Override
-    void halt() {
-
     }
 
     @Override

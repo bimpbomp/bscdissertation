@@ -25,14 +25,11 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     LevelState levelState;
 
-    AIBehaviour currentBehaviour;
-
     BContext context;
 
     public AIEntity(String name, float maxSpeed) {
         super(name, maxSpeed);
-
-        this.currentBehaviour = AIBehaviour.HALTED;
+        context = new BContext();
     }
 
     public BContext getContext() {
@@ -61,10 +58,6 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     public void setPath(Tile[] path) {
         this.path = path;
     }
-
-    abstract void update();
-    abstract void chase(MoveableEntity entityToChase);
-    abstract void halt();
 
     public Tile[] applyAStar(String aIName, Node<Tile> startTile, Node<Tile> targetTile, int depthToPathFind){
 

@@ -68,4 +68,8 @@ public abstract class Weapon {
     }
 
     public abstract float getBulletRadius();
+
+    void setAfterFiringCooldownInTicks(int ticks){
+        this.afterFiringCooldownInTicks = ticks;
+    }
 }

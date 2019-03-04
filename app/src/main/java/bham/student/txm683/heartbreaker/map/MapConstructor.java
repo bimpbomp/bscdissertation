@@ -7,6 +7,7 @@ import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.ai.Drone;
+import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
@@ -97,8 +98,10 @@ public class MapConstructor {
         player = new Player("player", new Point(2*tileSize,2*tileSize), tileSize/2, tileSize*3,
                 ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
 
-        enemies.add(new Drone("D:"+uniqueID.id(), new Point(5*tileSize, 2*tileSize).add(centerOffset), tileSize/2,
+        enemies.add(new Drone("DRONE"+uniqueID.id(), new Point(5*tileSize, 2*tileSize).add(centerOffset), tileSize/2,
                 ColorScheme.CHASER_COLOR, tileSize*1.5f, 100));
+
+        enemies.add(new Turret("TURRET"+ uniqueID.id(), getTileCenter(5,3), tileSize/2, ColorScheme.CHASER_COLOR, 100));
 
         core = new Core("core", new Point(8*tileSize,8*tileSize).add(centerOffset), tileSize/2);
 
@@ -192,11 +195,11 @@ public class MapConstructor {
         }
 
         if (sideSets != null && doorSet != 0) {
-            doors.add(new Door(uniqueID.id(), new Point(8 * tileSize, 5 * tileSize).add(centerOffset), tileSize, tileSize,
+            doors.add(new Door(uniqueID.id(), getTileCenter(8,5), tileSize, tileSize,
                     true, false, ColorScheme.DOOR_COLOR, doorSet, sideSets));
 
             pickups.add(new Key("K"+uniqueID.id(), doors.get(0).getName(),
-                    new Point(6*tileSize, 8*tileSize).add(centerOffset), tileSize/4));
+                    getTileCenter(6,8), tileSize/4));
         }
 
 
@@ -229,6 +232,10 @@ public class MapConstructor {
 
         map.setMeshGraph(meshConstructor.getMeshGraph());
         map.setRootMeshSets(meshConstructor.getMeshIntersectionSets());
+    }
+
+    private Point getTileCenter(int x, int y){
+        return new Point(x*tileSize, y*tileSize).add(centerOffset);
     }
 
     public List<Wall> generateWallsV2(List<List<Integer>> tileList){
