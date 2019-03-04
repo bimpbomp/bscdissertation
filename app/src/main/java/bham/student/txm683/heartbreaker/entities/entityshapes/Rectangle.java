@@ -32,6 +32,13 @@ public class Rectangle extends Polygon implements Renderable {
                 new Vector(center, center.add(new Point(-width/2f, height/2f)))}, colorValue);
     }
 
+    public Rectangle(Point center, Point topLeft, Point bottomRight, int colorValue){
+        this(center, new Vector[]{new Vector(center, topLeft),
+                new Vector(center, new Point(bottomRight.getX(), topLeft.getY())),
+                new Vector(center, bottomRight),
+                new Vector(center, new Point(topLeft.getX(), bottomRight.getY()))}, colorValue);
+    }
+
     @Override
     void setForwardUnitVector() {
         this.forwardUnitVector = vertexVectors[0].rotate((float) Math.cos(primaryAngle),
