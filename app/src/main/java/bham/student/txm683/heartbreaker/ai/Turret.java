@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
-import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;

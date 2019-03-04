@@ -19,6 +19,7 @@ import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.map.MapConstructor;
+import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
@@ -267,6 +268,14 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     room.getPerimeter().draw(canvas, renderOffset, secondsSinceLastGameTick, false);
             }
 
+            //draw meshGrid
+            if (debugInfo.renderVisSet()){
+
+                for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
+                    meshPolygon.draw(canvas, renderOffset, textPaint);
+                }
+            }
+
             //draw doors
             for (Renderable door : levelState.getMap().getDoors().values()){
                 if (isOnScreen(door))
@@ -317,7 +326,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
-            //draw vis set (if turned on)
+            /*//draw vis set (if turned on)
             if (debugInfo.renderVisSet()){
                 Point center;
                 for (Tile tile : levelState.getTileSet().getTilesVisibleToPlayer()){
@@ -325,7 +334,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     center = new Point(tile.add(tileSize/2, tileSize/2)).add(renderOffset);
                     canvas.drawCircle(center.getX(), center.getY(), 20, tilePaint);
                 }
-            }
+            }*/
 
             //draw grid (if turned on)
             if (debugInfo.renderMapTileGrid())

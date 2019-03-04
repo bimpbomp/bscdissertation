@@ -4,10 +4,12 @@ public abstract class BNode {
     private Status status;
 
     public BNode(){
-        status = Status.FAILURE;
+        status = Status.READY;
     }
 
-    public abstract void init(BContext context);
+    public void reset(BContext context){
+        this.status = Status.READY;
+    }
 
     public abstract Status process(BContext context);
 

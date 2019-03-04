@@ -163,7 +163,7 @@ public class MapConstructor {
             }
         }
 
-        //init map object
+        //reset map object
         map.setTileSet(tileSet);
         map.setWalls(walls);
         map.setWidthInTiles(mapWidth);

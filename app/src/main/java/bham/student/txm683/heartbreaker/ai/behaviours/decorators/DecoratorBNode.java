@@ -18,7 +18,7 @@ public abstract class DecoratorBNode extends BNode {
     abstract boolean condition(BContext context);
 
     @Override
-    public void init(BContext context) {
+    public void reset(BContext context) {
         child.setStatus(FAILURE);
     }
 
@@ -29,8 +29,8 @@ public abstract class DecoratorBNode extends BNode {
 
             Log.d("hb::" + this.getClass().getSimpleName(), "condition true");
             if (child.getStatus() != RUNNING){
-                //if child isn't running, init it
-                child.init(context);
+                //if child isn't running, reset it
+                child.reset(context);
             }
             return child.process(context);
         }

@@ -13,7 +13,16 @@ public class PathFinding {
 
     }
 
-    public static List<Tile> bfsFlee(TileSet tileSet, Point startPoint){
+
+
+    private static int calculateEuclideanHeuristic(Tile currentTile, Tile targetTile){
+        return (int) Math.sqrt(
+                Math.pow(targetTile.getX() - currentTile.getX(), 2) +
+                        Math.pow(targetTile.getY() - currentTile.getY(), 2)
+        );
+    }
+
+    /*public static List<Tile> bfsFlee(TileSet tileSet, Point startPoint){
         HashMap<Tile, Tile> cameFrom = new HashMap<>();
         Queue<Tile> openSet = new LinkedList<>();
         Set<Tile> closedSet = new HashSet<>();
@@ -45,7 +54,7 @@ public class PathFinding {
             }
         }
         return new ArrayList<>();
-    }
+    }*/
 
     //gets the coordinates of the 8 surrounding cells. Warning: doesn't check if they're valid
     private static List<Tile> getNeighbours(Tile coordinates, TileSet tileSet){
@@ -88,23 +97,23 @@ public class PathFinding {
      * @param path the stack containing the path to follow, first node at head
      * @return A Tile array containing the path to take, in order
      */
-    public static Tile[] tracePath(Stack<Tile> path){
+    public static Integer[] tracePath(Stack<Integer> path){
 
-        List<Tile> pathArray = new ArrayList<>();
+        List<Integer> pathArray = new ArrayList<>();
 
         while (!path.empty()){
-            Tile nextStep = path.pop();
+            Integer nextStep = path.pop();
 
             pathArray.add(nextStep);
         }
-        return pathArray.toArray(new Tile[0]);
+        return pathArray.toArray(new Integer[0]);
     }
 
-    public static List<Tile> traceAsList(Stack<Tile> path){
+    public static List<Integer> traceAsList(Stack<Integer> path){
         return Arrays.asList(tracePath(path));
     }
 
-    public static Stack<Tile> formPathStack(HashMap<Tile, Tile> cameFrom, Tile targetTile){
+    public static Stack<Tile> formPathStack(Map<Tile, Tile> cameFrom, Tile targetTile){
         Stack<Tile> path = new Stack<>();
 
         Tile previous = targetTile;
@@ -122,11 +131,11 @@ public class PathFinding {
         return path;
     }
 
-    public static Stack<Tile> formPathStack(HashMap<Node<Tile>, Node<Tile>> cameFrom, Node<Tile> targetNodeName){
-        Stack<Tile> path = new Stack<>();
+    public static Stack<Integer> formPathStack(Map<Node<Integer>, Node<Integer>> cameFrom, Node<Integer> targetNodeName){
+        Stack<Integer> path = new Stack<>();
 
-        Node<Tile> previous = targetNodeName;
-        Node<Tile> current = cameFrom.get(targetNodeName);
+        Node<Integer> previous = targetNodeName;
+        Node<Integer> current = cameFrom.get(targetNodeName);
 
         path.push(previous.getNodeID());
 

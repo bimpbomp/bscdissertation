@@ -141,7 +141,7 @@ public class AIManager {
 
                 //If the node hasn't been visited before, or the cost to get to this node is cheaper than the already stored cost
                 //add it to all tracking sets
-                if (!costSoFar.containsKey(next.getNodeID()) || costSoFar.get(next.getNodeID()) > gCostToNext) {
+                if (!costSoFar.containsKeys(next.getNodeID()) || costSoFar.get(next.getNodeID()) > gCostToNext) {
 
                     next.setCosts(fCostToNext, gCostToNext, hCostToNext);
 

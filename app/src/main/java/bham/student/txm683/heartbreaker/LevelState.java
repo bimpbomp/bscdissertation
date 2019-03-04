@@ -195,8 +195,8 @@ public class LevelState {
     }
 
     private void addConnection(Tile[] nodeTiles, int i, int j){
-        graph.addConnection(graph.getNode(nodeTiles[i]), graph.getNode(nodeTiles[j]),
-                AIEntity.calculateEuclideanHeuristic(nodeTiles[i], nodeTiles[j]));
+        /*graph.addConnection(graph.getNode(nodeTiles[i]), graph.getNode(nodeTiles[j]),
+                AIEntity.calculateEuclideanHeuristic(nodeTiles[i], nodeTiles[j]));*/
     }
 
     public Graph<Tile> getGraph() {

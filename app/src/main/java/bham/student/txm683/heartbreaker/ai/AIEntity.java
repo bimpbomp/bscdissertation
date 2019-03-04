@@ -1,23 +1,13 @@
 package bham.student.txm683.heartbreaker.ai;
 
-import android.util.Log;
-import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
-import bham.student.txm683.heartbreaker.utils.PathFinding;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import bham.student.txm683.heartbreaker.utils.graph.Edge;
-import bham.student.txm683.heartbreaker.utils.graph.Graph;
-import bham.student.txm683.heartbreaker.utils.graph.Node;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.PriorityQueue;
 
 public abstract class AIEntity extends MoveableEntity implements Renderable, Damageable {
 
@@ -59,7 +49,9 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         this.path = path;
     }
 
-    public Tile[] applyAStar(String aIName, Node<Tile> startTile, Node<Tile> targetTile, int depthToPathFind){
+
+
+    /*public Tile[] applyAStar(String aIName, Node<Tile> startTile, Node<Tile> targetTile, int depthToPathFind){
 
         depthToPathFind = Math.abs(depthToPathFind);
 
@@ -115,7 +107,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
                 //If the tile hasn't been visited before, or the cost to get to this tile is cheaper than the already stored cost
                 //add it to all tracking sets
-                if (!costSoFar.containsKey(neighbour) || costSoFar.get(neighbour) > gCostToNext) {
+                if (!costSoFar.containsKeys(neighbour) || costSoFar.get(neighbour) > gCostToNext) {
 
                     int fCost = gCostToNext + calculateEuclideanHeuristic(currentNode.getNodeID(), neighbour.getNodeID());
 
@@ -127,16 +119,16 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
             depthToPathFind--;
         }
         return PathFinding.tracePath(PathFinding.formPathStack(cameFrom, targetTile));
-    }
+    }*/
 
-    public static int calculateEuclideanHeuristic(Tile currentTile, Tile targetTile){
+    /*public static int calculateEuclideanHeuristic(Tile currentTile, Tile targetTile){
         return (int) Math.sqrt(
                 Math.pow(targetTile.getX() - currentTile.getX(), 2) +
                         Math.pow(targetTile.getY() - currentTile.getY(), 2)
         );
-    }
+    }*/
 
-    public static Node<Tile> getClosestNode(Tile tile, Graph<Tile> graph){
+    /*public static Node<Tile> getClosestNode(Tile tile, Graph<Tile> graph){
         int smallestDistance = Integer.MAX_VALUE;
 
         List<Node<Tile>> nodes = graph.getNodes();
@@ -160,5 +152,5 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         }
 
         return closestNode;
-    }
+    }*/
 }

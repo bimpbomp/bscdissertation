@@ -3,13 +3,14 @@ package bham.student.txm683.heartbreaker.ai;
 import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
+import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
+import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.HealthMonitor;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.IsTargetVisible;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FireAtTarget;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FleeFromTarget;
-import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Idle;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.Shooter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
@@ -20,9 +21,7 @@ import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.List;
 
@@ -65,12 +64,12 @@ public class Drone extends AIEntity implements Shooter {
                                 new FireAtTarget()
                         )
                 ),
-                new Idle()
+                Behaviour.getIdleTree()
         );
 
 
         context = new BContext();
-        context.addPair(BContext.VIEW_RANGE, 600);
+        context.addPair(BKeyType.VIEW_RANGE, 600);
     }
 
     @Override
@@ -83,7 +82,7 @@ public class Drone extends AIEntity implements Shooter {
         shape.rotateBy(angle);
     }
 
-    public void update() {
+    /*public void update() {
         if (path == null || path.length == 0) {
 
             //path = applyAStar(getName(), levelState.getGraph().getNode(new Tile(1900, 500)), levelState.getGraph().getNode(new Tile(600, 2000)), 10);
@@ -104,7 +103,7 @@ public class Drone extends AIEntity implements Shooter {
                 currentTargetNodeInPath = 0;
             }
         }
-    }
+    }*/
 
     public void setLevelState(LevelState levelState){
         this.levelState = levelState;
@@ -113,10 +112,10 @@ public class Drone extends AIEntity implements Shooter {
     @Override
     public void tick(float secondsSinceLastGameTick) {
 
-        context.addPair(BContext.ATTACK_TARGET, levelState.getPlayer());
-        context.addPair(BContext.HOST_ENTITY, this);
-        context.addPair(BContext.HEALTH_BOUND, 25);
-        context.addPair(BContext.LEVEL_STATE, levelState);
+        context.addPair(BKeyType.ATTACK_TARGET, levelState.getPlayer());
+        context.addPair(BKeyType.CONTROLLED_ENTITY, this);
+        context.addPair(BKeyType.HEALTH_BOUND, 25);
+        context.addPair(BKeyType.LEVEL_STATE, levelState);
         behaviourTreeRoot.process(context);
 
         if (getRequestedMovementVector().equals(new Vector()))
