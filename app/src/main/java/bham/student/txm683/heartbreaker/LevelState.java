@@ -10,6 +10,7 @@ import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.map.Map;
+import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
@@ -19,10 +20,7 @@ import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LevelState {
@@ -92,6 +90,10 @@ public class LevelState {
 
     public Graph<Integer> getMeshGraph(){
         return map.getMeshGraph();
+    }
+
+    public HashMap<Integer, MeshPolygon> getRootMeshPolygons(){
+        return map.getRootMeshPolygons();
     }
 
     public LevelEnder getLevelEnder(){

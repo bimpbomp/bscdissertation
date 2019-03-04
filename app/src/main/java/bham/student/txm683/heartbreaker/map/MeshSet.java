@@ -5,7 +5,7 @@ import bham.student.txm683.heartbreaker.utils.Tile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MeshSet {
+class MeshSet {
     private int id;
     private List<Tile> containedTiles;
 
