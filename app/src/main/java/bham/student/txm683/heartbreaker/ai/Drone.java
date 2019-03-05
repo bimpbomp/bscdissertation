@@ -1,16 +1,13 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
-import bham.student.txm683.heartbreaker.ai.behaviours.decorators.HealthMonitor;
-import bham.student.txm683.heartbreaker.ai.behaviours.decorators.IsTargetVisible;
-import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FireAtTarget;
-import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FleeFromTarget;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.Shooter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
@@ -56,20 +53,13 @@ public class Drone extends AIEntity implements Shooter {
         this.weapon = new BasicWeapon(getName(), 7);
 
         this.behaviourTreeRoot = new Selector(
-                new IsTargetVisible(
-                        new Selector(
-                                new HealthMonitor(
-                                        new FleeFromTarget()
-                                ),
-                                new FireAtTarget()
-                        )
-                ),
-                Behaviour.getIdleTree()
+                Behaviour.idleBehaviour()
         );
-
 
         context = new BContext();
         context.addPair(BKeyType.VIEW_RANGE, 600);
+        context.addPair(BKeyType.CONTROLLED_ENTITY, this);
+        context.addPair(BKeyType.TIME_PER_IDLE, 25);
     }
 
     @Override
@@ -112,10 +102,6 @@ public class Drone extends AIEntity implements Shooter {
     @Override
     public void tick(float secondsSinceLastGameTick) {
 
-        context.addPair(BKeyType.ATTACK_TARGET, levelState.getPlayer());
-        context.addPair(BKeyType.CONTROLLED_ENTITY, this);
-        context.addPair(BKeyType.HEALTH_BOUND, 25);
-        context.addPair(BKeyType.LEVEL_STATE, levelState);
         behaviourTreeRoot.process(context);
 
         if (getRequestedMovementVector().equals(new Vector()))
@@ -123,8 +109,10 @@ public class Drone extends AIEntity implements Shooter {
 
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
 
+        Log.d("hb::ROTVECTOR",  getRotationVector().relativeToString());
+
         shape.translateShape(movementVector);
-        shape.rotateShape(movementVector);
+        shape.rotateShape(getRotationVector());
     }
 
     @Override

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.SIGHT_BLOCKED;
 import static bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier.RECTANGLE;
 
 public class CollisionManager {
@@ -141,9 +142,9 @@ public class CollisionManager {
         for (AIEntity ai : levelState.getAliveAIEntities()){
 
             if (levelState.getTileSet().tileIsVisibleToPlayer(Tile.mapToTile(ai.getCenter(), levelState.getTileSet().getTileSize()))){
-                ai.getContext().addPair(BContext.SIGHT_BLOCKED, false);
+                ai.getContext().addPair(SIGHT_BLOCKED, false);
             } else {
-                ai.getContext().addPair(BContext.SIGHT_BLOCKED, true);
+                ai.getContext().addPair(SIGHT_BLOCKED, true);
             }
         }
     }

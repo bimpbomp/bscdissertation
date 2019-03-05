@@ -26,6 +26,10 @@ public class MeshPolygon {
         generateArea(meshSet.getContainedTiles(), tileSize);
     }
 
+    public BoundingBox getBoundingBox(){
+        return area.getBoundingBox();
+    }
+
     public Point getCenter(){
         return area.getCenter();
     }

@@ -94,8 +94,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     }
 
     private Vector calcBulletPlacement(float bulletRadius){
-        Vector bulletPlacement = new Vector(getCenter(), shape.getVertices()[0]);
-        return bulletPlacement.sMult((bulletPlacement.getLength() + bulletRadius + (calculateMovementVector(1/25f).getLength()) + 5f)/ bulletPlacement.getLength());
+         return shape.getForwardUnitVector();
     }
 
     @Override

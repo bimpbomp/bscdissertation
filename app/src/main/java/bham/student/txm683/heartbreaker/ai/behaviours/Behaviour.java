@@ -9,16 +9,18 @@ public class Behaviour {
 
     }
 
-    public static BNode getIdleTree(){
+    public static BNode idleBehaviour(){
         return new Sequence(
-
+            Tasks.randomPointInMesh(),
+            walkToPointBehaviour(),
+            Tasks.doNothing()
         );
     }
 
-    public static BNode getWalkToTree(){
+    public static BNode walkToPointBehaviour(){
         return new Sequence(
-                Tasks.getRotateToTask(),
-                Tasks.getMoveTowardsPointTask()
+                Tasks.rotateToTarget(),
+                Tasks.moveTowardsTarget()
         );
     }
 }

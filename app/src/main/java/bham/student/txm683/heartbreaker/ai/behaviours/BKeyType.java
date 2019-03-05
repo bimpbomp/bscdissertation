@@ -16,7 +16,9 @@ public enum BKeyType {
     VIEW_RANGE (Integer.class),
     SIGHT_BLOCKED (Boolean.class),
     CURRENT_MESH (MeshPolygon.class),
-    TARGET (Point.class);
+    TARGET (Point.class),
+    TIME_PER_IDLE (Integer.class),
+    TIME_LEFT_IN_IDLE (Integer.class);
 
     private Class type;
 

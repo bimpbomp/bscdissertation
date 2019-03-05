@@ -10,6 +10,8 @@ import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.SIGHT_BLOCKED;
+
 public class Turret extends AIEntity {
 
     private int health;
@@ -49,8 +51,8 @@ public class Turret extends AIEntity {
 
     @Override
     public void tick(float secondsSinceLastGameTick) {
-        if (context.containsKey(BContext.SIGHT_BLOCKED) && context.getValue(BContext.SIGHT_BLOCKED) instanceof  Boolean){
-            boolean sightBlocked = (boolean) context.getValue(BContext.SIGHT_BLOCKED);
+        if (context.containsKeys(SIGHT_BLOCKED) && context.getValue(SIGHT_BLOCKED) instanceof  Boolean){
+            boolean sightBlocked = (boolean) context.getValue(SIGHT_BLOCKED);
 
             if (!sightBlocked){
                 rotate(new Vector(getCenter(), levelState.getPlayer().getCenter()));

@@ -17,14 +17,27 @@ public class BContext {
 
         for (BKeyType key : keys) {
             //if the key isn't in the context, return false
-            if (!(pairs.containsKey(key) && pairs.get(key).getClass().equals(key.getType())))
+            if (!pairs.containsKey(key))
                 return false;
+
+            Class sclass = pairs.get(key).getClass();
+            while (sclass != null && !sclass.equals(Object.class)){
+
+                if (sclass.equals(key.getType()))
+                    return true;
+
+                sclass = sclass.getSuperclass();
+            }
         }
-        return true;
+        return false;
     }
 
     public void addPair(BKeyType key, Object value){
         this.pairs.put(key, value);
+    }
+
+    public void removePair(BKeyType key){
+        this.pairs.remove(key);
     }
 
     public Object getValue(BKeyType key){

@@ -2,6 +2,8 @@ package bham.student.txm683.heartbreaker;
 
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
+import bham.student.txm683.heartbreaker.ai.Drone;
+import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
@@ -96,6 +98,21 @@ public class Level implements Runnable {
 
                     for (Projectile projectile : levelState.getBullets()){
                         levelState.getTileSet().addTemporaryToGrid(projectile);
+                    }
+
+                    for (AIEntity aiEntity : levelState.getAliveAIEntities()){
+
+                        if (aiEntity instanceof Drone){
+                            aiEntity.getContext().addPair(BKeyType.CURRENT_MESH, levelState.getRootMeshPolygons().get(4));
+                        }
+                        /*Log.d("hb::AI", "Checking meshploygon for " + aiEntity.getName());
+                        for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
+                            if (meshPolygon.getBoundingBox().intersecting(aiEntity.getBoundingBox())){
+                                aiEntity.getContext().addPair(BKeyType.CURRENT_MESH, meshPolygon);
+                                Log.d("hb::AI", "Meshfound for " + aiEntity.getName() + ": " + meshPolygon.getId());
+                                break;
+                            }
+                        }*/
                     }
 
                     entityController.update(gameTickTimeStepInMillis / 1000f);

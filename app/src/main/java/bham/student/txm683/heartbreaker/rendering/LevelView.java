@@ -295,6 +295,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
 
+
+            //draw bullets
+            for (Renderable bullet : levelState.getBullets()){
+                if (isOnScreen(bullet))
+                    bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+            }
+
             //draw player
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
 
@@ -318,12 +325,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             for (Renderable wall : levelState.getMap().getWalls()){
                 if (isOnScreen(wall))
                     wall.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
-            }
-
-            //draw bullets
-            for (Renderable bullet : levelState.getBullets()){
-                if (isOnScreen(bullet))
-                    bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
             /*//draw vis set (if turned on)
