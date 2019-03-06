@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.utils;
 
 import android.util.Log;
 import android.util.Pair;
+import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
@@ -11,6 +12,7 @@ import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.*;
 
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 import static bham.student.txm683.heartbreaker.ai.behaviours.Status.FAILURE;
 import static bham.student.txm683.heartbreaker.ai.behaviours.Status.SUCCESS;
 
@@ -36,10 +38,13 @@ public class AStar {
 
     private AIEntity controlled;
 
-    public AStar(AIEntity controlled, int startMeshId, int targetMeshId, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
+    public AStar(AIEntity controlled, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
         this.controlled = controlled;
 
-        this.startNode = meshGraph.getNode(startMeshId);
+        this.startNode = meshGraph.getNode(((MeshPolygon)controlled.getContext().getValue(CURRENT_MESH)).getId());
+
+        int targetMeshId = ((LevelState) controlled.getContext().getValue(LEVEL_STATE)).mapToMesh((Point) controlled.getContext().getValue(MOVE_TO));
+
         this.targetNode = meshGraph.getNode(targetMeshId);
 
         this.meshPolygonMap = meshPolygonMap;
@@ -64,11 +69,15 @@ public class AStar {
         this.waypointPath = new ArrayList<>();
     }
 
-    public int plotRoughPath(){
+    public void plotPath(){
         reset();
-        Status PathFindingStatus = applyAStar();
 
-        int returnStatus;
+        if (startNode == null || targetNode == null){
+            Log.d("ASTAR", "start/target node is null for " + controlled.getName());
+            return;
+        }
+
+        Status PathFindingStatus = applyAStar();
 
         Integer[] roughPath;
 
@@ -82,7 +91,6 @@ public class AStar {
 
         if (roughPath.length == 1){
             stringBuilder.append("ALREADY AT DESTINATION");
-            returnStatus = 0;
         }else if (roughPath.length > 1) {
             for (int meshId : roughPath) {
                 stringBuilder.append(meshId);
@@ -98,13 +106,15 @@ public class AStar {
 
                 if (meshPolygon == null){
                     Log.d("ASTAR", "null pointer in path for " + controlled.getName());
-                    return -1;
+                    break;
                 }
 
                 p = meshPolygon.getNearestPoint(p, controlled.getWidth());
 
                 waypointPath.add(p);
             }
+
+            controlled.getContext().addPair(PATH, waypointPath);
             sb2.append("WAYPOINT PATH: ");
             for (Point point : waypointPath){
                 sb2.append(point.toString());
@@ -112,11 +122,8 @@ public class AStar {
             }
             sb2.append("END");
 
-            returnStatus = 1;
         } else {
             stringBuilder.append("NO NODES IN PATH");
-
-            returnStatus = -1;
         }
 
         Log.d("ASTAR", "status: " + PathFindingStatus + ", nodes: " + stringBuilder.toString());
@@ -124,12 +131,6 @@ public class AStar {
         if (waypointPath.size() > 0 ){
             Log.d("ASTAR", sb2.toString());
         }
-
-        return returnStatus;
-    }
-
-    public List<Point> getPath(){
-        return waypointPath;
     }
 
     private Status applyAStar(){

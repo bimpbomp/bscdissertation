@@ -23,4 +23,11 @@ public class Behaviour {
                 Tasks.moveTowardsTarget()
         );
     }
+
+    public static BNode followPathBehaviour(){
+        return new Sequence(
+                Tasks.plotPath(),
+                Tasks.followPath()
+        );
+    }
 }

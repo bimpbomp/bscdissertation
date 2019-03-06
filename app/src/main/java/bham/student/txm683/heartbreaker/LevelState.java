@@ -17,6 +17,7 @@ import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
+import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
@@ -86,6 +87,16 @@ public class LevelState {
 
         levelEnder = new LevelEnder();
 
+    }
+
+    public int mapToMesh(Point p){
+
+        for (MeshPolygon meshPolygon : getRootMeshPolygons().values()){
+            if (meshPolygon.getBoundingBox().intersecting(p)){
+                return meshPolygon.getId();
+            }
+        }
+        return -1;
     }
 
     public Graph<Integer> getMeshGraph(){

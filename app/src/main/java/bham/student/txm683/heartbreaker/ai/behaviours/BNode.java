@@ -5,6 +5,11 @@ public abstract class BNode {
 
     public BNode(){
         status = Status.READY;
+        construct();
+    }
+
+    public void construct(){
+
     }
 
     public void reset(BContext context){

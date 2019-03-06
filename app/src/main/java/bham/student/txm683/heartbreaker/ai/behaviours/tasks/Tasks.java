@@ -1,13 +1,18 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.tasks;
 
 import android.util.Log;
+import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
+import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+
+import java.util.List;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 import static bham.student.txm683.heartbreaker.ai.behaviours.Status.*;
@@ -70,6 +75,73 @@ public class Tasks {
                 AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
                 controlled.setRequestedMovementVector(Vector.ZERO_VECTOR);
                 controlled.setRotationVector(Vector.ZERO_VECTOR);
+            }
+        };
+    }
+
+    public static BNode plotPath(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(CONTROLLED_ENTITY, CURRENT_MESH, TARGET, LEVEL_STATE)){
+                    AStar a = new AStar((AIEntity) context.getValue(CONTROLLED_ENTITY),
+                            ((LevelState) context.getValue(LEVEL_STATE)).getRootMeshPolygons(),
+                            ((LevelState) context.getValue(LEVEL_STATE)).getMeshGraph());
+
+                    a.plotPath();
+
+                    return SUCCESS;
+                }
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode followPath(){
+        return new BNode() {
+            private int pointInPath;
+
+            @Override
+            public void construct() {
+                super.construct();
+                pointInPath = 0;
+            }
+
+            @Override
+            public void reset(BContext context) {
+                super.reset(context);
+                pointInPath = 0;
+            }
+
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(CONTROLLED_ENTITY, PATH)){
+
+                    AIEntity aiEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    List<Point> path = ((PathWrapper) context.getValue(PATH)).path();
+
+                    if (pointInPath > path.size()-1)
+                        return SUCCESS;
+
+                    Point currentPoint = path.get(pointInPath);
+
+
+                    if (new Vector(aiEntity.getCenter(), currentPoint).getLength() < 100){
+                        pointInPath++;
+
+                        if (pointInPath > path.size()-1)
+                            return SUCCESS;
+
+                        currentPoint = path.get(pointInPath);
+                    }
+
+                    Vector closenessV = new Vector(aiEntity.getCenter(), currentPoint);
+
+                    aiEntity.setRequestedMovementVector(closenessV);
+                    return RUNNING;
+
+                }
+                return FAILURE;
             }
         };
     }
