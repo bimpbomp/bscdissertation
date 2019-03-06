@@ -127,7 +127,6 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
             shape.translateShape(velocity);
 
-            //shape.translateShape(movementVector);
         } else {
             velocity = velocity.sMult(0.25f);
 
