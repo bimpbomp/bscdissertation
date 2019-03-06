@@ -15,10 +15,13 @@ public class Core extends AIEntity implements Damageable {
     private Hexagon outerShape;
 
     private int health;
+    private int width;
 
     public Core(String name, Point center, int size) {
         super(name, 0);
         health = 500;
+
+        this.width = size;
 
         this.innerShape = new Octagon(center, size/2, Color.WHITE);
         this.outerShape = new Hexagon(center, size, Color.BLACK);
@@ -32,6 +35,11 @@ public class Core extends AIEntity implements Damageable {
     @Override
     public void rotate(Vector rotationVector) {
 
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
     }
 
     @Override

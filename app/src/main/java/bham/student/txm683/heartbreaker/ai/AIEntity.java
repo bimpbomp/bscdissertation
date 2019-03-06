@@ -32,6 +32,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     public abstract void rotateBy(float angle);
 
+    public abstract int getWidth();
+
     @Override
     public CollidableType getCollidableType() {
         return CollidableType.AI_ENTITY;

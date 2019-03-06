@@ -16,6 +16,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
+import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -34,6 +35,7 @@ public class Drone extends AIEntity implements Shooter {
     private Weapon weapon;
     private BNode behaviourTreeRoot;
 
+    private int width;
 
     public Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
         super(name, maxSpeed);
@@ -46,6 +48,8 @@ public class Drone extends AIEntity implements Shooter {
                 new Vector(center, center.add(new Point(0, 0.5f * size))),
                 vertices.get(2)
         }, colorValue, colorValue);
+
+        this.width = size;
 
         this.health = initialHealth;
         this.atDestination = false;
@@ -115,8 +119,13 @@ public class Drone extends AIEntity implements Shooter {
         shape.translateShape(movementVector);
         shape.rotateShape(getRotationVector());
 
-        AStar aStar = new AStar(getName(), 1, 14, levelState.getRootMeshPolygons(), levelState.getMeshGraph());
+        AStar aStar = new AStar(this, ((MeshPolygon)context.getValue(BKeyType.CURRENT_MESH)).getId(), 14, levelState.getRootMeshPolygons(), levelState.getMeshGraph());
         aStar.plotRoughPath();
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
     }
 
     @Override

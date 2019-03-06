@@ -17,6 +17,8 @@ public class Turret extends AIEntity {
     private int health;
     private IsoscelesTriangle shape;
 
+    private int width;
+
     private Weapon weapon;
 
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
@@ -27,6 +29,8 @@ public class Turret extends AIEntity {
         health = initialHealth;
 
         this.weapon=  new BasicWeapon(name, 10, 30);
+
+        this.width = size;
     }
 
     @Override
@@ -59,6 +63,11 @@ public class Turret extends AIEntity {
                 levelState.addBullet(weapon.shoot(getForwardUnitVector()));
             }
         }
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
     }
 
     @Override

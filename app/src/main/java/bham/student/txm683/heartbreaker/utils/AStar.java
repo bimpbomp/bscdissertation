@@ -2,22 +2,19 @@ package bham.student.txm683.heartbreaker.utils;
 
 import android.util.Log;
 import android.util.Pair;
+import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.graph.Edge;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.*;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.Status.FAILURE;
 import static bham.student.txm683.heartbreaker.ai.behaviours.Status.SUCCESS;
 
 public class AStar {
-
-    private String aIName;
 
     private Node<Integer> startNode;
     private Node<Integer> targetNode;
@@ -35,14 +32,20 @@ public class AStar {
     //i.e. the tile that comes before the key tile in the path
     private Map<Node<Integer>, Node<Integer>> cameFrom;
 
-    public AStar(String aIName, int startMeshId, int targetMeshId, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
-        this.aIName = aIName;
+    private List<Point> waypointPath;
+
+    private AIEntity controlled;
+
+    public AStar(AIEntity controlled, int startMeshId, int targetMeshId, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
+        this.controlled = controlled;
 
         this.startNode = meshGraph.getNode(startMeshId);
         this.targetNode = meshGraph.getNode(targetMeshId);
 
         this.meshPolygonMap = meshPolygonMap;
         this.meshGraph = meshGraph;
+
+        this.waypointPath = new ArrayList<>();
 
         openSet = new PriorityQueue<>(10, (a, b) -> {
             if (a.second < b.second)
@@ -58,39 +61,78 @@ public class AStar {
         this.openSet.clear();
         this.cameFrom = new HashMap<>();
         this.costSoFar = new HashMap<>();
+        this.waypointPath = new ArrayList<>();
     }
 
-    public void plotRoughPath(){
+    public int plotRoughPath(){
         reset();
-        Status status = applyAStar();
+        Status PathFindingStatus = applyAStar();
+
+        int returnStatus;
+
         Integer[] roughPath;
 
-        if (status == SUCCESS)
+        if (PathFindingStatus == SUCCESS)
             roughPath = PathFinding.tracePath(PathFinding.formPathStack(cameFrom, targetNode));
         else
             roughPath = new Integer[0];
 
         StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder sb2 = new StringBuilder();
 
-        if (roughPath.length > 0) {
+        if (roughPath.length == 1){
+            stringBuilder.append("ALREADY AT DESTINATION");
+            returnStatus = 0;
+        }else if (roughPath.length > 1) {
             for (int meshId : roughPath) {
                 stringBuilder.append(meshId);
                 stringBuilder.append(", ");
             }
             stringBuilder.append("END");
+
+            Point p = controlled.getCenter();
+            //Point p = new Point(100,100);
+
+            for (int i = 1; i < roughPath.length; i++){
+                MeshPolygon meshPolygon = meshPolygonMap.get(roughPath[i]);
+
+                if (meshPolygon == null){
+                    Log.d("ASTAR", "null pointer in path for " + controlled.getName());
+                    return -1;
+                }
+
+                p = meshPolygon.getNearestPoint(p, controlled.getWidth());
+
+                waypointPath.add(p);
+            }
+            sb2.append("WAYPOINT PATH: ");
+            for (Point point : waypointPath){
+                sb2.append(point.toString());
+                sb2.append(", ");
+            }
+            sb2.append("END");
+
+            returnStatus = 1;
         } else {
             stringBuilder.append("NO NODES IN PATH");
+
+            returnStatus = -1;
         }
 
-        Log.d("ASTAR", "status: " + status + ", nodes: " + stringBuilder.toString());
+        Log.d("ASTAR", "status: " + PathFindingStatus + ", nodes: " + stringBuilder.toString());
+
+        if (waypointPath.size() > 0 ){
+            Log.d("ASTAR", sb2.toString());
+        }
+
+        return returnStatus;
+    }
+
+    public List<Point> getPath(){
+        return waypointPath;
     }
 
     private Status applyAStar(){
-
-        if (startNode.equals(targetNode)){
-            Log.d(aIName, "Already at destination");
-            return SUCCESS;
-        }
 
         //initialise sets by adding the start tile with 0 costs
         openSet.add(new Pair<>(startNode, 0));
@@ -98,6 +140,11 @@ public class AStar {
 
         //has a value of null so the tracePath algorithm knows when to stop backtracking
         cameFrom.put(startNode, null);
+
+        if (startNode.equals(targetNode)){
+            Log.d(controlled.getName(), "Already at destination");
+            return SUCCESS;
+        }
 
         while (!openSet.isEmpty()){
 
@@ -109,12 +156,12 @@ public class AStar {
 
                 Node<Integer> neighbour = connection.traverse();
 
-                Log.d(aIName, "current: " + currentNode.getNodeID().toString() + " neighbour: " + neighbour.getNodeID().toString());
+                Log.d(controlled.getName(), "current: " + currentNode.getNodeID().toString() + " neighbour: " + neighbour.getNodeID().toString());
 
                 //if the next tile is the target, add it to the cameFrom map and return the path generated
                 //by tracePath
                 if (targetNode.equals(neighbour)){
-                    Log.d(aIName, "Target Reached!");
+                    Log.d(controlled.getName(), "Target Reached!");
 
                     cameFrom.put(neighbour, currentNode);
                     return SUCCESS;
