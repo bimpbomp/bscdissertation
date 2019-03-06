@@ -88,6 +88,10 @@ public class Vector implements SaveableState {
         }
     }
 
+    public Vector setLength(float desiredLength){
+        return this.getUnitVector().sMult(desiredLength);
+    }
+
     /**
      * Calculates the unit vector for this vector.
      * @return Unit vector, with tail position preserved.
@@ -122,6 +126,10 @@ public class Vector implements SaveableState {
         Vector sumVectorFromOrigin = new Vector(vector.xRelativeToTail + xRelativeToTail,
                 vector.yRelativeToTail + yRelativeToTail);
         return sumVectorFromOrigin.translate(tail);
+    }
+
+    public Vector vSub(Vector v){
+        return this.vAdd(v.sMult(-1));
     }
 
     /**

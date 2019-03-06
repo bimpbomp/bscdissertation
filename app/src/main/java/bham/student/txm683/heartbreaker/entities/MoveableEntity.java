@@ -20,6 +20,10 @@ public abstract class MoveableEntity extends Entity {
         return rotationVector;
     }
 
+    public float getMaxSpeed() {
+        return maxSpeed;
+    }
+
     public void setRotationVector(Vector rotationVector) {
         this.rotationVector = rotationVector;
     }

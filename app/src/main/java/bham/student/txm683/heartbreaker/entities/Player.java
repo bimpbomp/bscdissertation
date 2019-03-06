@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -29,6 +30,8 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     private Weapon primaryWeapon;
     private Weapon secondaryWeapon;
 
+    private Vector velocity;
+
     private List<Key> keys;
 
     public Player(String name, Point center, int size, float maxSpeed, int upperTriColor, int lowerTriColor, int initialHealth) {
@@ -51,6 +54,8 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         this.secondaryWeapon = new BombThrower(name);
 
         this.keys = new ArrayList<>();
+
+        this.velocity = Vector.ZERO_VECTOR;
     }
 
     public void addKey(Key key){
@@ -100,16 +105,53 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     @Override
     public void tick(float secondsSinceLastGameTick) {
-        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
 
-        if (!movementVector.equals(Vector.ZERO_VECTOR)) {
-            shape.translateShape(movementVector);
+
+        if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR)) {
+            Vector movementForce = getRequestedMovementVector().sMult(4);
+
+            float dot = movementForce.dot(shape.getForwardUnitVector());
+
+            movementForce = movementForce.sMult((float) Math.pow(dot, 2));
+
+            Vector acc = movementForce.sMult(secondsSinceLastGameTick);
+
+            velocity = velocity.vAdd(acc);
+
+            float max = getMaxSpeed() * secondsSinceLastGameTick;
+
+            if (velocity.getLength() > max)
+                velocity = velocity.setLength(max);
+
+            Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " + acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " + getRequestedMovementVector().relativeToString() + " dot: " + dot);
+
+            shape.translateShape(velocity);
+
+            //shape.translateShape(movementVector);
+        } else {
+            velocity = velocity.sMult(0.25f);
+
+            shape.translateShape(velocity);
         }
 
+        Vector force;
         if (!getRotationVector().equals(Vector.ZERO_VECTOR)){
-            shape.rotateShape(getRotationVector());
-        } else if (!movementVector.equals(Vector.ZERO_VECTOR)) {
-            shape.rotateShape(movementVector);
+            force = getRotationVector();
+
+        } else
+            force = getRequestedMovementVector();
+
+        if (!force.equals(Vector.ZERO_VECTOR)) {
+            Vector momArm = new Vector(getCenter(), getCenter().add(shape.getForwardUnitVector().sMult(10f).getRelativeToTailPoint()));
+            Vector parCom = momArm.sMult(force.dot(momArm) / momArm.getLength());
+
+            Vector angF = force.vSub(parCom);
+
+            float angularAcc = momArm.det(angF);
+
+            float angularVelocity = angularAcc * secondsSinceLastGameTick;
+
+            shape.rotateBy(angularVelocity);
         }
 
     }
