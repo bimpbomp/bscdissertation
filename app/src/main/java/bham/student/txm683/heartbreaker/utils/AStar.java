@@ -35,10 +35,11 @@ public class AStar {
     //i.e. the tile that comes before the key tile in the path
     private Map<Node<Integer>, Node<Integer>> cameFrom;
 
-    public AStar(String aIName, Node<Integer> startNode, Node<Integer> targetNode, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
+    public AStar(String aIName, int startMeshId, int targetMeshId, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
         this.aIName = aIName;
-        this.startNode = startNode;
-        this.targetNode = targetNode;
+
+        this.startNode = meshGraph.getNode(startMeshId);
+        this.targetNode = meshGraph.getNode(targetMeshId);
 
         this.meshPolygonMap = meshPolygonMap;
         this.meshGraph = meshGraph;
@@ -50,7 +51,7 @@ public class AStar {
                 return 0;
             return 1; });
 
-
+        reset();
     }
 
     private void reset(){
@@ -60,6 +61,7 @@ public class AStar {
     }
 
     public void plotRoughPath(){
+        reset();
         Status status = applyAStar();
         Integer[] roughPath;
 
@@ -67,6 +69,20 @@ public class AStar {
             roughPath = PathFinding.tracePath(PathFinding.formPathStack(cameFrom, targetNode));
         else
             roughPath = new Integer[0];
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        if (roughPath.length > 0) {
+            for (int meshId : roughPath) {
+                stringBuilder.append(meshId);
+                stringBuilder.append(", ");
+            }
+            stringBuilder.append("END");
+        } else {
+            stringBuilder.append("NO NODES IN PATH");
+        }
+
+        Log.d("ASTAR", "status: " + status + ", nodes: " + stringBuilder.toString());
     }
 
     private Status applyAStar(){

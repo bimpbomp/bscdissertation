@@ -2,12 +2,15 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.annotation.SuppressLint;
 import android.util.Log;
+import bham.student.txm683.heartbreaker.utils.Line;
+import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MeshConstructorV2 {
 
@@ -125,6 +128,21 @@ public class MeshConstructorV2 {
 
         x = tile.add(-1,0);
         addIfVisited(tile, x);
+    }
+
+    public void addPointsToLineToNeighbour(int neighbourId, Point... points){
+        Map<Integer, Line> edgesToNeighbours =
+        if (points == null || points.length == 0){
+            return;
+        }
+
+        if (!edgesToNeighbours.containsKey(neighbourId)){
+            edgesToNeighbours.put();
+        }
+
+        for (Point point : points){
+
+        }
     }
 
     private void addIfVisited(Tile tile, Tile neighbour){
