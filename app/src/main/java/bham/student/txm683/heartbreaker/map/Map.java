@@ -1,15 +1,15 @@
 package bham.student.txm683.heartbreaker.map;
 
+import android.annotation.SuppressLint;
 import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.map.roomGraph.RoomGraph;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
 import java.util.ArrayList;
@@ -25,11 +25,13 @@ public class Map {
 
     private Player player;
 
-    private ArrayList<AIEntity> enemies;
+    private List<AIEntity> enemies;
     private List<Wall> walls;
 
     private HashMap<Integer, Room> rooms;
     private HashMap<String, Door> doors;
+
+    private List<Perimeter> perimeters;
 
     private List<Pickup> pickups;
 
@@ -45,12 +47,25 @@ public class Map {
     private HashMap<Integer, MeshPolygon> rootMeshPolygons;
 
 
+    @SuppressLint("UseSparseArrays")
     public Map(String name, int tileSize){
         this.name = name;
         this.tileSize = tileSize;
         this.doors = new HashMap<>();
 
         this.rootMeshPolygons = new HashMap<>();
+
+        this.perimeters = new ArrayList<>();
+
+    }
+
+    public Map(){
+        this("", 0);
+    }
+
+    public void setDimInTiles(int width, int height){
+        this.widthInTiles = width;
+        this.heightInTiles = height;
     }
 
     public Graph<Integer> getMeshGraph() {
@@ -79,7 +94,7 @@ public class Map {
         this.tileSet = tileSet;
     }
 
-    public Point mapTileToGlobalPoint(Tile tile){
+    /*public Point mapTileToGlobalPoint(Tile tile){
         Point point = new Point(tile.getX(), tile.getY()).sMult(tileSize);
         return new Point(point.getX()+tileSize/2f, point.getY()+tileSize/2f);
     }
@@ -94,7 +109,7 @@ public class Map {
         int x = (int) Math.floor(globalCoordinate.getX()/tileSize);
         int y = (int) Math.floor(globalCoordinate.getY()/tileSize);
         return new Point(x,y);
-    }
+    }*/
 
     public List<Pickup> getPickups() {
         return pickups;
@@ -128,7 +143,7 @@ public class Map {
         this.player = player;
     }
 
-    public void setEnemies(ArrayList<AIEntity> enemies) {
+    public void setEnemies(List<AIEntity> enemies) {
         this.enemies = enemies;
     }
 
@@ -146,12 +161,16 @@ public class Map {
         }
     }
 
-    public ArrayList<AIEntity> getEnemies() {
+    public List<AIEntity> getEnemies() {
         return enemies;
     }
 
-    public HashMap<Integer, Room> getRoomPerimeters() {
-        return rooms;
+    public List<Perimeter> getRoomPerimeters() {
+        return perimeters;
+    }
+
+    public void setPerimeters(List<Perimeter> perimeters) {
+        this.perimeters = perimeters;
     }
 
     public RoomGraph getRoomGraph() {

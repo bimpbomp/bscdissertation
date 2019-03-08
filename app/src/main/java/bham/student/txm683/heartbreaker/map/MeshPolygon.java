@@ -18,6 +18,11 @@ public class MeshPolygon {
         generateArea(meshSet.getContainedTiles(), tileSize);
     }
 
+    public MeshPolygon(int id, Rectangle area){
+        this.id = id;
+        this.area = area;
+    }
+
     private void generateArea(List<Tile> meshSetTiles, int tileSize){
         //sort tiles
         meshSetTiles.sort((a,b) -> {

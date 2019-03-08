@@ -11,15 +11,16 @@ import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
-import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.UniqueID;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class CollisionManager {
 
         this.spatialBins = new ArrayList<>();
 
-        initSpatPatV2();
+        initSpatPatV3();
     }
 
     public void checkCollisions(){
@@ -54,9 +55,9 @@ public class CollisionManager {
 
         fineGrainCollisionDetection();
 
-        checkAIsLineOfSight();
+        //checkAIsLineOfSight();
 
-        generatePlayerVisibleSet();
+        //generatePlayerVisibleSet();
     }
 
     private void generatePlayerVisibleSet(){
@@ -228,9 +229,10 @@ public class CollisionManager {
      */
     private void initSpatPatV2(){
         SpatialBin spatialBin;
+        UniqueID uniqueID = new UniqueID();
 
-        for (Room room : levelState.getMap().getRooms().values()){
-            spatialBin = new SpatialBin(room.getId(), room.getPerimeter().getBoundingBox());
+        for (Perimeter room : levelState.getMap().getRoomPerimeters()){
+            spatialBin = new SpatialBin(uniqueID.id(), room.getBoundingBox());
 
             spatialBins.add(spatialBin);
         }
@@ -248,6 +250,20 @@ public class CollisionManager {
                     //if the collidable intersects this bin's bounding box, add it to the bin's permanent list
                     bin.addPermanent(collidable);
                 }
+            }
+        }
+    }
+
+    private void initSpatPatV3(){
+        SpatialBin spatialBin = new SpatialBin(0, levelState.getLevelBoundingBox());
+
+        spatialBins.add(spatialBin);
+
+        for (Collidable collidable : levelState.getStaticCollidables()){
+            spatialBin.addPermanent(collidable);
+
+            if (collidable instanceof Door){
+                spatialBin.addPermanent(((Door) collidable).getPrimaryField());
             }
         }
     }

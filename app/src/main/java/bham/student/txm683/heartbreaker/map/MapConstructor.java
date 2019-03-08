@@ -165,11 +165,12 @@ public class MapConstructor {
 
         //init map object
         map.setTileSet(tileSet);
+        map.setRooms(rooms);
+
         map.setWalls(walls);
         map.setWidthInTiles(mapWidth);
         map.setHeightInTiles(mapHeight);
 
-        map.setRooms(rooms);
         map.setDoors(doors);
         map.setPlayer(player);
 

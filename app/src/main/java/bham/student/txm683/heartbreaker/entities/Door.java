@@ -11,6 +11,8 @@ import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Door extends Entity implements Renderable {
 
@@ -31,6 +33,9 @@ public class Door extends Entity implements Renderable {
     private static final int UNLOCKED_COLOR = Color.rgb( 0, 255, 0);
 
     private static final float DOOR_RATIO = 0.5f;
+
+    private int width, height;
+    private boolean vertical;
 
     public Door(int doorID, Point center, int width, int height, boolean locked,
                 boolean vertical, int doorColor, int doorSet, Tile sideSets){
@@ -54,6 +59,39 @@ public class Door extends Entity implements Renderable {
         }
 
         this.field = new DoorField(getName(), "F"+doorID, center, width, height, Color.GRAY);
+
+        this.width = width;
+        this.height = height;
+        this.vertical = vertical;
+    }
+
+    public static Door build(JSONObject jsonObject) throws JSONException {
+        int id = jsonObject.getInt("id");
+        Point center = new Point(jsonObject.getJSONObject("center"));
+        int width = jsonObject.getInt("width");
+        int height = jsonObject.getInt("height");
+        int color = jsonObject.getInt("color");
+        boolean locked = jsonObject.getBoolean("locked");
+        boolean vertical = jsonObject.getBoolean("vertical");
+        int doorSet = jsonObject.getInt("door_set");
+        Tile sideSets = new Tile(jsonObject.getJSONObject("side_sets"));
+
+        return new Door(id, center, width, height, locked, vertical, color, doorSet, sideSets);
+    }
+
+    public JSONObject pack() throws JSONException{
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", getDoorID());
+        jsonObject.put("center", getCenter().getStateObject());
+        jsonObject.put("locked", locked);
+        jsonObject.put("vertical", vertical);
+        jsonObject.put("side_sets", sideSets.getStateObject());
+        jsonObject.put("door_set", doorSet);
+        jsonObject.put("color", doorShape.getColor());
+        jsonObject.put("width", width);
+        jsonObject.put("height", height);
+
+        return jsonObject;
     }
 
     public int getDoorSet() {
@@ -158,6 +196,6 @@ public class Door extends Entity implements Renderable {
     }
 
     public int getDoorID(){
-        return Integer.parseInt(getName());
+        return Integer.parseInt(getName().substring(1));
     }
 }

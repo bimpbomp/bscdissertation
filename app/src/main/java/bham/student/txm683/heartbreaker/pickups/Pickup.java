@@ -9,6 +9,8 @@ import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Pickup extends InteractionField implements Renderable {
 
@@ -43,6 +45,27 @@ public class Pickup extends InteractionField implements Renderable {
         }
 
         this.shape = new Rectangle(center, size, size, color);
+    }
+
+    public Pickup(String name, PickupType type, Point center){
+        this(name, type, center, 50);
+    }
+
+    public static Pickup build(JSONObject jsonObject) throws JSONException {
+        String name = jsonObject.getString("name");
+        Point center = new Point(jsonObject.getJSONObject("center"));
+        PickupType type = PickupType.valueOf(jsonObject.getString("type"));
+        return new Pickup(name, type, center);
+    }
+
+    public JSONObject pack() throws JSONException{
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("name", getName());
+        jsonObject.put("center", getCenter().getStateObject());
+
+        jsonObject.put("type", pickupType.toString());
+
+        return jsonObject;
     }
 
     public PickupType getPickupType() {

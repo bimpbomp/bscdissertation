@@ -9,6 +9,8 @@ import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Wall extends Entity implements Renderable {
 
@@ -44,6 +46,29 @@ public class Wall extends Entity implements Renderable {
 
         this.shape = new Rectangle(center, size, size, colorValue);
         this.collisionVertices = shape.getVertices();
+    }
+
+    public static Wall build(JSONObject jsonObject) throws JSONException{
+        String name = jsonObject.getString("name");
+        Point center = new Point(jsonObject.getJSONObject("center"));
+        Point tl = new Point(jsonObject.getJSONObject("tl"));
+        Point br = new Point(jsonObject.getJSONObject("br"));
+        int color = jsonObject.getInt("color");
+        return new Wall(name, tl, br, center, color);
+    }
+
+    public JSONObject pack() throws JSONException{
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("name", getName());
+        jsonObject.put("center", getCenter().getStateObject());
+
+        BoundingBox b = getBoundingBox();
+        jsonObject.put("tl", b.getTopLeft().getStateObject());
+        jsonObject.put("br", b.getBottomRight().getStateObject());
+
+        jsonObject.put("color", shape.getColor());
+
+        return jsonObject;
     }
 
     @Override

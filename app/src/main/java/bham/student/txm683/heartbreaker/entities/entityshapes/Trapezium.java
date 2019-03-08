@@ -26,6 +26,11 @@ public class Trapezium extends Polygon implements Renderable {
     }
 
     @Override
+    public int getColor() {
+        return defaultColor;
+    }
+
+    @Override
     void setForwardUnitVector() {
         this.forwardUnitVector = vertexVectors[0].rotate((float) Math.cos(primaryAngle), (float) Math.sin(primaryAngle)).getUnitVector();
     }

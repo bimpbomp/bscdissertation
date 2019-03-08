@@ -28,6 +28,14 @@ public class Graph <T> {
         return null;
     }
 
+    public Node<T> addNode(Node<T> node){
+        if (!nodes.containsKey(node.getNodeID())){
+            nodes.put(node.getNodeID(), node);
+            return node;
+        }
+        return null;
+    }
+
     public Edge<T> addConnection(Node<T> from, Node<T> to, int weight){
         Edge<T> connection = new Edge<>(uniqueID.id(), from, to, weight);
 

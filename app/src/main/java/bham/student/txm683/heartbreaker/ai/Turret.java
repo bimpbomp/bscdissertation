@@ -7,9 +7,12 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
+import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Turret extends AIEntity {
 
@@ -26,6 +29,16 @@ public class Turret extends AIEntity {
         health = initialHealth;
 
         this.weapon=  new BasicWeapon(name, 10, 30);
+    }
+
+    public Turret(String name, Point center){
+        this(name ,center, 100, ColorScheme.CHASER_COLOR, 100);
+    }
+
+    public static Turret build(JSONObject jsonObject) throws JSONException {
+        Point center = new Point(jsonObject.getJSONObject("center"));
+        String name = jsonObject.getString("name");
+        return new Turret(name, center);
     }
 
     @Override

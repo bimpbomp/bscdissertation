@@ -7,4 +7,5 @@ public interface Shape {
     ShapeIdentifier getShapeIdentifier();
     Point getCenter();
     void translateShape(Vector movementVector);
+    int getColor();
 }

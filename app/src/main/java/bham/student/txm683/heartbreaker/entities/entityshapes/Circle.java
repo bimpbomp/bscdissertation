@@ -27,6 +27,11 @@ public class Circle implements Renderable, Shape {
         this.paint = new Paint();
     }
 
+    @Override
+    public int getColor() {
+        return defaultColor;
+    }
+
     public float getRadius() {
         return radius;
     }

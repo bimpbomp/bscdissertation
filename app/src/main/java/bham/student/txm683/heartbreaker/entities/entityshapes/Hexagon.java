@@ -23,6 +23,11 @@ public class Hexagon extends Polygon implements Renderable {
         defaultColor = color;
     }
 
+    @Override
+    public int getColor() {
+        return defaultColor;
+    }
+
     public static float getPrimaryAngle() {
         return primaryAngle;
     }

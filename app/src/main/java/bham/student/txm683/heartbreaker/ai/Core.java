@@ -9,6 +9,8 @@ import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Core extends AIEntity implements Damageable {
     private Octagon innerShape;
@@ -22,6 +24,16 @@ public class Core extends AIEntity implements Damageable {
 
         this.innerShape = new Octagon(center, size/2, Color.WHITE);
         this.outerShape = new Hexagon(center, size, Color.BLACK);
+    }
+
+    public Core(String name, Point center){
+        this(name, center, 200);
+    }
+
+    public static Core build(JSONObject jsonObject) throws JSONException {
+        Point center = new Point(jsonObject.getJSONObject("center"));
+        String name = jsonObject.getString("name");
+        return new Core(name, center);
     }
 
     @Override

@@ -39,6 +39,11 @@ public class Octagon extends Polygon implements Renderable {
     }
 
     @Override
+    public int getColor() {
+        return defaultColor;
+    }
+
+    @Override
     public void setColor(int color) {
         currentColor = color;
     }

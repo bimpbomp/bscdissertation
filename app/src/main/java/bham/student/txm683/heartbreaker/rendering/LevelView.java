@@ -14,12 +14,12 @@ import bham.student.txm683.heartbreaker.LevelEndStatus;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.MenuActivity;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
 import bham.student.txm683.heartbreaker.map.MapConstructor;
-import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -259,12 +259,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             Point renderOffset = viewWorldOrigin.sMult(-1f);
 
             //draw background
-            canvas.drawRGB(32,32,32);
+            canvas.drawRGB(0,0,0);
 
             //draw room backgrounds
-            for (Room room : levelState.getMap().getRoomPerimeters().values()){
-                if (isOnScreen(room.getPerimeter()))
-                    room.getPerimeter().draw(canvas, renderOffset, secondsSinceLastGameTick, false);
+            for (Perimeter room : levelState.getMap().getRoomPerimeters()){
+                if (isOnScreen(room))
+                    room.draw(canvas, renderOffset, secondsSinceLastGameTick, false);
             }
 
             //draw doors
@@ -318,14 +318,15 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             //draw vis set (if turned on)
-            if (debugInfo.renderVisSet()){
+            //TODO commented to disable tileset rendering (obsolete)
+            /*if (debugInfo.renderVisSet()){
                 Point center;
                 for (Tile tile : levelState.getTileSet().getTilesVisibleToPlayer()){
                     Log.d("hb::DrawingVis", tile.toString());
                     center = new Point(tile.add(tileSize/2, tileSize/2)).add(renderOffset);
                     canvas.drawCircle(center.getX(), center.getY(), 20, tilePaint);
                 }
-            }
+            }*/
 
             //draw grid (if turned on)
             if (debugInfo.renderMapTileGrid())

@@ -5,17 +5,16 @@ import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.Core;
-import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
-import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
@@ -337,12 +336,16 @@ public class LevelState {
         this.aiManager = aiManager;
     }
 
-    public boolean inSameRoom(Entity entity1, Entity entity2){
+    /*public boolean inSameRoom(Entity entity1, Entity entity2){
         for (Room room : map.getRooms().values()){
             if (room.isEntityInRoom(entity1)){
                 return room.isEntityInRoom(entity2);
             }
         }
         return false;
+    }*/
+
+    public BoundingBox getLevelBoundingBox(){
+        return new BoundingBox(0, 0, (int) map.getWidth(), (int) map.getHeight());
     }
 }
