@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 
@@ -21,6 +22,10 @@ public class MeshPolygon {
     public MeshPolygon(int id, Rectangle area){
         this.id = id;
         this.area = area;
+    }
+
+    public BoundingBox getBoundingBox(){
+        return area.getBoundingBox();
     }
 
     private void generateArea(List<Tile> meshSetTiles, int tileSize){

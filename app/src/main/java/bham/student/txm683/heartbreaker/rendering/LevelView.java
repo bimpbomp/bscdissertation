@@ -128,7 +128,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         if (this.levelState == null) {
 
             tileSize = 200;
-            MapConstructor mapConstructor = new MapConstructor();
+            MapConstructor mapConstructor = new MapConstructor(context);
 
             this.levelState = new LevelState(mapConstructor.loadMap("Map2", tileSize));
 
@@ -259,7 +259,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             Point renderOffset = viewWorldOrigin.sMult(-1f);
 
             //draw background
-            canvas.drawRGB(0,0,0);
+            canvas.drawColor(Color.GREEN);
 
             //draw room backgrounds
             for (Perimeter room : levelState.getMap().getRoomPerimeters()){

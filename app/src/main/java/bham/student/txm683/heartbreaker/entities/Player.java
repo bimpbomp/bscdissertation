@@ -62,7 +62,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     }
 
     public Player(Point center){
-        this("player", center, 100, 300, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
+        this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
     }
 
     public static Player build(JSONObject jsonObject) throws JSONException {
