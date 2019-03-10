@@ -127,6 +127,21 @@ public class MeshConstructorV2 {
         addIfVisited(tile, x);
     }
 
+    /*public void addPointsToLineToNeighbour(int neighbourId, Point... points){
+        Map<Integer, Line> edgesToNeighbours =
+        if (points == null || points.length == 0){
+            return;
+        }
+
+        if (!edgesToNeighbours.containsKey(neighbourId)){
+            edgesToNeighbours.put();
+        }
+
+        for (Point point : points){
+
+        }
+    }*/
+
     private void addIfVisited(Tile tile, Tile neighbour){
         int tileInt = getTileInt(tile);
         int neighbourInt = getTileInt(neighbour);

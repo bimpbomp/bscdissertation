@@ -5,10 +5,10 @@ import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
+import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.Entity;
-import bham.student.txm683.heartbreaker.utils.PathFinding;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -29,12 +29,15 @@ public class FleeFromTarget extends BNode {
     }
 
     @Override
-    public void init(BContext context) {
+    public void reset(BContext context) {
         //do pathfinding
-        levelState = (LevelState) context.getValue(BContext.LEVEL_STATE);
-        controlledEntity = (AIEntity) context.getValue(BContext.HOST_ENTITY);
+        levelState = (LevelState) context.getValue(BKeyType.LEVEL_STATE);
+        controlledEntity = (AIEntity) context.getValue(BKeyType.CONTROLLED_ENTITY);
 
-        path = new LinkedList<>(PathFinding.bfsFlee(levelState.getTileSet(), controlledEntity.getCenter()));
+        //path = new LinkedList<>(PathFinding.bfsFlee(levelState.getTileSet(), controlledEntity.getCenter()));
+
+        //TODO change
+        path = new LinkedList<>();
 
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -45,12 +48,12 @@ public class FleeFromTarget extends BNode {
 
     @Override
     public Status process(BContext context) {
-        if (context.containsKey(BContext.FLEE_FROM) && context.containsKey(BContext.HOST_ENTITY)){
-            entityFleeingFrom = (Entity) context.getValue(BContext.FLEE_FROM);
+        if (context.containsKeys(BKeyType.FLEE_FROM) && context.containsKeys(BKeyType.CONTROLLED_ENTITY)){
+            entityFleeingFrom = (Entity) context.getValue(BKeyType.FLEE_FROM);
 
-            controlledEntity = (AIEntity) context.getValue(BContext.HOST_ENTITY);
+            controlledEntity = (AIEntity) context.getValue(BKeyType.CONTROLLED_ENTITY);
 
-            TileSet tileSet = ((LevelState) context.getValue(BContext.LEVEL_STATE)).getTileSet();
+            TileSet tileSet = ((LevelState) context.getValue(BKeyType.LEVEL_STATE)).getTileSet();
 
             if (!path.isEmpty()) {
                 //if there are nodes left to travel
@@ -79,9 +82,9 @@ public class FleeFromTarget extends BNode {
 }
 
 /*
-Entity entity = (Entity) context.getValue(BContext.FLEE_FROM);
+Entity entity = (Entity) context.getValue(BKeyType.FLEE_FROM);
 
-AIEntity controlledEntity = ((AIEntity) context.getValue(BContext.HOST_ENTITY));
+AIEntity controlledEntity = ((AIEntity) context.getValue(BKeyType.CONTROLLED_ENTITY));
         Log.d("hb::FleeFromTarget", "fleeing: " + new Vector(controlledEntity.getCenter(), entity.getCenter()).sMult(-1f).toString());
 
                 controlledEntity.setRequestedMovementVector(new Vector(controlledEntity.getCenter(), entity.getCenter()).sMult(-1f).getUnitVector());

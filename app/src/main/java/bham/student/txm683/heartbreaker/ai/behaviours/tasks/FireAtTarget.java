@@ -10,12 +10,12 @@ import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.Shooter;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
-import static bham.student.txm683.heartbreaker.ai.behaviours.BContext.*;
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 
 public class FireAtTarget extends BNode {
 
     @Override
-    public void init(BContext context) {
+    public void reset(BContext context) {
 
     }
 
@@ -23,13 +23,13 @@ public class FireAtTarget extends BNode {
     public Status process(BContext context) {
 
         //if the context contains the host, level_state, sight_vector, and they're of the right type
-        if (context.containsKey(HOST_ENTITY) && context.getValue(HOST_ENTITY) instanceof AIEntity
-                && context.containsKey(BContext.LEVEL_STATE) && context.getValue(LEVEL_STATE) instanceof LevelState
-                && context.containsKey(ATTACK_TARGET) && context.getValue(ATTACK_TARGET) instanceof Entity){
+        if (context.containsKeys(CONTROLLED_ENTITY)
+                && context.containsKeys(LEVEL_STATE)
+                && context.containsKeys(ATTACK_TARGET)){
 
             //get the controlled entity
-            AIEntity controlledEntity = (AIEntity) context.getValue(HOST_ENTITY);
-            LevelState levelState = (LevelState) context.getValue(BContext.LEVEL_STATE);
+            AIEntity controlledEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+            LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
 
             //if controlled entity can't shoot, FAIL
             if (!(controlledEntity instanceof Shooter))

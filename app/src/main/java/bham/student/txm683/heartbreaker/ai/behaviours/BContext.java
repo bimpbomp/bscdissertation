@@ -1,32 +1,46 @@
 package bham.student.txm683.heartbreaker.ai.behaviours;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class BContext {
-    private HashMap<String, Object> pairs;
 
-    public static final String MOVE_TO = "move_target";
-    public static final String HOST_ENTITY = "controlled_entity";
-    public static final String FLEE_FROM = "attack_target";
-    public static final String HEALTH_BOUND = "health_bound";
-    public static final String ATTACK_TARGET = "attack_target";
-    public static final String LEVEL_STATE = "level_state";
-    public static final String VIEW_RANGE = "view_range";
-    public static final String SIGHT_BLOCKED = "sight_blocked";
+    private Map<BKeyType, Object> pairs;
 
     public BContext(){
-        pairs = new HashMap<>();
+        this.pairs = new HashMap<>();
     }
 
-    public void addPair(String key, Object value){
-        pairs.put(key, value);
+    public boolean containsKeys(BKeyType... keys){
+        if (keys == null || keys.length == 0)
+            return false;
+
+        for (BKeyType key : keys) {
+            //if the key isn't in the context, return false
+            if (!pairs.containsKey(key))
+                return false;
+
+            Class sclass = pairs.get(key).getClass();
+            while (sclass != null && !sclass.equals(Object.class)){
+
+                if (sclass.equals(key.getType()))
+                    return true;
+
+                sclass = sclass.getSuperclass();
+            }
+        }
+        return false;
     }
 
-    public Object getValue(String key){
+    public void addPair(BKeyType key, Object value){
+        this.pairs.put(key, value);
+    }
+
+    public void removePair(BKeyType key){
+        this.pairs.remove(key);
+    }
+
+    public Object getValue(BKeyType key){
         return pairs.getOrDefault(key, null);
-    }
-
-    public boolean containsKey(String key){
-        return pairs.containsKey(key);
     }
 }
