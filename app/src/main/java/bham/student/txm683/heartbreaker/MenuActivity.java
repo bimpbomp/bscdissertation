@@ -78,6 +78,9 @@ public class MenuActivity extends Activity {
         Button button = findViewById(R.id.launch_button);
         button.setOnClickListener((v) -> {
 
+            if (levelLauncher.getMapName().equals(""))
+                return;
+
             Intent exitIntent = new Intent(this, MainActivity.class);
             exitIntent.putExtra(BUNDLE_EXTRA, levelLauncher.createBundle());
             startActivity(exitIntent);

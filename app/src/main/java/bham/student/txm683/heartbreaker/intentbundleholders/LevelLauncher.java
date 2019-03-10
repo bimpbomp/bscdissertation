@@ -7,7 +7,7 @@ public class LevelLauncher {
     private String mapName;
 
     public LevelLauncher(){
-
+        mapName = "";
     }
 
     public LevelLauncher(Bundle bundle){
