@@ -39,6 +39,11 @@ public class Kite extends Polygon implements Renderable {
     }
 
     @Override
+    public int getColor() {
+        return defaultUpperTriColor;
+    }
+
+    @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         /*
         * Ignoring interpolationVector since it's not implemented yet,

@@ -137,7 +137,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private String readFromFile(String fileName){
+    public String readFromFile(String fileName){
         StringBuilder readInString = new StringBuilder();
         try {
             File file2 = new File(fileName);

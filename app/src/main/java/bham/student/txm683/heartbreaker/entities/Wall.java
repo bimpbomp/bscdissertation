@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
@@ -9,6 +8,8 @@ import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Wall extends Entity implements Renderable {
 
@@ -46,14 +47,37 @@ public class Wall extends Entity implements Renderable {
         this.collisionVertices = shape.getVertices();
     }
 
+    public static Wall build(JSONObject jsonObject) throws JSONException{
+        String name = jsonObject.getString("name");
+        Point center = new Point(jsonObject.getJSONObject("center"));
+        Point tl = new Point(jsonObject.getJSONObject("tl"));
+        Point br = new Point(jsonObject.getJSONObject("br"));
+        int color = jsonObject.getInt("color");
+        return new Wall(name, tl, br, center, color);
+    }
+
+    public JSONObject pack() throws JSONException{
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("name", getName());
+        jsonObject.put("center", getCenter().getStateObject());
+
+        BoundingBox b = getBoundingBox();
+        jsonObject.put("tl", b.getTopLeft().getStateObject());
+        jsonObject.put("br", b.getBottomRight().getStateObject());
+
+        jsonObject.put("color", shape.getColor());
+
+        return jsonObject;
+    }
+
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName){
 
         shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
-        Point offsetCenter = getCenter().add(renderOffset);
+        //Point offsetCenter = getCenter().add(renderOffset);
 
-        canvas.drawCircle(offsetCenter.getX(), offsetCenter.getY(), 10, new Paint());
+        //canvas.drawCircle(offsetCenter.getX(), offsetCenter.getY(), 10, new Paint());
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));

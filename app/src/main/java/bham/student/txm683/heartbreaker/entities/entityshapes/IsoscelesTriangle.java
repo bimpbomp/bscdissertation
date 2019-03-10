@@ -25,6 +25,11 @@ public class IsoscelesTriangle extends Polygon implements Renderable {
     }
 
     @Override
+    public int getColor() {
+        return defaultColor;
+    }
+
+    @Override
     public void setForwardUnitVector() {
         this.forwardUnitVector = vertexVectors[0].getUnitVector();
     }

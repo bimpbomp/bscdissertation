@@ -14,6 +14,7 @@ import bham.student.txm683.heartbreaker.LevelEndStatus;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.MenuActivity;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
@@ -129,7 +130,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         if (this.levelState == null) {
 
             tileSize = 200;
-            MapConstructor mapConstructor = new MapConstructor();
+            MapConstructor mapConstructor = new MapConstructor(context);
 
             this.levelState = new LevelState(mapConstructor.loadMap("Map2", tileSize));
 
@@ -260,12 +261,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             Point renderOffset = viewWorldOrigin.sMult(-1f);
 
             //draw background
-            canvas.drawRGB(32,32,32);
+            canvas.drawColor(Color.GREEN);
 
             //draw room backgrounds
-            for (Room room : levelState.getMap().getRoomPerimeters().values()){
-                if (isOnScreen(room.getPerimeter()))
-                    room.getPerimeter().draw(canvas, renderOffset, secondsSinceLastGameTick, false);
+            for (Perimeter room : levelState.getMap().getRoomPerimeters()){
+                if (isOnScreen(room))
+                    room.draw(canvas, renderOffset, secondsSinceLastGameTick, false);
             }
 
             //draw meshGrid
@@ -327,8 +328,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     wall.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
-            /*//draw vis set (if turned on)
-            if (debugInfo.renderVisSet()){
+            //draw vis set (if turned on)
+            //TODO commented to disable tileset rendering (obsolete)
+            /*if (debugInfo.renderVisSet()){
                 Point center;
                 for (Tile tile : levelState.getTileSet().getTilesVisibleToPlayer()){
                     Log.d("hb::DrawingVis", tile.toString());

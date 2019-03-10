@@ -1,22 +1,36 @@
 package bham.student.txm683.heartbreaker.map;
 
+
 import android.graphics.Color;
 
-public enum TileType {
-    ROOM_BOUNDARY (Color.BLACK),
-    PLAYER (Color.CYAN),
-    CHASER (Color.rgb(255, 153, 51)),
-    DOOR (Color.BLUE),
-    INVALID (Color.GRAY);
+import java.util.HashSet;
 
-    private int colorValue;
+public class TileType {
+    static final int WALL = Color.BLACK;
+    static final int PLAYER = Color.WHITE;
+    static final int DRONE = Color.YELLOW;
+    static final int DOOR = Color.BLUE;
+    static final int INVALID = Color.GRAY;
+    static final int CORE = Color.GREEN;
 
-    TileType(int colorValue){
-        this.colorValue = colorValue;
+    private static HashSet<Integer> colorConstants = new HashSet<>();
+
+    static {
+
+        colorConstants.add(WALL);
+        colorConstants.add(PLAYER);
+        colorConstants.add(DRONE);
+        colorConstants.add(DOOR);
+        colorConstants.add(INVALID);
+        colorConstants.add(CORE);
+
     }
 
-    public int getColorValue(){
-        return this.colorValue;
+    private TileType(){
+
+    }
+
+    static boolean isValidTileType(int color){
+        return colorConstants.contains(color);
     }
 }
-

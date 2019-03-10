@@ -7,6 +7,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Line;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 
@@ -31,6 +32,11 @@ public class MeshPolygon {
         this.edgesToNeighbours = new HashMap<>();
 
         generateArea(meshSet.getContainedTiles(), tileSize);
+    }
+
+    public MeshPolygon(int id, Rectangle area){
+        this.id = id;
+        this.area = area;
     }
 
     public Map<Integer, Line> getEdgesToNeighbours() {
@@ -73,6 +79,10 @@ public class MeshPolygon {
         area.draw(canvas, renderOffset, 0, false);
 
         RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, ""+id, getCenter().add(renderOffset), Color.WHITE, 5);
+    }
+
+    public BoundingBox getBoundingBox(){
+        return area.getBoundingBox();
     }
 
     private void generateArea(List<Tile> meshSetTiles, int tileSize){

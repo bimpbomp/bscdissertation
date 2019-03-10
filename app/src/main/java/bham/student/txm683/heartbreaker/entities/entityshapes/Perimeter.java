@@ -39,6 +39,11 @@ public class Perimeter implements Renderable, Collidable, Shape {
     }
 
     @Override
+    public int getColor() {
+        return defaultColor;
+    }
+
+    @Override
     public Point[] getCollisionVertices() {
         return this.vertices;
     }

@@ -89,7 +89,9 @@ public class Level implements Runnable {
                             }
                         }
                     }*/
-                    levelState.getTileSet().clearTemporaries();
+
+                    //TODO tileset now obsolete
+                    /*levelState.getTileSet().clearTemporaries();
 
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
                         levelState.getTileSet().addTemporaryToGrid(aiEntity);
@@ -99,7 +101,7 @@ public class Level implements Runnable {
 
                     for (Projectile projectile : levelState.getBullets()){
                         levelState.getTileSet().addTemporaryToGrid(projectile);
-                    }
+                    }*/
 
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
 

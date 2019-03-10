@@ -8,6 +8,9 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
+import bham.student.txm683.heartbreaker.ai.behaviours.decorators.IsTargetVisible;
+import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FireAtTarget;
+import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Idle;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.Shooter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
@@ -16,9 +19,13 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
+import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.utils.graph.Node;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -63,6 +70,16 @@ public class Drone extends AIEntity implements Shooter {
         context.addPair(BKeyType.VIEW_RANGE, 600);
         context.addPair(BKeyType.CONTROLLED_ENTITY, this);
         context.addPair(BKeyType.TIME_PER_IDLE, 25);
+    }
+
+    public Drone(String name, Point center){
+        this(name, center, 100, ColorScheme.CHASER_COLOR, 300, 100);
+    }
+
+    public static Drone build(JSONObject jsonObject) throws JSONException {
+        Point center = new Point(jsonObject.getJSONObject("center"));
+        String name = jsonObject.getString("name");
+        return new Drone(name, center);
     }
 
     @Override

@@ -9,6 +9,7 @@ import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.BombThrower;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
+import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.pickups.Key;
@@ -16,6 +17,8 @@ import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +59,15 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         this.keys = new ArrayList<>();
 
         this.velocity = Vector.ZERO_VECTOR;
+    }
+
+    public Player(Point center){
+        this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
+    }
+
+    public static Player build(JSONObject jsonObject) throws JSONException {
+        Point center = new Point(jsonObject.getJSONObject("center"));
+        return new Player(center);
     }
 
     public void addKey(Key key){
