@@ -5,6 +5,7 @@ import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Hexagon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Octagon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -47,6 +48,11 @@ public class Core extends AIEntity implements Damageable {
     @Override
     public void rotate(Vector rotationVector) {
 
+    }
+
+    @Override
+    public Weapon getWeapon() {
+        return null;
     }
 
     @Override

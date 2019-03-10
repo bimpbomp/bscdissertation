@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.composites;
 
+import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
@@ -54,6 +55,7 @@ public abstract class CompositeBNode extends BNode {
                 executionSequence.poll();
             } else {
                 setStatus(childStatus);
+                Log.d("COMPNode", "child returned " + childStatus + " which is invalid. Stopping");
                 return getStatus();
             }
         }

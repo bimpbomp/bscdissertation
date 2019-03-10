@@ -30,4 +30,11 @@ public class Behaviour {
                 Tasks.followPath()
         );
     }
+
+    public static BNode stationaryShootBehaviour(){
+        return new Sequence(
+                Tasks.checkLineOfSight(),
+                Tasks.shoot()
+        );
+    }
 }

@@ -2,7 +2,9 @@ package bham.student.txm683.heartbreaker.ai;
 
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
+import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
+import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
@@ -21,6 +23,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         super(name, maxSpeed);
         context = new BContext();
     }
+
+    public abstract Weapon getWeapon();
 
     public BContext getContext() {
         return context;
@@ -41,6 +45,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     public void setLevelState(LevelState levelState){
         this.levelState = levelState;
+        this.context.addPair(BKeyType.LEVEL_STATE, levelState);
     }
 
     public Tile[] getPath() {

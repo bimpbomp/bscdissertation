@@ -3,7 +3,7 @@ package bham.student.txm683.heartbreaker.ai;
 import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
-import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Tasks;
+import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -38,8 +38,7 @@ public class Turret extends AIEntity {
 
         this.width = size;
 
-        this.behaviourTreeRoot =
-                Tasks.checkLineOfSight();
+        this.behaviourTreeRoot = Behaviour.stationaryShootBehaviour();
 
         context.addPair(BKeyType.VIEW_RANGE, 600);
         context.addPair(BKeyType.CONTROLLED_ENTITY, this);
@@ -54,6 +53,11 @@ public class Turret extends AIEntity {
         Point center = new Point(jsonObject.getJSONObject("center"));
         String name = jsonObject.getString("name");
         return new Turret(name, center);
+    }
+
+    @Override
+    public Weapon getWeapon() {
+        return weapon;
     }
 
     @Override
@@ -141,8 +145,6 @@ public class Turret extends AIEntity {
         health -= damageToInflict;
         return health < 1;
     }
-
-
 
     @Override
     public void restoreHealth(int healthToRestore) {

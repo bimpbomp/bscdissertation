@@ -8,6 +8,7 @@ import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
+import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -229,13 +230,89 @@ public class Tasks {
                 if (context.containsKeys(SIGHT_BLOCKED, SIGHT_VECTOR, CONTROLLED_ENTITY)){
                     if ((Boolean) context.getValue(SIGHT_BLOCKED)){
                         ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.WHITE);
-                        return SUCCESS;
+
                     } else {
                         ((AIEntity) context.getValue(CONTROLLED_ENTITY)).rotate((Vector) context.getValue(SIGHT_VECTOR));
                         ((AIEntity) context.getValue(CONTROLLED_ENTITY)).revertToDefaultColor();
+                        return SUCCESS;
                     }
                 }
                 return FAILURE;
+            }
+        };
+    }
+
+    public static BNode shoot(){
+        return new BNode() {
+            private int count;
+
+            @Override
+            public void construct() {
+                super.construct();
+                count = 0;
+            }
+
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE, SIGHT_BLOCKED)){
+
+                    if ((Boolean) context.getValue(SIGHT_BLOCKED)) {
+                        Log.d("SHOOT", "sight is blocked, cannot shoot " + (++count));
+                        return FAILURE;
+                    }
+
+                    Log.d("SHOOT", "processing shoot!");
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                    Player player = levelState.getPlayer();
+                    float projSpeed = controlled.getWeapon().getSpeed();
+                    Point playerVel = player.getVelocity().getRelativeToTailPoint();
+                    Point playerPos = player.getCenter();
+                    Point aiPos = controlled.getCenter();
+
+                    float a = square(playerVel.getX()) + square(playerVel.getY())
+                            - square(projSpeed);
+
+                    float b = 2 * (
+                            (playerVel.getX() * (playerPos.getX() - aiPos.getX()))
+                            + (playerVel.getY() * (playerPos.getY() - aiPos.getY()))
+                    );
+
+                    float c = square(playerPos.getX() - aiPos.getX())
+                            + square(playerPos.getY() - aiPos.getY());
+
+                    float disc = b*b - 4 * a * c;
+
+                    float t1 = (float) (-1 * b + Math.sqrt(disc)) / (2 * a);
+                    float t2 = (float) (-1 * b - Math.sqrt(disc)) / (2 * a);
+
+                    float t = getT(t1, t2);
+
+                    if (t<0)
+                        return FAILURE;
+
+                    Point aimPoint = playerVel.sMult(t).add(playerPos);
+
+                    levelState.addBullet(controlled.getWeapon().shoot(new Vector(aiPos, aimPoint).getUnitVector()));
+
+                    return SUCCESS;
+                } else {
+                    Log.d("SHOOT", "required context isn't present");
+                }
+                return FAILURE;
+            }
+
+            private float getT(float t1, float t2){
+                if (t1 < 0)
+                    return t2;
+                if (t2 < 0)
+                    return t1;
+
+                return Math.min(t1,t2);
+            }
+
+            private float square(float a){
+                return a*a;
             }
         };
     }

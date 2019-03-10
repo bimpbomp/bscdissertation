@@ -4,6 +4,7 @@ import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.entities.Entity;
+import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -13,7 +14,7 @@ public enum BKeyType {
     CONTROLLED_ENTITY(AIEntity.class),
     FLEE_FROM (Entity.class),
     HEALTH_BOUND (Integer.class),
-    ATTACK_TARGET (Entity.class),
+    ATTACK_TARGET (MoveableEntity.class),
     LEVEL_STATE (LevelState.class),
     VIEW_RANGE (Integer.class),
     SIGHT_BLOCKED (Boolean.class),

@@ -77,6 +77,11 @@ public class Drone extends AIEntity implements Shooter {
     }
 
     @Override
+    public Weapon getWeapon() {
+        return weapon;
+    }
+
+    @Override
     public void rotate(Vector rotationVector) {
         shape.rotateShape(rotationVector);
     }

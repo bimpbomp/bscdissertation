@@ -17,7 +17,9 @@ public abstract class Weapon {
 
     private AmmoType ammoType;
 
-    public Weapon(String owner, int afterFiringCooldownInTicks, AmmoType ammoType){
+    private float speed;
+
+    public Weapon(String owner, int afterFiringCooldownInTicks, AmmoType ammoType, float bulletSpeed){
         this.owner = owner;
         this.uniqueID = new UniqueID();
 
@@ -27,6 +29,12 @@ public abstract class Weapon {
         this.timer = new GameTickTimer(25);
 
         this.ammoType = ammoType;
+
+        this.speed = bulletSpeed;
+    }
+
+    public float getSpeed() {
+        return speed;
     }
 
     public AmmoType getAmmoType() {
