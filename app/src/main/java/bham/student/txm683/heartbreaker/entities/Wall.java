@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
@@ -76,9 +75,9 @@ public class Wall extends Entity implements Renderable {
 
         shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
-        Point offsetCenter = getCenter().add(renderOffset);
+        //Point offsetCenter = getCenter().add(renderOffset);
 
-        canvas.drawCircle(offsetCenter.getX(), offsetCenter.getY(), 10, new Paint());
+        //canvas.drawCircle(offsetCenter.getX(), offsetCenter.getY(), 10, new Paint());
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));

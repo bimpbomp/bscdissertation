@@ -104,8 +104,10 @@ public class MapConstructor {
             for (Pair<Point, Boolean> spawn : mapReader.getDoorSpawns()){
                 Tile sideSets = null;
                 int doorSet = 0;
+                Log.d("DOORCONST", spawn.first + ": " + spawn.second);
 
                 for (MeshPolygon meshSet : meshPolygons){
+                    Log.d("DOORMESH","id: " +meshSet.getId() + ", bb: " + meshSet.getBoundingBox());
 
                     if (meshSet.getBoundingBox().intersecting(spawn.first)){
                         //if door center is in the polygon

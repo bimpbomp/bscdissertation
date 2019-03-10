@@ -128,6 +128,7 @@ public class MapReader {
                         if (pixel == DOOR){
 
                             Direction d = findRoomsAdjacentToDoor(new Tile(columnIdx, rowIdx));
+                            Log.d("DOORSPAWN", columnIdx + ", " + rowIdx + ": " + d.name());
 
                             doorSpawns.add(new Pair<>(convertToGlobal(columnIdx, rowIdx), (d == VERTICAL)));
                         }
