@@ -8,9 +8,6 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
-import bham.student.txm683.heartbreaker.ai.behaviours.decorators.IsTargetVisible;
-import bham.student.txm683.heartbreaker.ai.behaviours.tasks.FireAtTarget;
-import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Idle;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.Shooter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
@@ -23,7 +20,6 @@ import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
-import bham.student.txm683.heartbreaker.utils.graph.Node;
 import org.json.JSONException;
 import org.json.JSONObject;
 

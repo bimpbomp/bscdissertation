@@ -300,10 +300,10 @@ public class MapReader {
 
         //if horizontal direction has both sides free
         if (checkHorizontalDirection(coordinatesOfDoor))
-            return HORIZONTAL;
+            return VERTICAL;
             //if the vertical direction has both sides free
         else if (checkVerticalDirection(coordinatesOfDoor))
-            return VERTICAL;
+            return HORIZONTAL;
 
         //if neither vertical or horizontal have both sides free, then return invalid
         return Direction.INVALID;
