@@ -189,6 +189,10 @@ public class Door extends Entity implements Renderable {
         }
     }
 
+    public boolean isOpen(){
+        return open;
+    }
+
     public boolean isLocked() {
         return locked;
     }

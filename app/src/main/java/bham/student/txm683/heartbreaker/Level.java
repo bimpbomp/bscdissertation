@@ -1,6 +1,5 @@
 package bham.student.txm683.heartbreaker;
 
-import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
@@ -111,11 +110,11 @@ public class Level implements Runnable {
 
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
 
-                        Log.d("hb::AI", "Checking meshploygon for " + aiEntity.getName());
+                        //Log.d("hb::AI", "Checking meshploygon for " + aiEntity.getName());
                         for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
                             if (meshPolygon.getBoundingBox().intersecting(aiEntity.getBoundingBox())){
                                 aiEntity.getContext().addPair(BKeyType.CURRENT_MESH, meshPolygon);
-                                Log.d("hb::AI", "Meshfound for " + aiEntity.getName() + ": " + meshPolygon.getId());
+                                //Log.d("hb::AI", "Meshfound for " + aiEntity.getName() + ": " + meshPolygon.getId());
                                 break;
                             }
                         }

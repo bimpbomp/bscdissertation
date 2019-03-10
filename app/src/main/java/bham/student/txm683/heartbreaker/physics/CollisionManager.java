@@ -5,10 +5,7 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.TileSet;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.entities.Bomb;
-import bham.student.txm683.heartbreaker.entities.Door;
-import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.Projectile;
+import bham.student.txm683.heartbreaker.entities.*;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -27,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.SIGHT_BLOCKED;
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.SIGHT_VECTOR;
 import static bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier.RECTANGLE;
 
 public class CollisionManager {
@@ -55,6 +53,7 @@ public class CollisionManager {
 
         fineGrainCollisionDetection();
 
+        aiSight();
         //checkAIsLineOfSight();
 
         //generatePlayerVisibleSet();
@@ -581,6 +580,55 @@ public class CollisionManager {
         }
 
         return getMinimumPushVector(pushVectors, circle.getCenter(), polygon.getCenter());
+    }
+
+    public void aiSight(){
+        for (AIEntity aiEntity : levelState.getAliveAIEntities()){
+
+            Vector ray = new Vector(aiEntity.getCenter(), levelState.getPlayer().getCenter());
+            boolean blocked;
+
+            if (ray.getLength() < 800){
+                blocked = false;
+
+                for (Wall wall : levelState.getMap().getWalls()){
+                    if (collisionCheckRay(wall, ray)){
+                        blocked = true;
+                        break;
+                    }
+
+                }
+
+                if (!blocked) {
+                    for (Door door : levelState.getMap().getDoors().values()) {
+                        if (door.isOpen()) {
+                            if (collisionCheckRay(door, ray)) {
+                                blocked = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+
+            } else {
+                blocked = true;
+            }
+
+            Log.d("SIGHT", "vector: " + ray + ", blocked: " + blocked);
+            aiEntity.getContext().addPair(SIGHT_VECTOR, ray);
+            aiEntity.getContext().addPair(SIGHT_BLOCKED, blocked);
+        }
+    }
+
+    private static boolean collisionCheckRay(Collidable collidable, Vector ray){
+        Point[] rayVertices = new Point[]{ray.getTail(), ray.getHead()};
+
+        Vector[] axes = getEdgeNormals(getEdges(collidable.getShapeIdentifier(), collidable.getCollisionVertices()));
+        List<Vector> pVs = applySAT(axes, collidable.getCollisionVertices(), rayVertices);
+
+        //if length is equal then sight is blocked...
+        return pVs.size() == axes.length;
     }
 
     //Separating axis theorem for two polygons

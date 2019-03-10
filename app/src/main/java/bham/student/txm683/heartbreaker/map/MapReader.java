@@ -134,9 +134,8 @@ public class MapReader {
                             Log.d("DOORSPAWN", columnIdx + ", " + rowIdx + ": " + d.name());
 
                             doorSpawns.add(new Pair<>(convertToGlobal(columnIdx, rowIdx), (d == VERTICAL)));
-                        }
-
-                        spawnLocations.add(new Pair<>(pixel, convertToGlobal(columnIdx, rowIdx)));
+                        } else
+                            spawnLocations.add(new Pair<>(pixel, convertToGlobal(columnIdx, rowIdx)));
                     }
 
                 } else {

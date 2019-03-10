@@ -6,6 +6,7 @@ import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Vector;
 
 public enum BKeyType {
     MOVE_TO (Point.class),
@@ -16,6 +17,7 @@ public enum BKeyType {
     LEVEL_STATE (LevelState.class),
     VIEW_RANGE (Integer.class),
     SIGHT_BLOCKED (Boolean.class),
+    SIGHT_VECTOR (Vector.class),
     CURRENT_MESH (MeshPolygon.class),
     TARGET (Point.class),
     TIME_PER_IDLE (Integer.class),

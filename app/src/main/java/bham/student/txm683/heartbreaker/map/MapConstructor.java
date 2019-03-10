@@ -7,6 +7,7 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.ai.Drone;
+import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
@@ -90,6 +91,8 @@ public class MapConstructor {
                     enemies.add(new Drone("DRONE" + uniqueID.id(), spawn.second));
                 } else if (spawn.first == TileType.CORE){
                     core = new Core("CORE"+uniqueID.id(), spawn.second);
+                } else if (spawn.first == TileType.TURRET){
+                    enemies.add(new Turret("TURRET" + uniqueID.id(), spawn.second));
                 }
             }
 

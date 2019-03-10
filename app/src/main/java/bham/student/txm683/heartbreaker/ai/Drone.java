@@ -3,7 +3,6 @@ package bham.student.txm683.heartbreaker.ai;
 import android.graphics.Canvas;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
@@ -62,7 +61,6 @@ public class Drone extends AIEntity implements Shooter {
                 Behaviour.idleBehaviour()
         );
 
-        context = new BContext();
         context.addPair(BKeyType.VIEW_RANGE, 600);
         context.addPair(BKeyType.CONTROLLED_ENTITY, this);
         context.addPair(BKeyType.TIME_PER_IDLE, 25);

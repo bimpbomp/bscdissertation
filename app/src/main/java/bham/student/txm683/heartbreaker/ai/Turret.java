@@ -1,6 +1,9 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
+import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
+import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
+import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Tasks;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -13,8 +16,6 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.SIGHT_BLOCKED;
-
 public class Turret extends AIEntity {
 
     private int health;
@@ -23,6 +24,8 @@ public class Turret extends AIEntity {
     private int width;
 
     private Weapon weapon;
+
+    private BNode behaviourTreeRoot;
 
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
         super(name, 0);
@@ -34,6 +37,13 @@ public class Turret extends AIEntity {
         this.weapon=  new BasicWeapon(name, 10, 30);
 
         this.width = size;
+
+        this.behaviourTreeRoot =
+                Tasks.checkLineOfSight();
+
+        context.addPair(BKeyType.VIEW_RANGE, 600);
+        context.addPair(BKeyType.CONTROLLED_ENTITY, this);
+        context.addPair(BKeyType.TIME_PER_IDLE, 25);
     }
 
     public Turret(String name, Point center){
@@ -68,14 +78,17 @@ public class Turret extends AIEntity {
 
     @Override
     public void tick(float secondsSinceLastGameTick) {
-        if (context.containsKeys(SIGHT_BLOCKED) && context.getValue(SIGHT_BLOCKED) instanceof  Boolean){
+
+        behaviourTreeRoot.process(context);
+
+        /*if (context.containsKeys(SIGHT_BLOCKED) && context.getValue(SIGHT_BLOCKED) instanceof  Boolean){
             boolean sightBlocked = (boolean) context.getValue(SIGHT_BLOCKED);
 
             if (!sightBlocked){
                 rotate(new Vector(getCenter(), levelState.getPlayer().getCenter()));
                 levelState.addBullet(weapon.shoot(getForwardUnitVector()));
             }
-        }
+        }*/
     }
 
     @Override
@@ -128,6 +141,8 @@ public class Turret extends AIEntity {
         health -= damageToInflict;
         return health < 1;
     }
+
+
 
     @Override
     public void restoreHealth(int healthToRestore) {

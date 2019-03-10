@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.tasks;
 
+import android.graphics.Color;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
@@ -216,7 +217,24 @@ public class Tasks {
                         return RUNNING;
                     }
                 }
-                Log.d("hb::AI", "moveTowardsTarget doesnt contains keys");
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode checkLineOfSight(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(SIGHT_BLOCKED, SIGHT_VECTOR, CONTROLLED_ENTITY)){
+                    if ((Boolean) context.getValue(SIGHT_BLOCKED)){
+                        ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.WHITE);
+                        return SUCCESS;
+                    } else {
+                        ((AIEntity) context.getValue(CONTROLLED_ENTITY)).rotate((Vector) context.getValue(SIGHT_VECTOR));
+                        ((AIEntity) context.getValue(CONTROLLED_ENTITY)).revertToDefaultColor();
+                    }
+                }
                 return FAILURE;
             }
         };

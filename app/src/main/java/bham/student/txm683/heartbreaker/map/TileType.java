@@ -24,6 +24,7 @@ public class TileType {
         colorConstants.add(DOOR);
         colorConstants.add(INVALID);
         colorConstants.add(CORE);
+        colorConstants.add(TURRET);
 
     }
 
