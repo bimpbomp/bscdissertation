@@ -30,6 +30,6 @@ public class LevelLauncher {
     }
 
     public String getMapName(){
-        return this.getMapName();
+        return this.mapName;
     }
 }

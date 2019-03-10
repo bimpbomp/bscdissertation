@@ -11,6 +11,7 @@ import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.exceptions.MCEReason;
 import bham.student.txm683.heartbreaker.utils.exceptions.MapConversionException;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -76,8 +77,9 @@ public class MapReader {
         this.tileSize = tileSize;
         this.centerOffset = new Point(tileSize/2f, tileSize/2f);
 
-        convertMapBitmapToGraph(getMapRId(mapName));
+        convertMapBitmapToGraph(mapName);
     }
+
 
     private int getMapRId(String mapName){
 
@@ -95,13 +97,14 @@ public class MapReader {
         return -1;
     }
 
-    private void convertMapBitmapToGraph(int id) throws MapConversionException {
+    private void convertMapBitmapToGraph(String mapName) throws MapConversionException {
 
         BitmapFactory.Options o = new BitmapFactory.Options();
         o.inScaled = false;
         try {
-            mapImage = BitmapFactory.decodeResource(context.getResources(), R.raw.map1, o);
-        } catch (IllegalArgumentException e){
+            //mapImage = BitmapFactory.decodeResource(context.getResources(), R.raw.map1, o);
+            mapImage = BitmapFactory.decodeStream(context.getAssets().open("maps/"+mapName+".png"));
+        } catch (IOException e){
             throw new MapConversionException(MCEReason.FILE_DECODING, e);
         }
 

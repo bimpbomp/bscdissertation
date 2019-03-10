@@ -2,12 +2,14 @@ package bham.student.txm683.heartbreaker;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import bham.student.txm683.heartbreaker.audio.AudioController;
+import bham.student.txm683.heartbreaker.intentbundleholders.LevelLauncher;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 
 import java.io.*;
@@ -31,8 +33,17 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        Intent intent = getIntent();
+        Bundle bundle = intent.getBundleExtra(MenuActivity.BUNDLE_EXTRA);
+
+        String mapName = "";
+        if (bundle != null){
+            LevelLauncher levelLauncher = new LevelLauncher(bundle);
+            mapName = levelLauncher.getMapName();
+        }
+
         audioController = new AudioController(10);
-        levelView = new LevelView(this);
+        levelView = new LevelView(this, mapName);
 
         setContentView(levelView);
 
@@ -44,6 +55,7 @@ public class MainActivity extends Activity {
         } else {
             Log.d(TAG, "savedInstanceState is null");
         }
+
     }
 
     @Override

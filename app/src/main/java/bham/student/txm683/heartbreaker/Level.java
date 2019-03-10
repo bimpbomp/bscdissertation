@@ -4,8 +4,8 @@ import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
-import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.input.InputManager;
+import bham.student.txm683.heartbreaker.map.MapConstructor;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
@@ -38,8 +38,12 @@ public class Level implements Runnable {
 
     private int loops;
 
-    public Level(LevelView levelView){
+    private String mapName;
+
+    public Level(LevelView levelView, String mapName){
         super();
+
+        this.mapName = mapName;
 
         this.messageBus = new MessageBus();
 
@@ -49,8 +53,33 @@ public class Level implements Runnable {
         renderFPSMonitor = new FPSMonitor();
     }
 
+    private void load(){
+
+        if (this.levelState == null) {
+
+            this.levelView.setTileSize(200);
+            MapConstructor mapConstructor = new MapConstructor(levelView.getContext());
+
+            this.levelState = new LevelState(mapConstructor.loadMap(mapName, levelView.getTileSize()));
+
+            this.inputManager = new InputManager(levelState, levelView.getContext());
+
+            this.levelView.setInputManager(inputManager);
+            this.levelView.setLevelState(levelState);
+
+            levelView.initInGameUI();
+            levelView.setDebugInfo(levelState.getDebugInfo());
+
+            this.setRunning(true);
+        }
+    }
+
     @Override
     public void run(){
+
+        levelView.drawLoading();
+
+        load();
 
         //initialise systems
         entityController = new EntityController(levelState);
@@ -59,6 +88,12 @@ public class Level implements Runnable {
         nextScheduledGameTick = System.currentTimeMillis();
 
         levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e){
+            //do nothing
+        }
 
         //levelState.setPaused(false);
         while (running){
@@ -73,35 +108,6 @@ public class Level implements Runnable {
 
                     levelState.getPlayer().setRequestedMovementVector(inputManager.getThumbstick().getMovementVector());
                     levelState.getPlayer().setRotationVector(inputManager.getRotationThumbstick().getMovementVector());
-
-                    /*for (Room room : levelState.getMap().getRooms().values()){
-                        if (room.isEntityInRoom(levelState.getPlayer())) {
-                            levelState.getPlayer().setRoomID(room.getId());
-                            break;
-                        }
-                    }
-
-                    for (AIEntity aiEntity : levelState.getAliveAIEntities()){
-                        for (Room room : levelState.getMap().getRooms().values()){
-                            if (room.isEntityInRoom(aiEntity)){
-                                aiEntity.setRoomID(room.getId());
-                                break;
-                            }
-                        }
-                    }*/
-
-                    //TODO tileset now obsolete
-                    /*levelState.getTileSet().clearTemporaries();
-
-                    for (AIEntity aiEntity : levelState.getAliveAIEntities()){
-                        levelState.getTileSet().addTemporaryToGrid(aiEntity);
-                    }
-
-                    levelState.getTileSet().addTemporaryToGrid(levelState.getPlayer());
-
-                    for (Projectile projectile : levelState.getBullets()){
-                        levelState.getTileSet().addTemporaryToGrid(projectile);
-                    }*/
 
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
 

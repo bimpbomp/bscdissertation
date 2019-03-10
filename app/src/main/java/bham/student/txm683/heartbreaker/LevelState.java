@@ -261,11 +261,6 @@ public class LevelState {
         this.player = player;
     }
 
-    public void setScreenDimensions(int screenWidth, int screenHeight){
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
-    }
-
     public CopyOnWriteArrayList<Explosion> getExplosions() {
         return explosions;
     }
@@ -305,14 +300,6 @@ public class LevelState {
 
     public Map getMap() {
         return map;
-    }
-
-    public int getScreenWidth() {
-        return screenWidth;
-    }
-
-    public int getScreenHeight() {
-        return screenHeight;
     }
 
     public List<AIEntity> getAliveAIEntities() {

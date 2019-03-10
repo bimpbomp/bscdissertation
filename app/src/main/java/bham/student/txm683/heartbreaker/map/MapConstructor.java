@@ -64,7 +64,7 @@ public class MapConstructor {
         MapReader mapReader = new MapReader(context);
 
         try {
-            mapReader.loadMap("map1", tileSize);
+            mapReader.loadMap(name, tileSize);
 
             MeshConstructorV2 meshConstructor = new MeshConstructorV2();
             meshConstructor.constructMesh(mapReader.getMeshGenList());

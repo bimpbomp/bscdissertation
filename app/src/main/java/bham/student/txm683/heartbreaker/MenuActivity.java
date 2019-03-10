@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -62,7 +63,7 @@ public class MenuActivity extends Activity {
         this.levelLauncher = new LevelLauncher();
 
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.text1, listRaw());
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.text1, listMaps());
 
         //the below is the R.id value of the given field (gotten from listRaw())
         //int resourceID=fields[count].getInt(fields[count]);
@@ -71,13 +72,30 @@ public class MenuActivity extends Activity {
         ListView listView = findViewById(R.id.map_list);
         listView.setAdapter(adapter);
 
+        listView.setOnItemClickListener((parent, view, position, id) -> levelLauncher.setMapName((String) listView.getItemAtPosition(position)));
+
         //add button listener
         Button button = findViewById(R.id.launch_button);
         button.setOnClickListener((v) -> {
+
             Intent exitIntent = new Intent(this, MainActivity.class);
             exitIntent.putExtra(BUNDLE_EXTRA, levelLauncher.createBundle());
             startActivity(exitIntent);
         });
+    }
+
+    public List<String> listMaps(){
+        List<String> maps = new ArrayList<>();
+
+        try {
+            for (String mapName : getAssets().list("maps")){
+                maps.add(mapName.replaceAll(".png$", ""));
+            }
+        } catch (Exception e){
+            Log.d("EXCEPTION", e.getMessage());
+        }
+
+        return maps;
     }
 
     public List<String> listRaw(){

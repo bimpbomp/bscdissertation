@@ -19,9 +19,7 @@ import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.Thumbstick;
-import bham.student.txm683.heartbreaker.map.MapConstructor;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
-import bham.student.txm683.heartbreaker.map.Room;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -57,12 +55,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
      * Creates a new Level view with the given context
      * @param context The context to create the view.
      */
-    public LevelView(Context context){
+    public LevelView(Context context, String mapName){
         super(context);
 
         getHolder().addCallback(this);
 
-        this.level = new Level(this);
+        this.level = new Level(this, mapName);
         setFocusable(true);
 
         textPaint = RenderingTools.initPaintForText(Color.BLACK, 30, Paint.Align.CENTER);
@@ -72,6 +70,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         tilePaint.setColor(Color.MAGENTA);
 
         this.context = context;
+
+        levelThread = new Thread(level);
     }
 
     public void returnToMenu(){
@@ -113,9 +113,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.viewWidth = w;
         this.viewHeight = h;
         super.onSizeChanged(w, h, oldw, oldh);
-
-        if (this.levelState != null)
-            this.levelState.setScreenDimensions(viewWidth, viewHeight);
     }
 
     /**
@@ -126,8 +123,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "surfaceCreated");
+        levelThread.start();
 
-        if (this.levelState == null) {
+        /*if (this.levelState == null) {
 
             tileSize = 200;
             MapConstructor mapConstructor = new MapConstructor(context);
@@ -146,14 +144,30 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         this.levelThread = new Thread(this.level);
         this.level.setRunning(true);
-        this.levelThread.start();
+        this.levelThread.start();*/
+    }
+
+    public int getTileSize() {
+        return tileSize;
+    }
+
+    public void setTileSize(int tileSize) {
+        this.tileSize = tileSize;
+    }
+
+    public void setInputManager(InputManager inputManager) {
+        this.inputManager = inputManager;
+    }
+
+    public void setDebugInfo(DebugInfo debugInfo) {
+        this.debugInfo = debugInfo;
     }
 
     /**
      * Creates the in game ui objects. Called on surface creation and when the surface changes.
      * Will dynamically create the positions and sizes based on available space.
      */
-    private void initInGameUI(){
+    public void initInGameUI(){
         int buttonColor = Color.LTGRAY;
 
         float thumbstickMaxRadius = 150f;
@@ -207,9 +221,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.viewWidth = width;
         this.viewHeight = height;
 
-        this.levelState.setScreenDimensions(viewWidth, viewHeight);
-
-        initInGameUI();
+        //initInGameUI();
 
         Log.d(TAG, "surfaceChanged");
     }
@@ -237,6 +249,26 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return inputManager.onTouchEvent(event);
+    }
+
+    public void drawLoading(){
+        Canvas canvas = getHolder().lockCanvas();
+
+        if (canvas != null){
+            Log.d("LOADING", "canvas not null");
+
+            canvas.drawColor(Color.GRAY);
+            RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "Loading...", new Point(viewWidth/2f, viewHeight/2f), Color.RED, 10);
+
+        } else {
+            Log.d("LOADING", "canvas is null");
+        }
+
+        try {
+            getHolder().unlockCanvasAndPost(canvas);
+        } catch (IllegalArgumentException e){
+            //do nothing
+        }
     }
 
     /**

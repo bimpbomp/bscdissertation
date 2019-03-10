@@ -12,6 +12,7 @@ public class TileType {
     static final int DOOR = Color.BLUE;
     static final int INVALID = Color.GRAY;
     static final int CORE = Color.GREEN;
+    static final int TURRET = Color.RED;
 
     private static HashSet<Integer> colorConstants = new HashSet<>();
 
