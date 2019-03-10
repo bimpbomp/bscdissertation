@@ -181,8 +181,10 @@ public class Door extends Entity implements Renderable {
         if (!locked) {
             if (open) {
                 doorShape.setColor(Color.TRANSPARENT);
+                lockedSymbol.setColor(Color.TRANSPARENT);
             } else {
                 doorShape.revertToDefaultColor();
+                lockedSymbol.revertToDefaultColor();
             }
         }
     }

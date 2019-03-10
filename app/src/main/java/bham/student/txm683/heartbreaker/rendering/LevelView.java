@@ -305,7 +305,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             if (debugInfo.renderVisSet()){
 
                 for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
-                    meshPolygon.draw(canvas, renderOffset, textPaint);
+                    meshPolygon.draw(canvas, renderOffset);
                 }
             }
 
@@ -370,6 +370,14 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     canvas.drawCircle(center.getX(), center.getY(), 20, tilePaint);
                 }
             }*/
+
+            //draw meshGrid
+            if (debugInfo.renderVisSet()){
+
+                for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
+                    meshPolygon.drawLabel(canvas, renderOffset, textPaint);
+                }
+            }
 
             //draw grid (if turned on)
             if (debugInfo.renderMapTileGrid())

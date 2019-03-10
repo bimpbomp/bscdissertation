@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -134,7 +133,9 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
             if (velocity.getLength() > max)
                 velocity = velocity.setLength(max);
 
-            Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " + acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " + getRequestedMovementVector().relativeToString() + " dot: " + dot);
+            /*Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " +
+                    acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " +
+                    getRequestedMovementVector().relativeToString() + " dot: " + dot);*/
 
             shape.translateShape(velocity);
 

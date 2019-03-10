@@ -74,9 +74,11 @@ public class MeshPolygon {
         return area.getCenter();
     }
 
-    public void draw(Canvas canvas, Point renderOffset, Paint textPaint){
+    public void draw(Canvas canvas, Point renderOffset){
         area.draw(canvas, renderOffset, 0, false);
+    }
 
+    public void drawLabel(Canvas canvas, Point renderOffset, Paint textPaint){
         RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, ""+id, getCenter().add(renderOffset), Color.WHITE, 5);
     }
 
@@ -98,8 +100,8 @@ public class MeshPolygon {
         Point topLeft = new Point(tl).sMult(tileSize);
         Point bottomRight = new Point(br).sMult(tileSize);
 
-        Point center = topLeft.add(bottomRight.getX() - topLeft.getX(),
-                bottomRight.getY() - topLeft.getY());
+        Point center = topLeft.add((bottomRight.getX() - topLeft.getX())/2f,
+                (bottomRight.getY() - topLeft.getY())/2f);
 
         this.area = new Rectangle(center, topLeft, bottomRight, Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256)));
     }
