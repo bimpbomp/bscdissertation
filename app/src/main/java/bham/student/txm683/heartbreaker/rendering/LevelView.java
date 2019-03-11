@@ -400,10 +400,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             if (levelState.isPaused()) {
                 canvas.drawARGB(200, 0,0,0);
 
-                int oldColor = textPaint.getColor();
+                /*int oldColor = textPaint.getColor();
                 textPaint.setColor(Color.WHITE);
                 RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "Game is Paused", new Point(viewWidth/2f, viewHeight/3f), Color.RED, 50);
-                textPaint.setColor(oldColor);
+                textPaint.setColor(oldColor);*/
             }
 
             //draw in game ui

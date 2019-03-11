@@ -61,6 +61,8 @@ public class Level implements Runnable {
 
             this.levelState = new LevelState(mapConstructor.loadMap(mapName, levelView.getTileSize()));
 
+            this.levelState.setScreenDimensions(levelView.getWidth(), levelView.getHeight());
+
             this.inputManager = new InputManager(levelState, levelView.getContext());
 
             this.levelView.setInputManager(inputManager);
@@ -88,11 +90,11 @@ public class Level implements Runnable {
 
         levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
 
-        try {
+        /*try {
             Thread.sleep(2000);
         } catch (InterruptedException e){
             //do nothing
-        }
+        }*/
 
         //levelState.setPaused(false);
         while (running){

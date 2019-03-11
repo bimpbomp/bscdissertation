@@ -2,11 +2,16 @@ package bham.student.txm683.heartbreaker.input;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 import android.view.MotionEvent;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.rendering.popups.PopUpElement;
+import bham.student.txm683.heartbreaker.rendering.popups.Popup;
+import bham.student.txm683.heartbreaker.rendering.popups.TextBox;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
 
 public class InputManager {
     private static final String TAG = "hb::InputManager";
@@ -28,9 +33,26 @@ public class InputManager {
 
     private Context context;
 
+    private Popup pauseScreen;
+
+    private Popup completePopup;
+    private Popup diedPopup;
+
     public InputManager(LevelState levelState, Context context){
         this.levelState = levelState;
         this.context = context;
+
+        Tile screenDims = levelState.getScreenDimensions();
+        Point screenCenter = new Point(screenDims).sMult(0.5f);
+
+        PopUpElement[] elements = new PopUpElement[]{
+                new TextBox("Game is Paused", screenCenter, 0, 0, Color.RED, 20, 60),
+                new RectButton("Resume", screenCenter, 300, 100, Color.GRAY, 40, () -> {levelState.setPaused(false); pauseScreen.hide();}),
+                new RectButton("Restart", screenCenter, 300, 100, Color.GRAY, 60, () -> {}),
+                new RectButton("Return To Menu", screenCenter, 300, 100, Color.GRAY, 80, () -> returnToMenuButton.onClick())
+        };
+
+        this.pauseScreen = new Popup(screenCenter, screenDims.getX()/2, (int)(screenDims.getY()/1.5f), true, elements);
     }
 
     public boolean onTouchEvent(MotionEvent event){
@@ -45,10 +67,34 @@ public class InputManager {
         if (!levelState.isPaused()){
             eventHandled = handleWhileResumed(event, eventID, eventIndex, coordinatesPressed);
         } else {
-            eventHandled = handleWhilePaused(event, eventID, eventIndex, coordinatesPressed);
+            //eventHandled = handleWhilePaused(event, eventID, eventIndex, coordinatesPressed);
+            eventHandled = handleWhilePausedV2(event, eventID, coordinatesPressed);
         }
 
         return eventHandled;
+    }
+
+    private boolean handleWhilePausedV2(MotionEvent event, int eventID, Point coordinatesPressed){
+
+        for (Button element : pauseScreen.getInputElements()){
+            Log.d("INPUTMANAGER", "ticking pausescreenelements!");
+
+            if (element.containsPoint(coordinatesPressed)){
+
+                switch (event.getActionMasked()){
+                    case MotionEvent.ACTION_DOWN:
+                        element.setPointerID(eventID);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        element.onClick();
+                        break;
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private boolean handleWhilePaused(MotionEvent event, int eventID, int eventIndex, Point coordinatesPressed){
@@ -198,6 +244,7 @@ public class InputManager {
             thumbstick.cancel();
 
             pauseButton.onClick();
+            pauseScreen.show();
 
         } else if (thumbstick.hasID(eventID)){
             thumbstick.cancel();
@@ -215,7 +262,7 @@ public class InputManager {
 
     public void draw(Canvas canvas, Paint textPaint){
         if (!levelState.isPaused()) {
-            thumbstick.draw(canvas);
+            thumbstick.draw(canvas, textPaint);
 
             /*primaryWeaponButton.setLabel("∞");
             primaryWeaponButton.draw(canvas, textPaint);*/
@@ -223,18 +270,21 @@ public class InputManager {
             secondaryWeaponButton.setLabel(levelState.getPlayer().getSecondaryAmmo()+"");
             secondaryWeaponButton.draw(canvas, textPaint);
 
-            rotationThumbstick.draw(canvas);
+            rotationThumbstick.draw(canvas, textPaint);
+
+            pauseButton.draw(canvas, textPaint);
         } else {
-            returnToMenuButton.draw(canvas, textPaint);
+            pauseScreen.draw(canvas, new Point());
+            /*returnToMenuButton.draw(canvas, textPaint);
 
             if (debugButtons != null) {
                 for (Button button : debugButtons) {
                     button.draw(canvas, textPaint);
                 }
-            }
+            }*/
         }
 
-        pauseButton.draw(canvas, textPaint);
+
     }
 
     public Thumbstick getThumbstick() {

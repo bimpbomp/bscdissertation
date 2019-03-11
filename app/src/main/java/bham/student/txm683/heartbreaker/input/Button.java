@@ -18,8 +18,6 @@ public class Button implements InputUIElement {
     private int defaultColor;
     private int pressedColor;
 
-    private int currentColor;
-
     private String label;
 
     private Click buttonFunction;
@@ -39,6 +37,18 @@ public class Button implements InputUIElement {
         this.buttonFunction = buttonFunction;
 
         this.label = label;
+    }
+
+    public Button(String label, Point center, int color, Click buttonFunction){
+        this.label = label;
+        this.center = center;
+
+        this.paint = new Paint();
+        this.radius  = 0;
+
+        this.pressedColor = Color.GRAY;
+        this.defaultColor = color;
+        this.buttonFunction = buttonFunction;
     }
 
     public void setLabel(String label) {
@@ -93,4 +103,6 @@ public class Button implements InputUIElement {
     public Point getCenter() {
         return center;
     }
+
+    public void setCenter(Point center){this.center = center;}
 }

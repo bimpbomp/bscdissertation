@@ -36,6 +36,8 @@ public class LevelState {
     private CopyOnWriteArrayList<Projectile> bullets;
     private CopyOnWriteArrayList<Explosion> explosions;
 
+    private Tile screenDimensions;
+
     private Core core;
 
     private CopyOnWriteArrayList<Pickup> pickups;
@@ -43,9 +45,6 @@ public class LevelState {
     private CopyOnWriteArrayList<Explosion> lingeringExplosions;
 
     private AIManager aiManager;
-
-    private int screenWidth;
-    private int screenHeight;
 
     private boolean readyToRender;
     private boolean paused;
@@ -78,6 +77,7 @@ public class LevelState {
 
         this.core = map.getCore();
 
+
         for (AIEntity entity : aliveAIEntities){
             Log.d("LEVELSTATE ", entity.getName() + " has had levelstate set");
             entity.setLevelState(this);
@@ -87,6 +87,14 @@ public class LevelState {
 
         levelEnder = new LevelEnder();
 
+    }
+
+    public Tile getScreenDimensions() {
+        return screenDimensions;
+    }
+
+    public void setScreenDimensions(int width, int height) {
+        this.screenDimensions = new Tile(width, height);
     }
 
     public int mapToMesh(Point p){

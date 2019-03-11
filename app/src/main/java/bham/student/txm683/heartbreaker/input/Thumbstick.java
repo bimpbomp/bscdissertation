@@ -73,7 +73,7 @@ public class Thumbstick implements InputUIElement{
         return pointerID == id;
     }
 
-    public void draw(Canvas canvas){
+    public void draw(Canvas canvas, Paint textPaint){
         canvas.drawCircle(neutralPosition.getX(), neutralPosition.getY(), maxRadius, maxPaint);
         canvas.drawCircle(neutralPosition.getX(), neutralPosition.getY(), neutralCircleRadius, neutralPaint);
 
