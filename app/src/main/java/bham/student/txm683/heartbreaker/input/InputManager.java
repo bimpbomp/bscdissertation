@@ -35,8 +35,7 @@ public class InputManager {
 
     private Popup pauseScreen;
 
-    private Popup completePopup;
-    private Popup diedPopup;
+    private Popup activePopup;
 
     public InputManager(LevelState levelState, Context context){
         this.levelState = levelState;
@@ -47,12 +46,16 @@ public class InputManager {
 
         PopUpElement[] elements = new PopUpElement[]{
                 new TextBox("Game is Paused", screenCenter, 0, 0, Color.RED, 20, 60),
-                new RectButton("Resume", screenCenter, 300, 100, Color.GRAY, 40, () -> {levelState.setPaused(false); pauseScreen.hide();}),
+                new RectButton("Resume", screenCenter, 300, 100, Color.GRAY, 40, () -> {levelState.setPaused(false); activePopup.hide(); activePopup = null;}),
                 new RectButton("Restart", screenCenter, 300, 100, Color.GRAY, 60, () -> {}),
                 new RectButton("Return To Menu", screenCenter, 300, 100, Color.GRAY, 80, () -> returnToMenuButton.onClick())
         };
 
         this.pauseScreen = new Popup(screenCenter, screenDims.getX()/2, (int)(screenDims.getY()/1.5f), true, elements);
+    }
+
+    public void setActivePopup(Popup popup){
+        this.activePopup = popup;
     }
 
     public boolean onTouchEvent(MotionEvent event){
@@ -64,20 +67,24 @@ public class InputManager {
 
         Point coordinatesPressed = new Point(event.getX(eventIndex), event.getY(eventIndex));
 
-        if (!levelState.isPaused()){
+        if (activePopup == null){
+            eventHandled = handleWhileResumed(event, eventID, eventIndex, coordinatesPressed);
+        } else {
+            eventHandled = handlePopupInput(event, eventID, coordinatesPressed);
+        }
+
+        /*if (!levelState.isPaused()){
             eventHandled = handleWhileResumed(event, eventID, eventIndex, coordinatesPressed);
         } else {
             //eventHandled = handleWhilePaused(event, eventID, eventIndex, coordinatesPressed);
-            eventHandled = handleWhilePausedV2(event, eventID, coordinatesPressed);
-        }
+            eventHandled = handlePopupInput(event, eventID, coordinatesPressed);
+        }*/
 
         return eventHandled;
     }
 
-    private boolean handleWhilePausedV2(MotionEvent event, int eventID, Point coordinatesPressed){
-
-        for (Button element : pauseScreen.getInputElements()){
-            Log.d("INPUTMANAGER", "ticking pausescreenelements!");
+    private boolean handlePopupInput(MotionEvent event, int eventID, Point coordinatesPressed){
+        for (Button element : activePopup.getInputElements()){
 
             if (element.containsPoint(coordinatesPressed)){
 
@@ -93,6 +100,24 @@ public class InputManager {
                 }
             }
         }
+
+        /*for (Button element : pauseScreen.getInputElements()){
+            Log.d("INPUTMANAGER", "ticking pausescreenelements!");
+
+            if (element.containsPoint(coordinatesPressed)){
+
+                switch (event.getActionMasked()){
+                    case MotionEvent.ACTION_DOWN:
+                        element.setPointerID(eventID);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        element.onClick();
+                        break;
+                    default:
+                        return false;
+                }
+            }
+        }*/
 
         return true;
     }
@@ -244,7 +269,8 @@ public class InputManager {
             thumbstick.cancel();
 
             pauseButton.onClick();
-            pauseScreen.show();
+            activePopup = pauseScreen;
+            activePopup.show();
 
         } else if (thumbstick.hasID(eventID)){
             thumbstick.cancel();

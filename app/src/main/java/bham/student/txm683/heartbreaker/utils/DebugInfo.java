@@ -5,7 +5,7 @@ public class DebugInfo {
     private boolean renderPhysicsGrid = false;
     private boolean renderMapTileGrid = false;
     private boolean renderEntityNames = false;
-    private boolean activateAI = false;
+    private boolean activateAI = true;
 
     public DebugInfo(){
     }
