@@ -17,6 +17,7 @@ public enum BKeyType {
     ATTACK_TARGET (MoveableEntity.class),
     LEVEL_STATE (LevelState.class),
     VIEW_RANGE (Integer.class),
+    FRIENDLY_BLOCKING_SIGHT (Boolean.class),
     SIGHT_BLOCKED (Boolean.class),
     SIGHT_VECTOR (Vector.class),
     CURRENT_MESH (MeshPolygon.class),

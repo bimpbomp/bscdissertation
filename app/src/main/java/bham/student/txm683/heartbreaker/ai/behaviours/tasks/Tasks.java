@@ -253,10 +253,12 @@ public class Tasks {
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(SIGHT_BLOCKED, SIGHT_VECTOR, CONTROLLED_ENTITY)){
+                if (context.containsKeys(SIGHT_BLOCKED, SIGHT_VECTOR, CONTROLLED_ENTITY, FRIENDLY_BLOCKING_SIGHT)){
                     if ((Boolean) context.getValue(SIGHT_BLOCKED)){
                         ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.WHITE);
 
+                    } else if ((Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
+                        ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.YELLOW);
                     } else {
                         ((AIEntity) context.getValue(CONTROLLED_ENTITY)).rotate((Vector) context.getValue(SIGHT_VECTOR));
                         ((AIEntity) context.getValue(CONTROLLED_ENTITY)).revertToDefaultColor();
@@ -282,7 +284,7 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE, SIGHT_BLOCKED)){
 
-                    if ((Boolean) context.getValue(SIGHT_BLOCKED)) {
+                    if ((Boolean) context.getValue(SIGHT_BLOCKED) || (Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
                         Log.d("SHOOT", "sight is blocked, cannot shoot " + (++count));
                         return FAILURE;
                     }

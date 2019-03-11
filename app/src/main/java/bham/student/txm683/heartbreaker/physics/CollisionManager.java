@@ -23,8 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.SIGHT_BLOCKED;
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.SIGHT_VECTOR;
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 import static bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier.RECTANGLE;
 
 public class CollisionManager {
@@ -587,9 +586,11 @@ public class CollisionManager {
 
             Vector ray = new Vector(aiEntity.getCenter(), levelState.getPlayer().getCenter());
             boolean blocked;
+            boolean friendlyBlocking;
 
             if (ray.getLength() < 800){
                 blocked = false;
+                friendlyBlocking = false;
 
                 for (Wall wall : levelState.getMap().getWalls()){
                     if (collisionCheckRay(wall, ray)){
@@ -610,14 +611,27 @@ public class CollisionManager {
                     }
                 }
 
+                if (!blocked){
+                    for (AIEntity entity : levelState.getAliveAIEntities()){
+                        if (!entity.equals(aiEntity)){
+                            if (collisionCheckRay(entity, ray)){
+                                friendlyBlocking = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
 
             } else {
                 blocked = true;
+                friendlyBlocking = false;
             }
 
             Log.d("SIGHT", "vector: " + ray + ", blocked: " + blocked);
             aiEntity.getContext().addPair(SIGHT_VECTOR, ray);
             aiEntity.getContext().addPair(SIGHT_BLOCKED, blocked);
+            aiEntity.getContext().addPair(FRIENDLY_BLOCKING_SIGHT, friendlyBlocking);
         }
     }
 
