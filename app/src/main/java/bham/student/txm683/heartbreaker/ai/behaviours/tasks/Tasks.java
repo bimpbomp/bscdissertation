@@ -293,6 +293,10 @@ public class Tasks {
 
                     Point aimPoint = playerVel.sMult(t).add(playerPos);
 
+                    Log.d("SHOOTINFO", "t: " + t);
+                    Log.d("SHOOTT", "aimpoint: " + aimPoint + ", playerpos: " + playerPos);
+                    Log.d("SHOOTTT", "shoot vector: " + new Vector(aiPos, aimPoint).getUnitVector().getRelativeToTailPoint() + ", rayVector: " + new Vector(aiPos, playerPos).getUnitVector().getRelativeToTailPoint());
+
                     levelState.addBullet(controlled.getWeapon().shoot(new Vector(aiPos, aimPoint).getUnitVector()));
 
                     return SUCCESS;

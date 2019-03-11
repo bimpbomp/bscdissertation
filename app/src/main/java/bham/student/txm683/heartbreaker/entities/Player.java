@@ -128,11 +128,11 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
             movementForce = movementForce.sMult((float) Math.pow(dot, 2));
 
-            Vector acc = movementForce.sMult(secondsSinceLastGameTick);
+            Vector acc = movementForce;
 
             velocity = velocity.vAdd(acc);
 
-            float max = getMaxSpeed() * secondsSinceLastGameTick;
+            float max = getMaxSpeed();
 
             if (velocity.getLength() > max)
                 velocity = velocity.setLength(max);
@@ -141,7 +141,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
                     acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " +
                     getRequestedMovementVector().relativeToString() + " dot: " + dot);*/
 
-            shape.translateShape(velocity);
+            shape.translateShape(velocity.sMult(secondsSinceLastGameTick));
 
         } else {
             velocity = velocity.sMult(0.25f);
