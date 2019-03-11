@@ -46,6 +46,10 @@ class MeshSet {
         return distanceToWall;
     }
 
+    public void removeTile(Tile tile){
+        containedTiles.remove(tile);
+    }
+
     public List<Tile> getContainedTiles() {
         return containedTiles;
     }

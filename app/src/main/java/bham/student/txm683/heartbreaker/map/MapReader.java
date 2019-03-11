@@ -125,22 +125,25 @@ public class MapReader {
                     if (pixel == WALL){
                         tileValues.add(-1);
 
-                    } else{
+                    } else if (pixel == DOOR){
+
+                        Direction d = findRoomsAdjacentToDoor(new Tile(columnIdx, rowIdx));
+                        Log.d("DOORSPAWN", columnIdx + ", " + rowIdx + ": " + d.name());
+
+                        doorSpawns.add(new Pair<>(convertToGlobal(columnIdx, rowIdx), (d == VERTICAL)));
+
+                        tileValues.add(-2);
+
+                    } else {
+                        spawnLocations.add(new Pair<>(pixel, convertToGlobal(columnIdx, rowIdx)));
                         tileValues.add(0);
-
-                        if (pixel == DOOR){
-
-                            Direction d = findRoomsAdjacentToDoor(new Tile(columnIdx, rowIdx));
-                            Log.d("DOORSPAWN", columnIdx + ", " + rowIdx + ": " + d.name());
-
-                            doorSpawns.add(new Pair<>(convertToGlobal(columnIdx, rowIdx), (d == VERTICAL)));
-                        } else
-                            spawnLocations.add(new Pair<>(pixel, convertToGlobal(columnIdx, rowIdx)));
                     }
 
                 } else {
                     Log.d("MAP_READER", "Invalid tile type at: (" + columnIdx + "," + rowIdx + ")");
                     tileValues.add(0);
+
+
                 }
             }
 

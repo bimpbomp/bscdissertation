@@ -9,7 +9,7 @@ import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MeshConstructorV2 {
+class MeshConstructorV2 {
 
     private List<MeshSet> meshIntersectionSets;
 
@@ -29,7 +29,7 @@ public class MeshConstructorV2 {
     private Scan currentScan;
 
     @SuppressLint("UseSparseArrays")
-    public MeshConstructorV2(){
+    MeshConstructorV2(){
 
         this.meshIntersectionSets = new ArrayList<>();
 
@@ -41,7 +41,7 @@ public class MeshConstructorV2 {
         uniqueID = new UniqueID(1);
     }
 
-    public List<MeshPolygon> getMeshPolygons(int tileSize){
+    List<MeshPolygon> getMeshPolygons(int tileSize){
         List<MeshPolygon> meshPolygons = new ArrayList<>();
 
         for (MeshSet meshSet : meshIntersectionSets){
@@ -51,11 +51,7 @@ public class MeshConstructorV2 {
         return meshPolygons;
     }
 
-    public List<MeshSet> getMeshIntersectionSets() {
-        return meshIntersectionSets;
-    }
-
-    public Graph<Integer> getMeshGraph() {
+    Graph<Integer> getMeshGraph() {
         return meshGraph;
     }
 
@@ -64,7 +60,7 @@ public class MeshConstructorV2 {
      * Assumes that the tileList is properly padded so all columns are aligned
      * @param tileList Grid of integers stating their availability. 0 = free, -1 = wall, MININT = column padding
      */
-    public void constructMesh(List<List<Integer>> tileList){
+    void constructMesh(List<List<Integer>> tileList){
         this.tileList = tileList;
 
         currentScan = Scan.HORIZONTAL;
@@ -80,6 +76,23 @@ public class MeshConstructorV2 {
         intersectScans(hScan, vScan);
 
         meshSetListPrint("hb::INTERSECTION", meshIntersectionSets);
+
+        /*//put any doors into their own set
+        for (int i = 0; i < tileList.size(); i++){
+            List<Integer> row = tileList.get(i);
+            for (int j = 0; j < row.size(); j++){
+                Tile tile = new Tile(j, i);
+                if (getTileInt(tile) == -2){
+                    for (MeshSet meshSet : meshIntersectionSets){
+                        if (meshSet.hasTile(tile)){
+                            if (meshSet.getContainedTiles().size() > 1){
+
+                            }
+                        }
+                    }
+                }
+            }
+        }*/
 
         constructGraph();
 
@@ -207,28 +220,26 @@ public class MeshConstructorV2 {
                 //at this point, we have the meshset to add cells to, so walk along the row from the starting cell (inclusive)
                 //until a wall is hit.
 
-                int currentCell;
                 //the column index that the scan loop exited at
-                int loopExitRowValue = tileList.size()-1;
+
+                //int loopExitRowValue = tileList.size()-1;
+                ExitValue loopExitValue = new ExitValue(tileList.size()-1);
+                int currentCell;
 
                 //scan loop
                 for (int rowIdx = startingTile.getY(); rowIdx < tileList.size(); rowIdx++) {
                     currentCell = tileList.get(rowIdx).get(columnIdx);
-                    loopExitRowValue = rowIdx;
+                    //loopExitRowValue = rowIdx;
+                    loopExitValue.setExitVal(rowIdx);
 
-                    if (currentCell == 0) {
-                        //is empty, add to activeMeshSet
-                        addToMeshSet(activeMeshSet, new Tile(columnIdx, rowIdx));
-                    } else {
-                        //is not empty, break
+                    if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet, loopExitValue))
                         break;
-                    }
                 }
 
                 //if the exit value of the scan loop didnt reach the end of the row, then find the next starting tile
                 //if it did, then the row is finished, setting startingTile to null will end the loop for this row.
-                if (loopExitRowValue < tileList.size()-1)
-                    startingTile = findOpenCellOnColumn(columnIdx, loopExitRowValue);
+                if (loopExitValue.getExitVal() < tileList.size()-1)
+                    startingTile = findOpenCellOnColumn(columnIdx, loopExitValue.getExitVal());
                 else
                     startingTile = null;
 
@@ -274,26 +285,25 @@ public class MeshConstructorV2 {
 
                 int currentCell;
                 //the column index that the scan loop exited at
-                int loopExitColumnValue = row.size()-1;
+
+                //int loopExitColumnValue = row.size()-1;
+                ExitValue loopExitValue = new ExitValue(row.size()-1);
 
                 //scan loop
                 for (int columnIdx = startingTile.getX(); columnIdx < row.size(); columnIdx++) {
                     currentCell = row.get(columnIdx);
-                    loopExitColumnValue = columnIdx;
+                    //loopExitColumnValue = columnIdx;
+                    loopExitValue.setExitVal(columnIdx);
 
-                    if (currentCell == 0) {
-                        //is empty, add to activeMeshSet
-                        addToMeshSet(activeMeshSet, new Tile(columnIdx, rowIdx));
-                    } else {
-                        //is not empty, break
+                    if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet, loopExitValue))
                         break;
-                    }
+
                 }
 
                 //if the exit value of the scan loop didnt reach the end of the row, then find the next starting tile
                 //if it did, then the row is finished, setting startingTile to null will end the loop for this row.
-                if (loopExitColumnValue < row.size()-1)
-                    startingTile = findOpenCellOnRow(rowIdx, loopExitColumnValue);
+                if (loopExitValue.getExitVal() < row.size()-1)
+                    startingTile = findOpenCellOnRow(rowIdx, loopExitValue.getExitVal());
                 else
                     startingTile = null;
 
@@ -303,6 +313,21 @@ public class MeshConstructorV2 {
             //iteration is finished, moving onto next row. save state of this row
             previousMeshSets = currentMeshSets;
         }
+    }
+
+    private boolean analyseCell(int cell, Tile tile, MeshSet activeMeshSet, ExitValue exitValue){
+        if (cell == 0) {
+            //is empty, add to activeMeshSet
+            addToMeshSet(activeMeshSet, tile);
+
+            return false;
+        } else if (cell == -2){
+            //the cell is a door, add to it's own set, move on
+            addToMeshSet(activeMeshSet, tile);
+            exitValue.increment();
+        }
+
+        return true;
     }
 
     private MeshSet getActiveMeshSet(Tile startingTile, int distanceToWall, List<MeshSet> previousMeshSets){
@@ -383,7 +408,7 @@ public class MeshConstructorV2 {
         for (int columnIdx = startingCol; columnIdx < row.size(); columnIdx++){
             int cell = row.get(columnIdx);
 
-            if (cell == 0){
+            if (cell == 0 || cell == -2){
                 return new Tile(columnIdx, rowIdx);
             }
         }
@@ -407,7 +432,8 @@ public class MeshConstructorV2 {
         for (int rowIdx = startingRow; rowIdx < tileList.size(); rowIdx++){
 
             try {
-                if (tileList.get(rowIdx).get(columnIdx) == 0)
+                int cell = tileList.get(rowIdx).get(columnIdx);
+                if (cell == 0 || cell == -2)
                     return new Tile(columnIdx, rowIdx);
 
             } catch (IndexOutOfBoundsException e){
@@ -430,6 +456,26 @@ public class MeshConstructorV2 {
                     meshGraph.addNode(newId);
                 }
             }
+        }
+    }
+
+    private class ExitValue {
+        private int exitVal;
+
+        ExitValue(int exitVal){
+            this.exitVal = exitVal;
+        }
+
+        public int getExitVal() {
+            return exitVal;
+        }
+
+        public void setExitVal(int exitVal) {
+            this.exitVal = exitVal;
+        }
+
+        public void increment(){
+            this.exitVal++;
         }
     }
 }
