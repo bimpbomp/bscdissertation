@@ -146,7 +146,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         } else {
             velocity = velocity.sMult(0.25f);
 
-            shape.translateShape(velocity);
+            shape.translateShape(velocity.sMult(secondsSinceLastGameTick));
         }
 
         Vector force;
