@@ -248,7 +248,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return inputManager.onTouchEvent(event);
+        if (inputManager != null)
+            return inputManager.onTouchEvent(event);
+
+        return super.onTouchEvent(event);
     }
 
     public void drawLoading(){

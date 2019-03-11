@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.ai;
 
+import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.utils.GameTickTimer;
 
@@ -36,6 +37,7 @@ public class AIManager {
         if (!controlledAI.contains(ai)) {
             this.controlledAI.add(ai);
             ai.setLevelState(levelState);
+            Log.d("AIMANAGER", ai.getName() + " has had levelstate set");
         }
     }
 

@@ -226,14 +226,23 @@ class MeshConstructorV2 {
                 ExitValue loopExitValue = new ExitValue(tileList.size()-1);
                 int currentCell;
 
-                //scan loop
-                for (int rowIdx = startingTile.getY(); rowIdx < tileList.size(); rowIdx++) {
-                    currentCell = tileList.get(rowIdx).get(columnIdx);
-                    //loopExitRowValue = rowIdx;
-                    loopExitValue.setExitVal(rowIdx);
+                if (tileList.get(startingTile.getY()).get(columnIdx) == -2) {
+                    Log.d("MESHV", "door found at: " + new Tile(columnIdx, startingTile.getY()));
+                    //starting tile is a door
+                    addToMeshSet(activeMeshSet, startingTile);
+                    loopExitValue.setExitVal(startingTile.getY() + 1);
+                } else {
+                    //scan loop
+                    for (int rowIdx = startingTile.getY(); rowIdx < tileList.size(); rowIdx++) {
+                        currentCell = tileList.get(rowIdx).get(columnIdx);
 
-                    if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet, loopExitValue))
-                        break;
+                        Log.d("MESHVS", "looking at: " + new Tile(columnIdx, rowIdx));
+                        //loopExitRowValue = rowIdx;
+                        loopExitValue.setExitVal(rowIdx);
+
+                        if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet, loopExitValue))
+                            break;
+                    }
                 }
 
                 //if the exit value of the scan loop didnt reach the end of the row, then find the next starting tile
@@ -289,15 +298,21 @@ class MeshConstructorV2 {
                 //int loopExitColumnValue = row.size()-1;
                 ExitValue loopExitValue = new ExitValue(row.size()-1);
 
-                //scan loop
-                for (int columnIdx = startingTile.getX(); columnIdx < row.size(); columnIdx++) {
-                    currentCell = row.get(columnIdx);
-                    //loopExitColumnValue = columnIdx;
-                    loopExitValue.setExitVal(columnIdx);
+                if (row.get(startingTile.getX()) == -2){
+                    //starting tile is a door
+                    addToMeshSet(activeMeshSet, startingTile);
+                    loopExitValue.setExitVal(startingTile.getX()+1);
+                } else {
+                    //scan loop
+                    for (int columnIdx = startingTile.getX(); columnIdx < row.size(); columnIdx++) {
+                        currentCell = row.get(columnIdx);
+                        //loopExitColumnValue = columnIdx;
+                        loopExitValue.setExitVal(columnIdx);
 
-                    if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet, loopExitValue))
-                        break;
+                        if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet, loopExitValue))
+                            break;
 
+                    }
                 }
 
                 //if the exit value of the scan loop didnt reach the end of the row, then find the next starting tile
@@ -323,7 +338,8 @@ class MeshConstructorV2 {
             return false;
         } else if (cell == -2){
             //the cell is a door, add to it's own set, move on
-            addToMeshSet(activeMeshSet, tile);
+            //addToMeshSet(activeMeshSet, tile);
+            getActiveMeshSet(tile, 0, new ArrayList<>());
             exitValue.increment();
         }
 
@@ -375,7 +391,7 @@ class MeshConstructorV2 {
 
             int cell = row.get(columnIdx);
 
-            if (cell == 0){
+            if (cell == 0 || cell == -2){
                 count++;
             } else {
                 return count;
@@ -390,7 +406,7 @@ class MeshConstructorV2 {
         for (int rowIdx = startingRow; rowIdx < tileList.size(); rowIdx++){
             int cell = tileList.get(rowIdx).get(columnIdx);
 
-            if (cell == 0)
+            if (cell == 0 || cell == -2)
                 count++;
             else
                 return count;

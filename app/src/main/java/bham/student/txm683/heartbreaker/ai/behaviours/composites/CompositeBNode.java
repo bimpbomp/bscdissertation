@@ -35,6 +35,8 @@ public abstract class CompositeBNode extends BNode {
         executionSequence.clear();
         executionSequence.addAll(children);
 
+        Log.d("COMPNODE", "resetting...");
+
         for (BNode child : children){
             child.reset(context);
         }
@@ -50,9 +52,12 @@ public abstract class CompositeBNode extends BNode {
             BNode child = executionSequence.peek();
 
             Status childStatus = child.process(context);
+            Log.d("COMPNODE", "child status: " + childStatus);
 
             if (childStatus == continueExecutionStatus){
                 executionSequence.poll();
+                Log.d("COMPNODE", "polling child, queue size after: " + executionSequence.size());
+
             } else {
                 setStatus(childStatus);
                 Log.d("COMPNode", "child returned " + childStatus + " which is invalid. Stopping");

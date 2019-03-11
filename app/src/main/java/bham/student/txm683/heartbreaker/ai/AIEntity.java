@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.ai;
 
+import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
@@ -44,6 +45,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     }
 
     public void setLevelState(LevelState levelState){
+        Log.d("AIENTITY", getName() + " has levelState added");
+
         this.levelState = levelState;
         this.context.addPair(BKeyType.LEVEL_STATE, levelState);
     }

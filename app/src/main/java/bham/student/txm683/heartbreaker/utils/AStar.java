@@ -4,6 +4,7 @@ import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.graph.Edge;
@@ -43,7 +44,10 @@ public class AStar {
 
         this.startNode = meshGraph.getNode(((MeshPolygon)controlled.getContext().getValue(CURRENT_MESH)).getId());
 
-        int targetMeshId = ((LevelState) controlled.getContext().getValue(LEVEL_STATE)).mapToMesh((Point) controlled.getContext().getValue(MOVE_TO));
+        LevelState levelState = (LevelState) controlled.getContext().getValue(LEVEL_STATE);
+        Point target = (Point) controlled.getContext().getValue(MOVE_TO);
+
+        int targetMeshId = levelState.mapToMesh(target);
 
         this.targetNode = meshGraph.getNode(targetMeshId);
 
@@ -114,7 +118,7 @@ public class AStar {
                 waypointPath.add(p);
             }
 
-            controlled.getContext().addPair(PATH, waypointPath);
+
             sb2.append("WAYPOINT PATH: ");
             for (Point point : waypointPath){
                 sb2.append(point.toString());
@@ -131,6 +135,8 @@ public class AStar {
         if (waypointPath.size() > 0 ){
             Log.d("ASTAR", sb2.toString());
         }
+
+        controlled.getContext().addPair(PATH, new PathWrapper(waypointPath));
     }
 
     private Status applyAStar(){

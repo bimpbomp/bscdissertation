@@ -79,6 +79,7 @@ public class LevelState {
         this.core = map.getCore();
 
         for (AIEntity entity : aliveAIEntities){
+            Log.d("LEVELSTATE ", entity.getName() + " has had levelstate set");
             entity.setLevelState(this);
         }
 

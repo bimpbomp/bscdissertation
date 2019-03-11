@@ -85,10 +85,16 @@ public class Tasks {
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY, CURRENT_MESH, TARGET, LEVEL_STATE)){
+                if (context.containsKeys(CONTROLLED_ENTITY, CURRENT_MESH, LEVEL_STATE)){
+                    Log.d("TASK plotPath", "plotting...");
+                    Log.d("TASK plotPath", "levelstate is null: " + (context.getValue(LEVEL_STATE) == null));
+
+                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                    context.addPair(MOVE_TO, levelState.getPlayer().getCenter());
+
                     AStar a = new AStar((AIEntity) context.getValue(CONTROLLED_ENTITY),
-                            ((LevelState) context.getValue(LEVEL_STATE)).getRootMeshPolygons(),
-                            ((LevelState) context.getValue(LEVEL_STATE)).getMeshGraph());
+                            levelState.getRootMeshPolygons(),
+                            levelState.getMeshGraph());
 
                     a.plotPath();
 
@@ -122,8 +128,22 @@ public class Tasks {
                     AIEntity aiEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
                     List<Point> path = ((PathWrapper) context.getValue(PATH)).path();
 
-                    if (pointInPath > path.size()-1)
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    for (Point point : path){
+                        stringBuilder.append(point);
+                        stringBuilder.append(", ");
+                    }
+                    stringBuilder.append("END");
+
+                    Log.d("TASK followPath", stringBuilder.toString());
+                    Log.d("TASK followPath", "point in path: " + pointInPath);
+
+                    if (pointInPath > path.size()-1) {
+                        Log.d("TASK followPath", "path completed!");
+                        aiEntity.setRequestedMovementVector(Vector.ZERO_VECTOR);
                         return SUCCESS;
+                    }
 
                     Point currentPoint = path.get(pointInPath);
 
@@ -131,18 +151,24 @@ public class Tasks {
                     if (new Vector(aiEntity.getCenter(), currentPoint).getLength() < 100){
                         pointInPath++;
 
-                        if (pointInPath > path.size()-1)
+                        if (pointInPath > path.size()-1) {
+                            Log.d("TASK followPath", "path completed!!");
+                            aiEntity.setRequestedMovementVector(Vector.ZERO_VECTOR);
                             return SUCCESS;
+                        }
 
                         currentPoint = path.get(pointInPath);
                     }
 
-                    Vector closenessV = new Vector(aiEntity.getCenter(), currentPoint);
+                    Vector closenessV = new Vector(aiEntity.getCenter(), currentPoint).getUnitVector();
 
+                    Log.d("TASK followPath", "heading to: " + currentPoint + ", vector to point: " + closenessV.relativeToString());
                     aiEntity.setRequestedMovementVector(closenessV);
+                    aiEntity.setRotationVector(closenessV);
                     return RUNNING;
 
                 }
+                Log.d("TASK followPath", "task failed...");
                 return FAILURE;
             }
         };
