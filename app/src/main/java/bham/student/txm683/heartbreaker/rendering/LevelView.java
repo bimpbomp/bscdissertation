@@ -51,6 +51,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Context context;
 
+    private String mapName;
+
     /**
      * Creates a new Level view with the given context
      * @param context The context to create the view.
@@ -60,7 +62,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         getHolder().addCallback(this);
 
-        this.level = new Level(this, mapName);
+        this.mapName = mapName;
+
+        this.context = context;
+
         setFocusable(true);
 
         textPaint = RenderingTools.initPaintForText(Color.BLACK, 30, Paint.Align.CENTER);
@@ -68,10 +73,32 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         tilePaint = new Paint();
         tilePaint.setStrokeWidth(8f);
         tilePaint.setColor(Color.MAGENTA);
+    }
 
-        this.context = context;
+    public void startLevel(){
+        this.level = new Level(this, mapName);
 
         levelThread = new Thread(level);
+        levelThread.start();
+    }
+
+    public void endLevel(){
+        boolean retry = true;
+
+        while(retry){
+            try {
+                level.setRunning(false);
+                levelThread.join();
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
+            retry = false;
+        }
+    }
+
+    public void restartLevel(){
+        endLevel();
+        startLevel();
     }
 
     public void shutDown(){
@@ -130,28 +157,14 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(TAG, "surfaceCreated");
-        levelThread.start();
+        /*levelThread = new Thread(level);
+        levelThread.start();*/
 
-        /*if (this.levelState == null) {
+        startLevel();
+    }
 
-            tileSize = 200;
-            MapConstructor mapConstructor = new MapConstructor(context);
+    public void start(){
 
-            this.levelState = new LevelState(mapConstructor.loadMap("Map2", tileSize));
-
-            this.levelState.setScreenDimensions(viewWidth, viewHeight);
-
-            this.inputManager = new InputManager(levelState, context);
-
-            this.level.setInputManager(inputManager);
-            this.level.setLevelState(levelState);
-        }
-
-        this.debugInfo = levelState.getDebugInfo();
-
-        this.levelThread = new Thread(this.level);
-        this.level.setRunning(true);
-        this.levelThread.start();*/
     }
 
     public int getTileSize() {
@@ -239,17 +252,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        boolean retry = true;
-
-        while(retry){
-            try {
-                level.setRunning(false);
-                levelThread.join();
-            } catch (InterruptedException e){
-                e.printStackTrace();
-            }
-            retry = false;
-        }
+        endLevel();
         Log.d(TAG, "surfaceDestroyed");
     }
 
@@ -259,6 +262,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             return inputManager.onTouchEvent(event);
 
         return super.onTouchEvent(event);
+    }
+
+    public void onBackPressed(){
+        inputManager.showPauseScreen();
     }
 
     public void drawLoading(){

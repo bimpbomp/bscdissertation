@@ -59,6 +59,11 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onBackPressed() {
+        levelView.onBackPressed();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
 

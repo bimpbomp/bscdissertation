@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.util.Log;
 import android.view.MotionEvent;
 import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.rendering.popups.PopUpElement;
 import bham.student.txm683.heartbreaker.rendering.popups.Popup;
 import bham.student.txm683.heartbreaker.rendering.popups.TextBox;
@@ -40,13 +41,13 @@ public class InputManager {
 
     private Popup activePopup;
 
-    public InputManager(LevelState levelState, Context context){
+    public InputManager(LevelState levelState, Context context, LevelView levelView){
         this.levelState = levelState;
         this.context = context;
 
         this.pauseScreen = createMOSPopup(new RectButtonBuilder[]{
                         new RectButtonBuilder("Resume", 40, this::hideActivePopup),
-                        new RectButtonBuilder("Restart", 60, () -> {}),
+                        new RectButtonBuilder("Restart", 60, levelView::restartLevel),
                         new RectButtonBuilder("Return To Menu", 80, () -> returnToMenuButton.onClick())
                 },
 
@@ -262,6 +263,11 @@ public class InputManager {
             if (returnToMenuButton.hasID(eventID))
                 returnToMenuButton.onClick();
         }
+    }
+
+    public void showPauseScreen(){
+        levelState.setPaused(true);
+        setActivePopup(pauseScreen);
     }
 
     private void handleUpResumed(int eventID){

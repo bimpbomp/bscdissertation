@@ -61,6 +61,7 @@ public class Level implements Runnable {
     }
 
     private void load(){
+        levelView.drawLoading();
 
         if (this.levelState == null) {
 
@@ -71,7 +72,7 @@ public class Level implements Runnable {
 
             this.levelState.setScreenDimensions(levelView.getWidth(), levelView.getHeight());
 
-            this.inputManager = new InputManager(levelState, levelView.getContext());
+            this.inputManager = new InputManager(levelState, levelView.getContext(), levelView);
 
             this.levelView.setInputManager(inputManager);
             this.levelView.setLevelState(levelState);
@@ -79,11 +80,9 @@ public class Level implements Runnable {
             levelView.initInGameUI();
             levelView.setDebugInfo(levelState.getDebugInfo());
 
-            this.setRunning(true);
-
             RectButtonBuilder[] buttonBuilders = new RectButtonBuilder[]{
                     //TODO set restart function
-                    new RectButtonBuilder("Restart", 40, () -> {}),
+                    new RectButtonBuilder("Restart", 40, () -> {levelView.restartLevel();}),
                     new RectButtonBuilder("Return To Menu", 60, () -> levelView.returnToMenu())
             };
 
@@ -102,29 +101,30 @@ public class Level implements Runnable {
             };
 
             this.completePopup = inputManager.createMOSPopup(buttonBuilders, textBuilders);
+
+            //initialise systems
+            entityController = new EntityController(levelState);
+            collisionManager = new CollisionManager(levelState);
+
+            levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
         }
-    }
 
-    @Override
-    public void run(){
-
-        levelView.drawLoading();
-
-        load();
-
-        //initialise systems
-        entityController = new EntityController(levelState);
-        collisionManager = new CollisionManager(levelState);
-
-        nextScheduledGameTick = System.currentTimeMillis();
-
-        levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
+        this.setRunning(true);
+        levelState.setReadyToRender(true);
 
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e){
             //do nothing
         }
+    }
+
+    @Override
+    public void run(){
+
+        load();
+
+        nextScheduledGameTick = System.currentTimeMillis();
 
         BenchMarker benchMarker = new BenchMarker();
 
@@ -178,10 +178,12 @@ public class Level implements Runnable {
                     if (levelState.getPlayer().getHealth() < 1){
                         /*levelState.getLevelEnder().setStatus(LevelEndStatus.PLAYER_DIED);
                         levelView.returnToMenu();*/
+                        levelState.getLevelEnder().setStatus(LevelEndStatus.PLAYER_DIED);
                         inputManager.setActivePopup(diedPopup);
                     } else if (levelState.getCore().getHealth() < 1) {
                         /*levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
                         levelView.returnToMenu();*/
+                        levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
                         inputManager.setActivePopup(completePopup);
                     }
                 }
