@@ -1,5 +1,7 @@
 package bham.student.txm683.heartbreaker.physics;
 
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
@@ -10,14 +12,12 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
+import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
-import bham.student.txm683.heartbreaker.utils.UniqueID;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.utils.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,23 +39,41 @@ public class CollisionManager {
 
     private static String TAG = "hb::CollisionManager";
 
+    private BenchMarker benchMarker;
+
     public CollisionManager(LevelState levelState){
         this.levelState = levelState;
 
         this.spatialBins = new ArrayList<>();
 
-        initSpatPatV3();
+        initSpatPatV4();
+
+        benchMarker = new BenchMarker();
     }
 
     public void checkCollisions(){
+        benchMarker.begin();
         applySpatPatV2();
+        benchMarker.output("collision rough-grain");
 
+        benchMarker.begin();
         fineGrainCollisionDetection();
+        benchMarker.output("collision fine-grain");
 
+        benchMarker.begin();
         aiSight();
-        //checkAIsLineOfSight();
+        benchMarker.output("ai sight");
 
-        //generatePlayerVisibleSet();
+    }
+
+    public void drawBins(Canvas canvas, Point renderOffset){
+        Paint paint = new Paint();
+
+        for (SpatialBin spatialBin : spatialBins){
+            paint.setColor(ColorScheme.randomColor());
+
+            spatialBin.getBoundingBox().draw(canvas, renderOffset, paint);
+        }
     }
 
     private void generatePlayerVisibleSet(){
@@ -235,6 +253,11 @@ public class CollisionManager {
             spatialBins.add(spatialBin);
         }
 
+        fillBins();
+
+    }
+
+    private void fillBins(){
         //add each static to the permanent list in the correct spatial bin
         for (Collidable collidable : levelState.getStaticCollidables()){
 
@@ -264,6 +287,31 @@ public class CollisionManager {
                 spatialBin.addPermanent(((Door) collidable).getPrimaryField());
             }
         }
+    }
+
+    private void initSpatPatV4(){
+
+        UniqueID uniqueID = new UniqueID();
+
+        int numHCells = 4;
+        int numVCells = 4;
+
+        int cellWidth = (int) levelState.getMap().getWidth()/numHCells;
+        int cellHeight = (int) levelState.getMap().getHeight()/numVCells;
+
+        for (int i = 1; i <= numHCells; i++){
+            int l = (i-1) * cellWidth;
+            int r = i * cellWidth;
+
+            for (int j = 1; j <= numVCells; j++){
+                int t = (j-1) * cellHeight;
+                int b = j * cellHeight;
+
+                spatialBins.add(new SpatialBin(uniqueID.id(), new BoundingBox(l,t,r,b)));
+            }
+        }
+
+        fillBins();
     }
 
     private void applySpatPatV2(){
@@ -581,7 +629,7 @@ public class CollisionManager {
         return getMinimumPushVector(pushVectors, circle.getCenter(), polygon.getCenter());
     }
 
-    public void aiSight(){
+    private void aiSight(){
         for (AIEntity aiEntity : levelState.getAliveAIEntities()){
 
             Vector ray = new Vector(aiEntity.getCenter(), levelState.getPlayer().getCenter());

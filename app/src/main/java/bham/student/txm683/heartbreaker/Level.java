@@ -14,6 +14,7 @@ import bham.student.txm683.heartbreaker.physics.EntityController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.rendering.popups.Popup;
 import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
+import bham.student.txm683.heartbreaker.utils.BenchMarker;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
 
 public class Level implements Runnable {
@@ -125,6 +126,8 @@ public class Level implements Runnable {
             //do nothing
         }
 
+        BenchMarker benchMarker = new BenchMarker();
+
         //levelState.setPaused(false);
         while (running){
 
@@ -139,6 +142,8 @@ public class Level implements Runnable {
                     levelState.getPlayer().setRequestedMovementVector(inputManager.getThumbstick().getMovementVector());
                     levelState.getPlayer().setRotationVector(inputManager.getRotationThumbstick().getMovementVector());
 
+
+                    benchMarker.begin();
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
 
                         //Log.d("hb::AI", "Checking meshploygon for " + aiEntity.getName());
@@ -150,12 +155,17 @@ public class Level implements Runnable {
                             }
                         }
                     }
+                    benchMarker.output("meshCalc");
 
                     entityController.update(gameTickTimeStepInMillis / 1000f);
 
+                    benchMarker.begin();
                     levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
+                    benchMarker.output("AI");
 
+                    benchMarker.begin();
                     collisionManager.checkCollisions();
+                    benchMarker.output("collisions");
 
                     gameFPSMonitor.updateFPS();
 
@@ -181,13 +191,19 @@ public class Level implements Runnable {
 
             if (!levelState.isPaused() && levelState.isReadyToRender()) {
 
+                benchMarker.begin();
                 float timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick) / 1000f;
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), timeSinceLastGameTick);
+                benchMarker.output("render");
 
             } else if (levelState.isPaused() && levelState.isReadyToRender()){
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), 0f);
             }
         }
+    }
+
+    public void shutDown(){
+        levelState.getAiManager().shutDown();
     }
 
     public void setRunning(boolean isRunning){
@@ -205,4 +221,6 @@ public class Level implements Runnable {
     public CollisionManager getCollisionManager() {
         return collisionManager;
     }
+
+
 }

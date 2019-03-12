@@ -74,7 +74,14 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         levelThread = new Thread(level);
     }
 
+    public void shutDown(){
+        level.shutDown();
+    }
+
     public void returnToMenu(){
+
+        shutDown();
+
         Intent intent = new Intent(context, MenuActivity.class);
 
         intent.putExtra("bundle", levelState.getLevelEnder().createBundle());
@@ -337,6 +344,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 if (isOnScreen(bullet))
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
+
+            //level.getCollisionManager().drawBins(canvas, renderOffset);
 
             //draw player
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());

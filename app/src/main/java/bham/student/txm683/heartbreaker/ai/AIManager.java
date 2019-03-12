@@ -28,7 +28,6 @@ public class AIManager {
 
         update = true;
 
-        //tick 10 times a second
         this.timer = new GameTickTimer(50);
         timer.start();
     }
@@ -39,6 +38,9 @@ public class AIManager {
             ai.setLevelState(levelState);
             Log.d("AIMANAGER", ai.getName() + " has had levelstate set");
         }
+    }
+
+    public void shutDown(){
     }
 
     public void removeAI(AIEntity ai){

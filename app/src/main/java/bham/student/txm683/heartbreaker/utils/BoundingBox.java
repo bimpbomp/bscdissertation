@@ -1,5 +1,7 @@
 package bham.student.txm683.heartbreaker.utils;
 
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.util.Log;
 
 public class BoundingBox {
@@ -60,6 +62,12 @@ public class BoundingBox {
                 getBottomRight(),
                 getBottomLeft()
         };
+    }
+
+    public void draw(Canvas canvas, Point renderOffset, Paint paint){
+        Point tl = getTopLeft().add(renderOffset);
+        Point br = getBottomRight().add(renderOffset);
+        canvas.drawRect(tl.getX(),tl.getY(),br.getX(),br.getY(),paint);
     }
 
     public Point getTopLeft(){
