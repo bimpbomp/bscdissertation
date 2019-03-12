@@ -22,7 +22,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO fix collision error between Wall 0 and player on the RHS of Wall 0.
 public class Player extends MoveableEntity implements Damageable, Renderable {
 
     private Kite shape;
@@ -60,12 +59,18 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         this.velocity = Vector.ZERO_VECTOR;
     }
 
+    @Override
     public Vector getVelocity() {
         return velocity;
     }
 
+    @Override
+    public void setVelocity(Vector v) {
+        velocity = v;
+    }
+
     public Player(Point center){
-        this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100000);
+        this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
     }
 
     public static Player build(JSONObject jsonObject) throws JSONException {

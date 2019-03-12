@@ -13,7 +13,6 @@ import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
-import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -144,21 +143,12 @@ public class LevelState {
     }
 
     public List<Collidable> getStaticCollidables(){
-        //TODO consolidate into one list in LevelState
-        //TODO store as HashMap with id/name as key and the object as the value
 
         List<Collidable> collidables = new ArrayList<>(map.getDoors().values());
         collidables.addAll(map.getWalls());
 
 
         return collidables;
-    }
-
-    public List<Renderable> getRenderables(){
-        //TODO add getRenderPriority() method to LevelState
-        //this will allow renderables to be ordered by their render priority and allow higher priority items to
-        //be rendered on the top (i.e. last)
-        return new ArrayList<>();
     }
 
     private void generateGraph(){

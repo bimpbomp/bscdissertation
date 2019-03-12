@@ -43,6 +43,14 @@ public abstract class MoveableEntity extends Entity {
         return requestedMovementVector;
     }
 
+    public void setVelocity(Vector v){
+
+    }
+
+    public Vector getVelocity(){
+        return new Vector(1,1);
+    }
+
     @Override
     public boolean canMove() {
         return true;

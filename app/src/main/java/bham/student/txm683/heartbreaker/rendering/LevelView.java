@@ -372,17 +372,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     wall.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
-            //draw vis set (if turned on)
-            //TODO commented to disable tileset rendering (obsolete)
-            /*if (debugInfo.renderVisSet()){
-                Point center;
-                for (Tile tile : levelState.getTileSet().getTilesVisibleToPlayer()){
-                    Log.d("hb::DrawingVis", tile.toString());
-                    center = new Point(tile.add(tileSize/2, tileSize/2)).add(renderOffset);
-                    canvas.drawCircle(center.getX(), center.getY(), 20, tilePaint);
-                }
-            }*/
-
             //draw meshGrid
             if (debugInfo.renderVisSet()){
 

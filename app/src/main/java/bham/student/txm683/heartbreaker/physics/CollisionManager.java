@@ -542,7 +542,7 @@ public class CollisionManager {
         //both entities are solid and the collision needs to be resolved.
         if (firstCollidable.canMove() && secondCollidable.canMove()) {
 
-            //resolve collisions with any statics that share a cell with either entity
+            /*//resolve collisions with any statics that share a cell with either entity
             isStaticCollision(firstCollidable, bin, true);
             isStaticCollision(secondCollidable, bin, true);
 
@@ -568,13 +568,34 @@ public class CollisionManager {
                 moveEntityCenter(firstCollidable, firstAmountMoved);
                 moveEntityCenter(secondCollidable, secondAmountMoved.sMult(-1f));
 
+                changeVelocity(firstCollidable, pushVector);
+
             } else if (!firstAbleToMove) {
                 //if the first entity now overlaps a static, tick it back to it's original position
                 //and tick the second entity the other half of the distance so it doesn't overlap the first
                 //collision is resolved, tick to next entity pair
                 moveEntityCenter(firstCollidable, firstAmountMoved.sMult(-1f));
                 moveEntityCenter(secondCollidable, secondAmountMoved);
-            }
+
+                changeVelocity(secondCollidable, pushVector);
+            } else {
+                changeVelocity(firstCollidable, pushVector.sMult(0.5f));
+                changeVelocity(secondCollidable, pushVector.sMult(0.5f));
+            }*/
+
+            //update position of first entity with half of the push vector
+            firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
+            newCenter = firstCollidable.getCenter().add(firstAmountMoved);
+            firstCollidable.setCenter(newCenter);
+
+            //update position of second entity with half of the inverted pushVector
+            //i.e pushes second entity away from first
+            secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
+            newCenter = secondCollidable.getCenter().add(secondAmountMoved);
+            secondCollidable.setCenter(newCenter);
+
+            changeVelocity(firstCollidable, pushVector.sMult(0.5f));
+            changeVelocity(secondCollidable, pushVector.sMult(0.5f));
 
         } else if (firstCollidable.canMove()) {
 
@@ -585,6 +606,8 @@ public class CollisionManager {
             newCenter = firstCollidable.getCenter().add(firstAmountMoved);
             firstCollidable.setCenter(newCenter);
 
+            changeVelocity(firstCollidable, pushVector);
+
         } else if (secondCollidable.canMove()) {
             //if only the second entity can tick (is not static), resolution is to add all push
             //vector to second entity
@@ -592,6 +615,28 @@ public class CollisionManager {
             secondAmountMoved = pushVector.sMult(-1).getRelativeToTailPoint();
             newCenter = secondCollidable.getCenter().add(secondAmountMoved);
             secondCollidable.setCenter(newCenter);
+
+            changeVelocity(secondCollidable, pushVector);
+        }
+    }
+
+    private void changeVelocity(Collidable collidable, Vector pushVector){
+
+        if (collidable instanceof MoveableEntity){
+            Vector normal = pushVector.rotateAntiClockwise90().getUnitVector();
+            Vector vel = ((MoveableEntity) collidable).getVelocity();
+
+            float dot = (normal.dot(vel));
+
+            float velLength = vel.getLength();
+
+            float coeff = dot/(velLength * velLength);
+
+            Vector newV = normal.sMult(dot);
+
+            Log.d("VEL", "dot: " + dot + ", vel: " + vel.relativeToString() + ", norm: " + normal.relativeToString() + ", newV: " + newV.relativeToString());
+
+            ((MoveableEntity) collidable).setVelocity(newV);
         }
     }
 
@@ -660,6 +705,7 @@ public class CollisionManager {
                 }
 
                 if (!blocked){
+
                     for (AIEntity entity : levelState.getAliveAIEntities()){
                         if (!entity.equals(aiEntity)){
                             if (collisionCheckRay(entity, ray)){
@@ -667,6 +713,10 @@ public class CollisionManager {
                                 break;
                             }
                         }
+                    }
+
+                    if (collisionCheckRay(levelState.getCore(), ray)){
+                        friendlyBlocking = true;
                     }
                 }
 
