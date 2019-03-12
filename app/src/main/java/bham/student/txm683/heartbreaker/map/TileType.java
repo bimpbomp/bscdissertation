@@ -3,36 +3,39 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.graphics.Color;
 
-import java.util.HashSet;
-
 public class TileType {
     static final int WALL = Color.BLACK;
+    static final int DOOR = Color.BLUE;
+
     static final int PLAYER = Color.WHITE;
     static final int DRONE = Color.YELLOW;
-    static final int DOOR = Color.BLUE;
-    static final int INVALID = Color.GRAY;
     static final int CORE = Color.GREEN;
     static final int TURRET = Color.RED;
 
-    private static HashSet<Integer> colorConstants = new HashSet<>();
-
-    static {
-
-        colorConstants.add(WALL);
-        colorConstants.add(PLAYER);
-        colorConstants.add(DRONE);
-        colorConstants.add(DOOR);
-        colorConstants.add(INVALID);
-        colorConstants.add(CORE);
-        colorConstants.add(TURRET);
-
-    }
+    static final int HEALTH = Color.BLUE;
+    static final int BOMB = Color.WHITE;
 
     private TileType(){
 
     }
 
-    static boolean isValidTileType(int color){
-        return colorConstants.contains(color);
+    static boolean isEntity(int color){
+        return color == PLAYER || color == TURRET || color == DRONE || color == CORE;
+    }
+
+    static boolean isKey(int color){
+        return isLockedDoor(color);
+    }
+
+    static boolean isLockedDoor(int color){
+        return (Color.blue(color) == 0 && Color.green(color) == 0) && Color.red(color) != 0;
+    }
+
+    static boolean isDoor(int color){
+        return color == DOOR || isLockedDoor(color);
+    }
+
+    static boolean isPickup(int color){
+        return color == HEALTH || color == BOMB;
     }
 }

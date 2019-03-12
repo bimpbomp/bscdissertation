@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseArray;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.ai.Drone;
@@ -11,7 +12,9 @@ import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
+import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
+import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
@@ -104,15 +107,16 @@ public class MapConstructor {
                 Log.d("MapConstructor", "null core");
             }
 
-            for (Pair<Point, Boolean> spawn : mapReader.getDoorSpawns()){
+
+            SparseArray<String> doorNames = new SparseArray<>();
+
+            for (DoorBuilder doorBuilder : mapReader.getDoorSpawns()){
                 Tile sideSets = null;
                 int doorSet = 0;
-                Log.d("DOORCONST", spawn.first + ": " + spawn.second);
 
                 for (MeshPolygon meshSet : meshPolygons){
-                    Log.d("DOORMESH","id: " +meshSet.getId() + ", bb: " + meshSet.getBoundingBox());
 
-                    if (meshSet.getBoundingBox().intersecting(spawn.first)){
+                    if (meshSet.getBoundingBox().intersecting(doorBuilder.getCenter())){
                         //if door center is in the polygon
 
                         Log.d("hb::HASDOORTILE", meshSet.getId()+"");
@@ -127,9 +131,38 @@ public class MapConstructor {
 
                 //TODO add condition for locked doors
                 if (sideSets != null && doorSet != 0) {
-                    doors.add(new Door(uniqueID.id(), spawn.first, tileSize, tileSize,
-                            false, spawn.second, ColorScheme.DOOR_COLOR, doorSet, sideSets));
+                    Door door = new Door(uniqueID.id(), doorBuilder.getCenter(), tileSize, tileSize,
+                            doorBuilder.isLocked(), doorBuilder.isVertical(), ColorScheme.DOOR_COLOR, doorSet, sideSets);
+                    doors.add(door);
+
+                    doorNames.put(doorBuilder.getKeyColor(), door.getName());
                 }
+            }
+
+            //sort out keys
+            for (KeyBuilder keyBuilder : mapReader.getKeyBuilders()){
+                String doorName = doorNames.get(keyBuilder.getUnlocks());
+
+                if (doorName != null){
+                    pickups.add(new Key(uniqueID.id(), doorName, keyBuilder.getCenter()));
+                }
+            }
+
+            //sort out pickups
+            for (Pair<Integer, Point> spawn : mapReader.getPickupLocations()) {
+                PickupType type;
+                String pickupName;
+
+                if (spawn.first == TileType.HEALTH) {
+                    type = PickupType.HEALTH;
+                    pickupName = "H";
+                } else if (spawn.first == TileType.BOMB) {
+                    type = PickupType.BOMB;
+                    pickupName = "B";
+                }else
+                    continue;
+
+                pickups.add(new Pickup(pickupName+uniqueID.id(), type, spawn.second));
             }
 
             //initialise meshgraph with door states

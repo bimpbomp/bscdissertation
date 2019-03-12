@@ -3,24 +3,20 @@ package bham.student.txm683.heartbreaker.map;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
+import android.graphics.Color;
 import android.util.Pair;
-import bham.student.txm683.heartbreaker.R;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.exceptions.MCEReason;
 import bham.student.txm683.heartbreaker.utils.exceptions.MapConversionException;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.PriorityQueue;
+import java.util.Locale;
 
 import static bham.student.txm683.heartbreaker.map.MapReader.Direction.*;
-import static bham.student.txm683.heartbreaker.map.TileType.INVALID;
-import static bham.student.txm683.heartbreaker.map.TileType.*;
+import static bham.student.txm683.heartbreaker.map.TileType.WALL;
 
 public class MapReader {
 
@@ -34,17 +30,16 @@ public class MapReader {
         INVALID
     }
 
-
     private static final String TAG = "hb::MapReader";
 
     private Context context;
     private Bitmap mapImage;
 
-    private PriorityQueue<Pair<Tile, Integer>> openSet;
-
     private List<List<Integer>> meshGenList;
     private List<Pair<Integer, Point>> spawnLocations;
-    private List<Pair<Point, Boolean>> doorSpawns;
+    private List<DoorBuilder> doorSpawns;
+    private List<KeyBuilder> keyBuilders;
+    private List<Pair<Integer, Point>> pickupLocations;
 
     private int tileSize;
     private Point centerOffset;
@@ -59,13 +54,16 @@ public class MapReader {
 
         width = 0;
         height = 0;
+
+        this.keyBuilders = new ArrayList<>();
+        this.pickupLocations = new ArrayList<>();
     }
 
     public List<List<Integer>> getMeshGenList() {
         return meshGenList;
     }
 
-    public List<Pair<Point, Boolean>> getDoorSpawns(){
+    public List<DoorBuilder> getDoorSpawns(){
         return doorSpawns;
     }
 
@@ -73,37 +71,128 @@ public class MapReader {
         return spawnLocations;
     }
 
+    public List<KeyBuilder> getKeyBuilders() {
+        return keyBuilders;
+    }
+
+    public List<Pair<Integer, Point>> getPickupLocations() {
+        return pickupLocations;
+    }
+
     public void loadMap(String mapName, int tileSize) throws MapConversionException {
         this.tileSize = tileSize;
         this.centerOffset = new Point(tileSize/2f, tileSize/2f);
 
         convertMapBitmapToGraph(mapName);
+        readInEntities(mapName);
+        readInPickups(mapName);
     }
 
-
-    private int getMapRId(String mapName){
-
-        Field[] fields=R.raw.class.getFields();
-
-        for(Field field : fields){
-
-            if (field.getName().equals(mapName))
-                try {
-                    return field.getInt(field);
-                } catch (IllegalAccessException e){
-                    //do nothing
-                }
+    private Bitmap openImage(String mapName, int frameNo) throws MapConversionException {
+        BitmapFactory.Options o = new BitmapFactory.Options();
+        o.inScaled = false;
+        try {
+            return BitmapFactory.decodeStream(context.getAssets().open(String.format(Locale.UK,"maps/%s/%s_%d.png", mapName, mapName, frameNo)));
+        } catch (IOException e){
+            throw new MapConversionException(MCEReason.FILE_DECODING, e);
         }
-        return -1;
+    }
+
+    private void readInEntities(String mapName) throws MapConversionException {
+
+        mapImage = openImage(mapName, 1);
+
+        //dimensions in pixels/tiles
+        height = mapImage.getHeight();
+        width = mapImage.getWidth();
+
+        for (int rowIdx = 0; rowIdx < height; rowIdx++){
+
+            for (int columnIdx = 0; columnIdx < width; columnIdx++){
+
+                int pixel = mapImage.getPixel(columnIdx, rowIdx);
+
+                if (TileType.isEntity(pixel)){
+                    spawnLocations.add(new Pair<>(pixel, convertToGlobal(columnIdx, rowIdx)));
+                }
+            }
+        }
+    }
+
+    private void readInPickups(String mapName) throws MapConversionException {
+
+        mapImage = openImage(mapName, 2);
+
+        //dimensions in pixels/tiles
+        height = mapImage.getHeight();
+        width = mapImage.getWidth();
+
+        for (int rowIdx = 0; rowIdx < height; rowIdx++){
+
+            for (int columnIdx = 0; columnIdx < width; columnIdx++){
+
+                int pixel = mapImage.getPixel(columnIdx, rowIdx);
+
+                if (TileType.isKey(pixel)){
+                    keyBuilders.add(new KeyBuilder(pixel, convertToGlobal(columnIdx, rowIdx)));
+                } else if (TileType.isPickup(pixel)) {
+                    pickupLocations.add(new Pair<>(pixel, convertToGlobal(columnIdx, rowIdx)));
+                }
+            }
+        }
     }
 
     private void convertMapBitmapToGraph(String mapName) throws MapConversionException {
+
+        mapImage = openImage(mapName, 0);
+
+        //dimensions in pixels/tiles
+        height = mapImage.getHeight();
+        width = mapImage.getWidth();
+
+        List<Integer> tileValues;
+        for (int rowIdx = 0; rowIdx < height; rowIdx++){
+            tileValues = new ArrayList<>();
+
+            for (int columnIdx = 0; columnIdx < width; columnIdx++){
+
+                int pixel = mapImage.getPixel(columnIdx, rowIdx);
+
+                if (pixel == WALL){
+                    tileValues.add(-1);
+
+                } else {
+                    Color color = Color.valueOf(pixel);
+
+                    if (TileType.isDoor(pixel)){
+
+                        boolean locked = (color.blue() == 0 && color.green() == 0);
+
+                        Direction d = findRoomsAdjacentToDoor(new Tile(columnIdx, rowIdx));
+
+                        doorSpawns.add(new DoorBuilder(locked, d==VERTICAL, convertToGlobal(columnIdx, rowIdx), pixel));
+
+                        tileValues.add(-2);
+
+                    } else {
+                        tileValues.add(0);
+                    }
+                }
+            }
+
+            meshGenList.add(tileValues);
+        }
+    }
+
+    /*private void convertMapBitmapToGraph(String mapName) throws MapConversionException {
 
         BitmapFactory.Options o = new BitmapFactory.Options();
         o.inScaled = false;
         try {
             //mapImage = BitmapFactory.decodeResource(context.getResources(), R.raw.map1, o);
-            mapImage = BitmapFactory.decodeStream(context.getAssets().open("maps/"+mapName+".png"));
+
+            //mapImage = BitmapFactory.decodeStream(context.getAssets().open(String.format("maps/%s/%s_0.png", mapName, mapName)));
+            mapImage = BitmapFactory.decodeStream(context.getAssets().open(String.format("maps/%s.png", mapName)));
         } catch (IOException e){
             throw new MapConversionException(MCEReason.FILE_DECODING, e);
         }
@@ -149,148 +238,16 @@ public class MapReader {
 
             meshGenList.add(tileValues);
         }
-    }
+    }*/
 
     private Point convertToGlobal(int columnIdx, int rowIdx){
         return new Point(columnIdx, rowIdx).sMult(tileSize).add(centerOffset);
     }
 
-    private void roomInitialisation(Tile startingPosition) throws MapConversionException{
-
-        //contains tiles that are valid and have been seen (as a neighbour) but not visited.
-        //ordered by the integer cost to get to that tile from the starting position
-        initOpenSet();
-
-        openSet.add(new Pair<>(startingPosition, 0));
-
-        //visited tiles are added here
-        HashSet<Tile> closedSet = new HashSet<>();
-
-        //initialise variables needed in loop
-        Pair<Tile, Integer> tileAndCost;
-        Tile currentTile;
-        int currentColor;
-
-        int currentCost;
-        int neighbourTileType;
-        while (!openSet.isEmpty()) {
-
-            //get the tile with the lowest cost
-            tileAndCost = openSet.poll();
-            currentTile = tileAndCost.first;
-            currentCost = tileAndCost.second;
-
-            currentColor = getPixelColorWithOffset(currentTile, 0, 0);
-            //process the current tile
-            switch (currentColor){
-                case (PLAYER):
-                    break;
-                case (DRONE):
-                    break;
-                case (DOOR):
-                    //if door doesn't exist in graph already, add it
-
-                    break;
-                case (WALL):
-                    break;
-                default:
-                    continue;
-            }
-
-            //add it to the closed set so it isn't inspected again
-            closedSet.add(currentTile);
-
-            ArrayList<Tile> neighbours = getNeighbours(currentTile);
-
-            for (Tile neighbour : neighbours) {
-                //get the color of this neighbour
-                neighbourTileType = getPixelColorWithOffset(neighbour,0,0);
-
-                if (neighbourTileType == INVALID || closedSet.contains(neighbour)) {
-                    //if the tile is out of bounds, or has already been inspected, move on
-                    continue;
-                }
-
-                //neighbour is a valid tile, calc it's cost and add to openset
-                int neighbourCost = currentCost + 1;
-                openSet.add(new Pair<>(neighbour, neighbourCost));
-            }
-        }
-    }
-
-    //BFS of bitmap for first instance of TileType constant provided.
-    //memoryless, doesn't return path or keep track of where it came from.
-    //Used for finding a specific tile
-    private Tile searchForTileType(Tile startingPosition, int desiredTileType) throws MapConversionException{
-        if (!isValidTileType(desiredTileType))
-            throw new MapConversionException(MCEReason.SEARCH_FOR_INVALID_TILE_TYPE);
-
-        //contains tiles that are valid and have been seen (as a neighbour) but not visited.
-        //ordered by the integer cost to get to that tile from the starting position
-        initOpenSet();
-
-        //visited tiles are added here
-        HashSet<Tile> closedSet = new HashSet<>();
-
-        openSet.add(new Pair<>(startingPosition, 0));
-
-        //initialise variables needed in loop
-        Pair<Tile, Integer> tileAndCost;
-        Tile currentTile;
-        int currentCost;
-        int neighbourTileType;
-        while (!openSet.isEmpty()) {
-
-            //get the tile with the lowest cost
-            tileAndCost = openSet.poll();
-            currentTile = tileAndCost.first;
-            currentCost = tileAndCost.second;
-
-            //add it to the closed set so it isn't inspected again
-            closedSet.add(currentTile);
-
-            ArrayList<Tile> neighbours = getNeighbours(currentTile);
-
-            for (Tile neighbour : neighbours) {
-                //get the color of this neighbour
-                neighbourTileType = getPixelColorWithOffset(neighbour,0,0);
-
-                if (neighbourTileType == INVALID || closedSet.contains(neighbour)) {
-                    //if the tile is out of bounds, or has already been inspected, move on
-                    continue;
-                } else if (neighbourTileType == desiredTileType) {
-                    //if the tile is the goal, return
-                    return neighbour;
-                }
-
-                //neighbour is a valid tile but not target, calc it's cost and add to openset
-                int neighbourCost = currentCost + 1;
-                openSet.add(new Pair<>(neighbour, neighbourCost));
-            }
-        }
-
-        return startingPosition;
-    }
-
-    //gets the coordinates of the 8 surrounding cells. Warning: doesn't check if they're valid
-    private ArrayList<Tile> getNeighbours(Tile coordinates){
-        ArrayList<Tile> neighbours = new ArrayList<>();
-
-        for (int i = -1; i < 2; i++){
-            for (int j = -1; j < 2; j++){
-                if (i == 0 && j == 0)
-                    continue;
-
-                neighbours.add(coordinates.add(i, j));
-            }
-        }
-        return neighbours;
-    }
-
     //returns the Color constant value of the tile given with the given offset applied
     //if the pixel doesn't exist, return TileType.Invalid
     private int getPixelColorWithOffset(Tile coordinates, int xDiff, int yDiff){
-        int tileType = INVALID;
+        int tileType = 0;
 
         try {
             tileType = mapImage.getPixel(coordinates.getX()+xDiff, coordinates.getY()+yDiff);
@@ -364,16 +321,6 @@ public class MapReader {
                 break;
         }
         return validDirection;
-    }
-
-    private void initOpenSet(){
-        openSet = new PriorityQueue<>(10, (a, b) -> {
-            if (a.second < b.second)
-                return -1;
-            else if (a.second.equals(b.second))
-                return 0;
-            return 1;
-        });
     }
 
     public int getWidth() {
