@@ -214,7 +214,7 @@ public class Tasks {
                         return SUCCESS;
                     } else {
                         Log.d("hb::AI", "rotating... angle:  " + angle);
-                        controlled.rotateBy(angle);
+                        controlled.setRotationVector(rotVector);
                         return RUNNING;
                     }
                 }

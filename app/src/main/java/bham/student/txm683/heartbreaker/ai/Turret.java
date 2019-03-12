@@ -85,6 +85,9 @@ public class Turret extends AIEntity {
 
         behaviourTreeRoot.process(context);
 
+        setRequestedMovementVector(Vector.ZERO_VECTOR);
+        move(secondsSinceLastGameTick, shape);
+
         /*if (context.containsKeys(SIGHT_BLOCKED) && context.getValue(SIGHT_BLOCKED) instanceof  Boolean){
             boolean sightBlocked = (boolean) context.getValue(SIGHT_BLOCKED);
 
