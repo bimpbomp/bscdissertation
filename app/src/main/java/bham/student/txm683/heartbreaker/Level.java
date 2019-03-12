@@ -1,15 +1,19 @@
 package bham.student.txm683.heartbreaker;
 
+import android.graphics.Color;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.input.InputManager;
+import bham.student.txm683.heartbreaker.input.RectButtonBuilder;
 import bham.student.txm683.heartbreaker.map.MapConstructor;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.EntityController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
+import bham.student.txm683.heartbreaker.rendering.popups.Popup;
+import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
 
 public class Level implements Runnable {
@@ -38,6 +42,9 @@ public class Level implements Runnable {
     private int loops;
 
     private String mapName;
+
+    private Popup diedPopup;
+    private Popup completePopup;
 
     public Level(LevelView levelView, String mapName){
         super();
@@ -72,6 +79,28 @@ public class Level implements Runnable {
             levelView.setDebugInfo(levelState.getDebugInfo());
 
             this.setRunning(true);
+
+            RectButtonBuilder[] buttonBuilders = new RectButtonBuilder[]{
+                    //TODO set restart function
+                    new RectButtonBuilder("Restart", 40, () -> {}),
+                    new RectButtonBuilder("Return To Menu", 60, () -> levelView.returnToMenu())
+            };
+
+            TextBoxBuilder[] textBuilders = new TextBoxBuilder[]{
+                    new TextBoxBuilder("You Died...", 20, 60, Color.RED)
+            };
+
+            this.diedPopup = inputManager.createMOSPopup(buttonBuilders, textBuilders);
+
+            buttonBuilders = new RectButtonBuilder[]{
+                    new RectButtonBuilder("Return To Menu", 60, () -> levelView.returnToMenu())
+            };
+
+            textBuilders = new TextBoxBuilder[]{
+                    new TextBoxBuilder("Success!", 20, 60, Color.GREEN)
+            };
+
+            this.completePopup = inputManager.createMOSPopup(buttonBuilders, textBuilders);
         }
     }
 
@@ -90,11 +119,11 @@ public class Level implements Runnable {
 
         levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
 
-        /*try {
-            Thread.sleep(2000);
+        try {
+            Thread.sleep(1000);
         } catch (InterruptedException e){
             //do nothing
-        }*/
+        }
 
         //levelState.setPaused(false);
         while (running){
@@ -137,11 +166,13 @@ public class Level implements Runnable {
 
                     //check level end conditions
                     if (levelState.getPlayer().getHealth() < 1){
-                        levelState.getLevelEnder().setStatus(LevelEndStatus.PLAYER_DIED);
-                        levelView.returnToMenu();
+                        /*levelState.getLevelEnder().setStatus(LevelEndStatus.PLAYER_DIED);
+                        levelView.returnToMenu();*/
+                        inputManager.setActivePopup(diedPopup);
                     } else if (levelState.getCore().getHealth() < 1) {
-                        levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
-                        levelView.returnToMenu();
+                        /*levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
+                        levelView.returnToMenu();*/
+                        inputManager.setActivePopup(completePopup);
                     }
                 }
             } else {

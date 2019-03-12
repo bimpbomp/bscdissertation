@@ -29,6 +29,10 @@ public class RectButton extends Button implements PopUpElement {
         this.verticalPosition = PopUpElement.boundVerticalPosition(verticalPosition);
     }
 
+    public RectButton(RectButtonBuilder builder, Point center){
+        this(builder.getLabel(), center, 300, 100, Color.GRAY, builder.getVerticalPosition(), builder.getButtonFunction());
+    }
+
     @Override
     public int getVerticalPosition() {
         return verticalPosition;

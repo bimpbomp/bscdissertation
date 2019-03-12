@@ -28,6 +28,10 @@ public class TextBox implements PopUpElement {
         this.verticalPosition = PopUpElement.boundVerticalPosition(verticalPosition);
     }
 
+    public TextBox(TextBoxBuilder builder, Point center){
+        this(builder.getLabel(), center, 0,0, builder.getColor(), builder.getVerticalPosition(),builder.getTextSize());
+    }
+
     @Override
     public int getVerticalPosition() {
         return verticalPosition;

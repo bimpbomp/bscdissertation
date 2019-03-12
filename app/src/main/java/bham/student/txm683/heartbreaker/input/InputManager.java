@@ -10,8 +10,12 @@ import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.rendering.popups.PopUpElement;
 import bham.student.txm683.heartbreaker.rendering.popups.Popup;
 import bham.student.txm683.heartbreaker.rendering.popups.TextBox;
+import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InputManager {
     private static final String TAG = "hb::InputManager";
@@ -25,7 +29,6 @@ public class InputManager {
     private Button returnToMenuButton;
 
     private Button secondaryWeaponButton;
-    private Button primaryWeaponButton;
 
     private Button[] debugButtons;
 
@@ -41,21 +44,42 @@ public class InputManager {
         this.levelState = levelState;
         this.context = context;
 
+        this.pauseScreen = createMOSPopup(new RectButtonBuilder[]{
+                        new RectButtonBuilder("Resume", 40, this::hideActivePopup),
+                        new RectButtonBuilder("Restart", 60, () -> {}),
+                        new RectButtonBuilder("Return To Menu", 80, () -> returnToMenuButton.onClick())
+                },
+
+                new TextBoxBuilder[]{
+                        new TextBoxBuilder("Game is Paused", 20, 60, Color.RED)}
+                );
+    }
+
+    public void hideActivePopup(){
+        this.activePopup.hide();
+        this.activePopup = null;
+    }
+
+    public Popup createMOSPopup(RectButtonBuilder[] buttonBuilders, TextBoxBuilder[] textBuilders){
         Tile screenDims = levelState.getScreenDimensions();
         Point screenCenter = new Point(screenDims).sMult(0.5f);
 
-        PopUpElement[] elements = new PopUpElement[]{
-                new TextBox("Game is Paused", screenCenter, 0, 0, Color.RED, 20, 60),
-                new RectButton("Resume", screenCenter, 300, 100, Color.GRAY, 40, () -> {levelState.setPaused(false); activePopup.hide(); activePopup = null;}),
-                new RectButton("Restart", screenCenter, 300, 100, Color.GRAY, 60, () -> {}),
-                new RectButton("Return To Menu", screenCenter, 300, 100, Color.GRAY, 80, () -> returnToMenuButton.onClick())
-        };
+        List<PopUpElement> elements = new ArrayList<>();
 
-        this.pauseScreen = new Popup(screenCenter, screenDims.getX()/2, (int)(screenDims.getY()/1.5f), true, elements);
+        for (RectButtonBuilder buttonBuilder : buttonBuilders) {
+            elements.add(new RectButton(buttonBuilder, screenCenter));
+        }
+
+        for (TextBoxBuilder textBuilder : textBuilders) {
+            elements.add(new TextBox(textBuilder, screenCenter));
+        }
+
+        return new Popup(screenCenter, screenDims.getX()/2, (int)(screenDims.getY()/1.5f), true, elements, (b) -> levelState.setPaused(b));
     }
 
-    public void setActivePopup(Popup popup){
-        this.activePopup = popup;
+    public void setActivePopup(Popup activePopup) {
+        this.activePopup = activePopup;
+        this.activePopup.show();
     }
 
     public boolean onTouchEvent(MotionEvent event){
@@ -84,6 +108,9 @@ public class InputManager {
     }
 
     private boolean handlePopupInput(MotionEvent event, int eventID, Point coordinatesPressed){
+        if (activePopup == null)
+            return false;
+
         for (Button element : activePopup.getInputElements()){
 
             if (element.containsPoint(coordinatesPressed)){
@@ -100,24 +127,6 @@ public class InputManager {
                 }
             }
         }
-
-        /*for (Button element : pauseScreen.getInputElements()){
-            Log.d("INPUTMANAGER", "ticking pausescreenelements!");
-
-            if (element.containsPoint(coordinatesPressed)){
-
-                switch (event.getActionMasked()){
-                    case MotionEvent.ACTION_DOWN:
-                        element.setPointerID(eventID);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        element.onClick();
-                        break;
-                    default:
-                        return false;
-                }
-            }
-        }*/
 
         return true;
     }
@@ -179,13 +188,8 @@ public class InputManager {
 
                     coordinatesPressed = new Point(event.getX(eventIndex), event.getY(eventIndex));
 
-                    //Log.d("hb::INPUT", "index: " + eventIndex + ", id: " + eventID);
-
-                    //Log.d("hb::INPUTIDS", "thumb: " + thumbstick.getID() + ", rot: " + rotationThumbstick.getID());
                     if (thumbstick.hasID(eventID))
                         thumbstick.setActivePosition(coordinatesPressed);
-                    /*else if (primaryWeaponButton.hasID(eventID))
-                        levelState.addBullet(levelState.getPlayer().shoot());*/
                     else if (secondaryWeaponButton.hasID(eventID))
                         levelState.addBullet(levelState.getPlayer().shootSecondary());
                     else if (rotationThumbstick.hasID(eventID)){
@@ -269,17 +273,14 @@ public class InputManager {
             thumbstick.cancel();
 
             pauseButton.onClick();
-            activePopup = pauseScreen;
-            activePopup.show();
+
+            setActivePopup(pauseScreen);
 
         } else if (thumbstick.hasID(eventID)){
             thumbstick.cancel();
         } else if (secondaryWeaponButton.hasID(eventID)){
-            //levelState.getPlayer().meleeAttack();
             secondaryWeaponButton.cancel();
-        }/* else if (primaryWeaponButton.hasID(eventID)){
-            primaryWeaponButton.cancel();
-        }*/
+        }
         else if (rotationThumbstick.hasID(eventID)){
             rotationThumbstick.cancel();
         }
@@ -290,27 +291,16 @@ public class InputManager {
         if (!levelState.isPaused()) {
             thumbstick.draw(canvas, textPaint);
 
-            /*primaryWeaponButton.setLabel("∞");
-            primaryWeaponButton.draw(canvas, textPaint);*/
-
-            secondaryWeaponButton.setLabel(levelState.getPlayer().getSecondaryAmmo()+"");
+            secondaryWeaponButton.setLabel(levelState.getPlayer().getSecondaryAmmo() + "");
             secondaryWeaponButton.draw(canvas, textPaint);
 
             rotationThumbstick.draw(canvas, textPaint);
 
             pauseButton.draw(canvas, textPaint);
-        } else {
-            pauseScreen.draw(canvas, new Point());
-            /*returnToMenuButton.draw(canvas, textPaint);
-
-            if (debugButtons != null) {
-                for (Button button : debugButtons) {
-                    button.draw(canvas, textPaint);
-                }
-            }*/
         }
 
-
+        if (activePopup != null)
+            activePopup.draw(canvas, new Point());
     }
 
     public Thumbstick getThumbstick() {
@@ -344,8 +334,6 @@ public class InputManager {
     public void setDebugButtons(Button[] buttons){
         this.debugButtons = buttons;
     }
-
-    public void setPrimaryWeaponButton(Button primaryWeaponButton){this.primaryWeaponButton = primaryWeaponButton;}
 
     public Button getReturnToMenuButton() {
         return returnToMenuButton;

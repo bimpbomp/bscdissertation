@@ -9,7 +9,7 @@ import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class Popup {
@@ -19,17 +19,21 @@ public class Popup {
     private boolean pauseOnShow;
     private Paint textPaint;
 
+    private IPause pauseFunction;
+
     private Rectangle background;
 
-    public Popup(Point center, int width, int height, boolean pauseOnShow, PopUpElement... elements){
+    public Popup(Point center, int width, int height, boolean pauseOnShow, List<PopUpElement> elements, IPause pauseFunction){
         this.elements = new ArrayList<>();
 
         this.background = new Rectangle(center, width, height, Color.LTGRAY);
 
-        if (elements == null || elements.length == 0)
+        if (elements == null || elements.size() == 0)
             throw new IllegalArgumentException("Popup constructor requires at least one element");
 
-        this.elements.addAll(Arrays.asList(elements));
+        elements.sort(Comparator.comparingInt(PopUpElement::getVerticalPosition));
+
+        this.elements = elements;
 
         this.elements.forEach(element ->
                 element.setCenter(new Point(center.getX(), center.getY() - (height/2f) + height * (element.getVerticalPosition()/100f))));
@@ -37,6 +41,8 @@ public class Popup {
         show = false;
         this.pauseOnShow = pauseOnShow;
         textPaint = RenderingTools.initPaintForText(Color.DKGRAY, 30, Paint.Align.CENTER);
+
+        this.pauseFunction = pauseFunction;
     }
 
     public void draw(Canvas canvas, Point renderOffset){
@@ -62,14 +68,22 @@ public class Popup {
         return inputs;
     }
 
-    public boolean show(){
+    public void show(){
         this.show = true;
-        return pauseOnShow;
+
+        if (pauseOnShow)
+            pauseFunction.setPaused(true);
     }
 
-    public boolean hide(){
+    public void hide(){
 
         this.show = false;
-        return pauseOnShow;
+
+        if (pauseOnShow)
+            pauseFunction.setPaused(false);
+    }
+
+    public interface IPause{
+        void setPaused(boolean pause);
     }
 }
