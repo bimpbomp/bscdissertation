@@ -5,7 +5,9 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 
 public interface Shape {
     ShapeIdentifier getShapeIdentifier();
+    Vector getForwardUnitVector();
     Point getCenter();
     void translateShape(Vector movementVector);
+    void rotateBy(float angle);
     int getColor();
 }

@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
@@ -115,7 +114,7 @@ public class Drone extends AIEntity implements Shooter {
 
         behaviourTreeRoot.process(context);
 
-        if (getRequestedMovementVector().equals(new Vector()))
+        /*if (getRequestedMovementVector().equals(new Vector()))
             return;
 
         Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
@@ -123,10 +122,9 @@ public class Drone extends AIEntity implements Shooter {
         Log.d("hb::ROTVECTOR",  getRotationVector().relativeToString());
 
         shape.translateShape(movementVector);
-        shape.rotateShape(getRotationVector());
+        shape.rotateShape(getRotationVector());*/
 
-        /*AStar aStar = new AStar(this, ((MeshPolygon)context.getValue(BKeyType.CURRENT_MESH)).getId(), 14, levelState.getRootMeshPolygons(), levelState.getMeshGraph());
-        aStar.plotPath();*/
+        move(secondsSinceLastGameTick, shape);
     }
 
     @Override

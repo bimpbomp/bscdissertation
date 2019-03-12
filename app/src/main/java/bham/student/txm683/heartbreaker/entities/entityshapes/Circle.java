@@ -28,6 +28,16 @@ public class Circle implements Renderable, Shape {
     }
 
     @Override
+    public void rotateBy(float angle) {
+
+    }
+
+    @Override
+    public Vector getForwardUnitVector() {
+        return Vector.ZERO_VECTOR;
+    }
+
+    @Override
     public int getColor() {
         return defaultColor;
     }

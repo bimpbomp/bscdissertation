@@ -32,6 +32,16 @@ public class Perimeter implements Renderable, Collidable, Shape {
         this.paint = new Paint();
     }
 
+    @Override
+    public Vector getForwardUnitVector() {
+        return Vector.ZERO_VECTOR;
+    }
+
+    @Override
+    public void rotateBy(float angle) {
+
+    }
+
     public void convertToGlobal(int tileSize){
         for (int i = 0; i < vertices.length; i++){
             vertices[i] = vertices[i].sMult(tileSize);

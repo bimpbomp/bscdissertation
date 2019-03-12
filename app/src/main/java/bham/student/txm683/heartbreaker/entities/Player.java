@@ -124,9 +124,9 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     @Override
     public void tick(float secondsSinceLastGameTick) {
+        move(secondsSinceLastGameTick, shape);
 
-
-        if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR)) {
+        /*if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR)) {
             Vector movementForce = getRequestedMovementVector().sMult(4);
 
             float dot = movementForce.dot(shape.getForwardUnitVector());
@@ -142,9 +142,9 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
             if (velocity.getLength() > max)
                 velocity = velocity.setLength(max);
 
-            /*Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " +
+            *//*Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " +
                     acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " +
-                    getRequestedMovementVector().relativeToString() + " dot: " + dot);*/
+                    getRequestedMovementVector().relativeToString() + " dot: " + dot);*//*
 
             shape.translateShape(velocity.sMult(secondsSinceLastGameTick));
 
@@ -172,7 +172,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
             float angularVelocity = angularAcc * secondsSinceLastGameTick;
 
             shape.rotateBy(angularVelocity);
-        }
+        }*/
 
     }
 
