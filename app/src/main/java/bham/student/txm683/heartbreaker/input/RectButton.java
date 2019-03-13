@@ -3,7 +3,6 @@ package bham.student.txm683.heartbreaker.input;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.rendering.popups.PopUpElement;
@@ -76,8 +75,6 @@ public class RectButton extends Button implements PopUpElement {
     public void draw(Canvas canvas, Point point, Paint textPaint) {
         shape.draw(canvas, point, 0, false);
         RenderingTools.renderCenteredText(canvas, textPaint, getLabel(), getCenter());
-
-        Log.d("RECTBUTTON", "center: " + getCenter());
     }
 
     @Override

@@ -212,8 +212,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         int attackButtonRadius = 100;
         this.inputManager.setSecondaryWeaponButton(new Button("BOMB", new Point(viewWidth-(attackButtonRadius + thumbstickMaxRadius*2) - 20, viewHeight-attackButtonRadius -10), attackButtonRadius, Color.RED, null));
 
-        //this.inputManager.setPrimaryWeaponButton(new Button("PEW", new Point(viewWidth-attackButtonRadius -10, viewHeight-attackButtonRadius-10), attackButtonRadius, Color.MAGENTA, null));
-
         textPaint.setTextSize(36f);
         //gives space for 8 debug buttons
         int debugButtonDiameter = viewHeight/6;

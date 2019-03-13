@@ -31,7 +31,7 @@ public class FireAtTarget extends BNode {
             AIEntity controlledEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
             LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
 
-            //if controlled entity can't shoot, FAIL
+            //if controlled entity can't aim, FAIL
             if (!(controlledEntity instanceof Shooter))
                 return Status.FAILURE;
 

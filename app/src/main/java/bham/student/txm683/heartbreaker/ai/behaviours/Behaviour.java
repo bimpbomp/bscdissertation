@@ -17,6 +17,15 @@ public class Behaviour {
         );
     }
 
+    public static BNode turretIdleBehaviour(){
+        return new Sequence(
+                Tasks.randomPointInMesh(),
+                Tasks.idleRotDamp(),
+                Tasks.rotateToTarget(),
+                Tasks.doNothing()
+        );
+    }
+
     public static BNode walkToPointBehaviour(){
         return new Sequence(
                 Tasks.rotateToTarget(),
@@ -34,6 +43,9 @@ public class Behaviour {
     public static BNode stationaryShootBehaviour(){
         return new Sequence(
                 Tasks.checkLineOfSight(),
+                Tasks.attackRotDamp(),
+                Tasks.aim(),
+                Tasks.rotateToTarget(),
                 Tasks.shoot()
         );
     }

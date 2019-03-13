@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
+import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -38,7 +39,11 @@ public class Turret extends AIEntity {
 
         this.width = size;
 
-        this.behaviourTreeRoot = Behaviour.stationaryShootBehaviour();
+        //this.behaviourTreeRoot = Behaviour.stationaryShootBehaviour();
+        this.behaviourTreeRoot = new Selector(
+                Behaviour.stationaryShootBehaviour(),
+                Behaviour.turretIdleBehaviour()
+        );
 
         context.addPair(BKeyType.VIEW_RANGE, 600);
         context.addPair(BKeyType.CONTROLLED_ENTITY, this);
@@ -86,14 +91,14 @@ public class Turret extends AIEntity {
         behaviourTreeRoot.process(context);
 
         setRequestedMovementVector(Vector.ZERO_VECTOR);
-        move(secondsSinceLastGameTick, shape);
+        move(secondsSinceLastGameTick, shape, (float) context.getValue(BKeyType.ROT_DAMP));
 
         /*if (context.containsKeys(SIGHT_BLOCKED) && context.getValue(SIGHT_BLOCKED) instanceof  Boolean){
             boolean sightBlocked = (boolean) context.getValue(SIGHT_BLOCKED);
 
             if (!sightBlocked){
                 rotate(new Vector(getCenter(), levelState.getPlayer().getCenter()));
-                levelState.addBullet(weapon.shoot(getForwardUnitVector()));
+                levelState.addBullet(weapon.aim(getForwardUnitVector()));
             }
         }*/
     }

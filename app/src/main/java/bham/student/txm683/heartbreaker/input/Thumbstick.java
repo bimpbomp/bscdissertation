@@ -36,19 +36,19 @@ public class Thumbstick implements InputUIElement{
         this.receivingInput = false;
 
         this.neutralCircleRadius = neutralCircleRadius;
-        this.activeCircleRadius = neutralCircleRadius*1.5f;
+        this.activeCircleRadius = neutralCircleRadius*1.8f;
 
         this.activePaint = new Paint();
-        this.activePaint.setColor(Color.GRAY);
+        this.activePaint.setColor(Color.argb(200, 169,169,169));
         this.activePaint.setStrokeWidth(10);
 
         this.neutralPaint = new Paint();
-        this.neutralPaint.setColor(Color.DKGRAY);
+        this.neutralPaint.setColor(Color.argb(170, 128,128,128));
         this.neutralPaint.setStrokeWidth(10);
 
         this.maxRadius = maxRadius;
         this.maxPaint = new Paint();
-        this.maxPaint.setColor(Color.LTGRAY);
+        this.maxPaint.setColor(Color.argb(100, 105,105,105));
         this.maxPaint.setStrokeWidth(10);
 
         this.maxInputLengthRequirement = maxRadius * 0.7f;
@@ -74,7 +74,7 @@ public class Thumbstick implements InputUIElement{
     }
 
     public void draw(Canvas canvas, Paint textPaint){
-        canvas.drawCircle(neutralPosition.getX(), neutralPosition.getY(), maxRadius, maxPaint);
+        //canvas.drawCircle(neutralPosition.getX(), neutralPosition.getY(), maxRadius, maxPaint);
         canvas.drawCircle(neutralPosition.getX(), neutralPosition.getY(), neutralCircleRadius, neutralPaint);
 
         canvas.drawCircle(inputVector.getHead().getX(), inputVector.getHead().getY(), activeCircleRadius, activePaint);

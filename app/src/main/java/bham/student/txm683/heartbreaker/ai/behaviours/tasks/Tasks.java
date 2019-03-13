@@ -37,7 +37,7 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsKeys(CONTROLLED_ENTITY)){
                     if (getStatus() == RUNNING){
-                        Log.d("hb::AI doNothing", "is already running");
+                        Log.d("TASKS doNothing", "is already running");
 
                         if (context.containsKeys(TIME_LEFT_IN_IDLE)){
                             int timeLeftInIdle = (int) context.getValue(TIME_LEFT_IN_IDLE) - 1;
@@ -46,18 +46,18 @@ public class Tasks {
                             setMovementToZero(context);
 
                             if (timeLeftInIdle < 1){
-                                Log.d("hb::AI doNothing", "has succeeded");
+                                Log.d("TASKS doNothing", "has succeeded");
                                 setStatus(SUCCESS);
                             } else {
-                                Log.d("hb::AI doNothing", timeLeftInIdle + " time left");
+                                Log.d("TASKS doNothing", timeLeftInIdle + " time left");
                                 setStatus(RUNNING);
                             }
                         }
 
                     } else {
-                        Log.d("hb::AI doNothing", "was not already running");
+                        Log.d("TASKS doNothing", "was not already running");
                         if (context.containsKeys(TIME_PER_IDLE)) {
-                            Log.d("hb::AI doNothing", "setting movement to zero");
+                            Log.d("TASKS doNothing", "setting movement to zero");
                             int timePerIdle = (int) context.getValue(TIME_PER_IDLE);
                             context.addPair(TIME_LEFT_IN_IDLE, timePerIdle);
 
@@ -68,7 +68,7 @@ public class Tasks {
 
                     return getStatus();
                 }
-                Log.d("hb::AI", "doNothing has failed");
+                Log.d("TASKS", "doNothing has failed");
                 setStatus(FAILURE);
                 return FAILURE;
             }
@@ -184,12 +184,12 @@ public class Tasks {
 
                     Point target = currentMesh.getRandomPointInMesh();
 
-                    Log.d("hb::AI", "target: " + target.toString());
+                    Log.d("TASKS", "target: " + target.toString());
                     context.addPair(TARGET, target);
 
                     return SUCCESS;
                 }
-                Log.d("hb::AI", "randomPointInMesh doesnt contains keys");
+                Log.d("TASKS", "randomPointInMesh doesnt contains keys");
                 return FAILURE;
             }
         };
@@ -200,7 +200,7 @@ public class Tasks {
             @Override
             public Status process(BContext context) {
                 if (context.containsKeys(TARGET, CONTROLLED_ENTITY)){
-                    Log.d("hb::AI", "rotateTo contains keys");
+                    Log.d("TASKS", "rotateTo contains keys");
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
                     Point target = (Point) context.getValue(TARGET);
 
@@ -208,18 +208,41 @@ public class Tasks {
 
                     float angle = Vector.calculateAngleBetweenVectors(controlled.getForwardUnitVector(), rotVector);
 
+                    Log.d("TASKS", "rotation target: " + target);
+                    Log.d("TASKS", "rotVector: " + rotVector.relativeToString() + ", controlledForwardVector: " + controlled.getForwardUnitVector().relativeToString());
+
                     if (Math.abs(angle) < 0.0872665){
-                        Log.d("hb::AI", "no need to rotate... angle:  " + angle);
+                        Log.d("TASKS", "no need to rotate... angle:  " + angle);
                         controlled.setRotationVector(Vector.ZERO_VECTOR);
                         return SUCCESS;
                     } else {
-                        Log.d("hb::AI", "rotating... angle:  " + angle);
+                        Log.d("TASKS", "rotating... angle:  " + angle);
                         controlled.setRotationVector(rotVector);
                         return RUNNING;
                     }
                 }
-                Log.d("hb::AI", "rotateTo doesnt contains keys");
+                Log.d("TASKS", "rotateTo doesnt contains keys");
                 return FAILURE;
+            }
+        };
+    }
+
+    public static BNode idleRotDamp(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                context.addPair(ROT_DAMP, 0.25f);
+                return SUCCESS;
+            }
+        };
+    }
+
+    public static BNode attackRotDamp(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                context.addPair(ROT_DAMP, 0.75f);
+                return SUCCESS;
             }
         };
     }
@@ -234,7 +257,7 @@ public class Tasks {
                     Point target = (Point) context.getValue(TARGET);
 
                     Vector movementVector = new Vector(controlled.getCenter(), target);
-                    Log.d("hb::AI", "movement vector: " + movementVector.relativeToString() + ", length: " + movementVector.getLength());
+                    Log.d("TASKS", "movement vector: " + movementVector.relativeToString() + ", length: " + movementVector.getLength());
 
                     if (movementVector.getLength() < 100) {
                         controlled.setRequestedMovementVector(Vector.ZERO_VECTOR);
@@ -260,7 +283,7 @@ public class Tasks {
                     } else if ((Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
                         ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.YELLOW);
                     } else {
-                        ((AIEntity) context.getValue(CONTROLLED_ENTITY)).rotate((Vector) context.getValue(SIGHT_VECTOR));
+                        //((AIEntity) context.getValue(CONTROLLED_ENTITY)).rotate((Vector) context.getValue(SIGHT_VECTOR));
                         ((AIEntity) context.getValue(CONTROLLED_ENTITY)).revertToDefaultColor();
                         return SUCCESS;
                     }
@@ -270,7 +293,7 @@ public class Tasks {
         };
     }
 
-    public static BNode shoot(){
+    public static BNode aim(){
         return new BNode() {
             private int count;
 
@@ -285,15 +308,17 @@ public class Tasks {
                 if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE, SIGHT_BLOCKED)){
 
                     if ((Boolean) context.getValue(SIGHT_BLOCKED) || (Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
-                        Log.d("SHOOT", "sight is blocked, cannot shoot " + (++count));
+                        Log.d("TASKS", "sight is blocked, cannot aim " + (++count));
                         return FAILURE;
                     }
 
-                    Log.d("SHOOT", "processing shoot!");
+                    Log.d("TASKS", "processing aim!");
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
                     LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
                     Player player = levelState.getPlayer();
+
                     float projSpeed = controlled.getWeapon().getSpeed();
+
                     Point playerVel = player.getVelocity().getRelativeToTailPoint();
                     Point playerPos = player.getCenter();
                     Point aiPos = controlled.getCenter();
@@ -321,15 +346,17 @@ public class Tasks {
 
                     Point aimPoint = playerVel.sMult(t).add(playerPos);
 
-                    Log.d("SHOOTINFO", "t: " + t);
-                    Log.d("SHOOTT", "aimpoint: " + aimPoint + ", playerpos: " + playerPos);
-                    Log.d("SHOOTTT", "shoot vector: " + new Vector(aiPos, aimPoint).getUnitVector().getRelativeToTailPoint() + ", rayVector: " + new Vector(aiPos, playerPos).getUnitVector().getRelativeToTailPoint());
+                    context.addPair(TARGET, aimPoint);
 
-                    levelState.addBullet(controlled.getWeapon().shoot(new Vector(aiPos, aimPoint).getUnitVector()));
+                    Log.d("TASKS", "t: " + t);
+                    Log.d("TASKS", "aimpoint: " + aimPoint + ", playerpos: " + playerPos);
+                    Log.d("TASKS", "aim vector: " + new Vector(aiPos, aimPoint).getUnitVector().getRelativeToTailPoint()
+                            + ", rayVector: " + new Vector(aiPos, playerPos).getUnitVector().getRelativeToTailPoint());
+
 
                     return SUCCESS;
                 } else {
-                    Log.d("SHOOT", "required context isn't present");
+                    Log.d("TASKS", "required context isn't present");
                 }
                 return FAILURE;
             }
@@ -345,6 +372,26 @@ public class Tasks {
 
             private float square(float a){
                 return a*a;
+            }
+        };
+    }
+
+    public static BNode shoot(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+
+                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE, TARGET)){
+                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+
+                    Point aimPoint = (Point) context.getValue(TARGET);
+
+                    levelState.addBullet(controlled.getWeapon().shoot(new Vector(controlled.getCenter(), aimPoint).getUnitVector()));
+
+                    return SUCCESS;
+                }
+                return FAILURE;
             }
         };
     }

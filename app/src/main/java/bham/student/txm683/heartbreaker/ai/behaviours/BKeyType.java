@@ -24,7 +24,8 @@ public enum BKeyType {
     TARGET (Point.class),
     TIME_PER_IDLE (Integer.class),
     TIME_LEFT_IN_IDLE (Integer.class),
-    PATH (PathWrapper.class);
+    PATH (PathWrapper.class),
+    ROT_DAMP (Float.class);
 
     private Class type;
 

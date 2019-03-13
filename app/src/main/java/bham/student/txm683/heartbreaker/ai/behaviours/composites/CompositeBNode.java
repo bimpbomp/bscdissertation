@@ -31,15 +31,19 @@ public abstract class CompositeBNode extends BNode {
         //reset own status
         super.reset(context);
 
-        //reset children status
-        executionSequence.clear();
-        executionSequence.addAll(children);
+        resetQueue();
 
         Log.d("COMPNODE", "resetting...");
 
+        //reset children status
         for (BNode child : children){
             child.reset(context);
         }
+    }
+
+    protected void resetQueue(){
+        executionSequence.clear();
+        executionSequence.addAll(children);
     }
 
     @Override

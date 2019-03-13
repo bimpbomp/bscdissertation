@@ -57,7 +57,7 @@ public abstract class MoveableEntity extends Entity {
         return new Vector(1,1);
     }
 
-    protected void move(float secondsSinceLastGameTick, Shape shape){
+    protected void move(float secondsSinceLastGameTick, Shape shape, float rotationalDamping){
         if (velocity.getLength() < 5f)
             velocity = Vector.ZERO_VECTOR;
 
@@ -116,7 +116,7 @@ public abstract class MoveableEntity extends Entity {
             Vector momArm = new Vector(getCenter(), getCenter().add(shape.getForwardUnitVector().sMult(20f).getRelativeToTailPoint()));
             Vector parCom = momArm.sMult(force.dot(momArm) / momArm.getLength());
 
-            Vector angF = force.vSub(parCom);
+            Vector angF = force.vSub(parCom).sMult(rotationalDamping);
 
             float angularAcc = momArm.det(angF);
 

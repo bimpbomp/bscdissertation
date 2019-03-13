@@ -232,7 +232,7 @@ public class InputManager {
         } else if (pauseButton.getID() < 0 && pauseButton.containsPoint(coordinatesPressed)){
             pauseButton.setPointerID(eventID);/*
         } else if (primaryWeaponButton.getID() < 0 && primaryWeaponButton.containsPoint(coordinatesPressed)){
-            levelState.addBullet(levelState.getPlayer().shoot());
+            levelState.addBullet(levelState.getPlayer().aim());
             primaryWeaponButton.setPointerID(eventID);*/
         } else if (rotationThumbstick.getID() < 0 && rotationThumbstick.containsPoint(coordinatesPressed)){
             rotationThumbstick.setActivePosition(coordinatesPressed);

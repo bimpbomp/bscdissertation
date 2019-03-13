@@ -124,7 +124,7 @@ public class Drone extends AIEntity implements Shooter {
         shape.translateShape(movementVector);
         shape.rotateShape(getRotationVector());*/
 
-        move(secondsSinceLastGameTick, shape);
+        move(secondsSinceLastGameTick, shape,1);
     }
 
     @Override

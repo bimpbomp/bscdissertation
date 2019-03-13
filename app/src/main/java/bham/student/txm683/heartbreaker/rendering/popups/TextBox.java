@@ -2,7 +2,6 @@ package bham.student.txm683.heartbreaker.rendering.popups;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
 
@@ -58,7 +57,5 @@ public class TextBox implements PopUpElement {
         textPaint.setTextSize(textSize);
         RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, label, center, color, 10);
         textPaint.setTextSize(oldSize);
-
-        Log.d("TEXTBOX", "center: " + center);
     }
 }
