@@ -129,7 +129,7 @@ public class MapConstructor {
                     }
                 }
 
-                //TODO add condition for locked doors
+                //TODO add eval for locked doors
                 if (sideSets != null && doorSet != 0) {
                     Door door = new Door(uniqueID.id(), doorBuilder.getCenter(), tileSize, tileSize,
                             doorBuilder.isLocked(), doorBuilder.isVertical(), ColorScheme.DOOR_COLOR, doorSet, sideSets);

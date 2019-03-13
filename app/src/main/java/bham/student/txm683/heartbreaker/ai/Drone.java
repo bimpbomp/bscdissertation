@@ -54,15 +54,16 @@ public class Drone extends AIEntity implements Shooter {
 
         this.weapon = new BasicWeapon(getName(), 7);
 
-        this.behaviourTreeRoot = Behaviour.followPathBehaviour();
+        this.behaviourTreeRoot = Behaviour.droneTree();
 
         context.addPair(BKeyType.VIEW_RANGE, 600);
         context.addPair(BKeyType.CONTROLLED_ENTITY, this);
         context.addPair(BKeyType.TIME_PER_IDLE, 25);
+        context.addPair(BKeyType.HEALTH_BOUND, 50);
     }
 
     public Drone(String name, Point center){
-        this(name, center, 100, ColorScheme.CHASER_COLOR, 300, 100);
+        this(name, center, 100, ColorScheme.CHASER_COLOR, 600, 100);
     }
 
     public static Drone build(JSONObject jsonObject) throws JSONException {
@@ -216,6 +217,7 @@ public class Drone extends AIEntity implements Shooter {
     @Override
     public void revertToDefaultColor() {
         shape.revertToDefaultColor();
+        shape.revertUppertriToDefaultColor();
     }
 
     @Override

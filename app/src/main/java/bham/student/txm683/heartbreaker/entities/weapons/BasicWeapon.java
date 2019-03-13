@@ -24,10 +24,12 @@ public class BasicWeapon extends Weapon {
         this.bulletLife = 25;
     }
 
-    public BasicWeapon(String owner, int cooldownTicks, int damage){
+    public BasicWeapon(String owner, int cooldownTicks, int damage, int radiusModifier){
         this(owner);
         setAfterFiringCooldownInTicks(cooldownTicks);
         this.damage = damage;
+
+        this.bulletRadius *= radiusModifier;
     }
 
     public BasicWeapon(String owner, int cooldownTicks){

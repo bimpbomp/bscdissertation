@@ -31,8 +31,6 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     private Weapon primaryWeapon;
     private Weapon secondaryWeapon;
 
-    private Vector velocity;
-
     private List<Key> keys;
 
     public Player(String name, Point center, int size, float maxSpeed, int upperTriColor, int lowerTriColor, int initialHealth) {
@@ -56,21 +54,10 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
         this.keys = new ArrayList<>();
 
-        this.velocity = Vector.ZERO_VECTOR;
     }
 
     public Player(Point center){
         this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.UPPER_PLAYER_COLOR, 100);
-    }
-
-    @Override
-    public Vector getVelocity() {
-        return velocity;
-    }
-
-    @Override
-    public void setVelocity(Vector v) {
-        velocity = v;
     }
 
     public static Player build(JSONObject jsonObject) throws JSONException {
@@ -210,12 +197,16 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
-        shape.setColor(primaryWeapon.getSymbolisingColor());
+        //shape.setColor(primaryWeapon.getSymbolisingColor());
 
         shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
+    }
+
+    public Point getFront(){
+        return shape.getVertices()[0];
     }
 
     @Override

@@ -35,7 +35,7 @@ public class Turret extends AIEntity {
 
         health = initialHealth;
 
-        this.weapon=  new BasicWeapon(name, 10, 30);
+        this.weapon=  new BasicWeapon(name, 10, 30, 2);
 
         this.width = size;
 
@@ -51,7 +51,7 @@ public class Turret extends AIEntity {
     }
 
     public Turret(String name, Point center){
-        this(name ,center, 100, ColorScheme.CHASER_COLOR, 100);
+        this(name ,center, 200, ColorScheme.CHASER_COLOR, 100);
     }
 
     public static Turret build(JSONObject jsonObject) throws JSONException {
