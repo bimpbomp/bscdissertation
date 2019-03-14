@@ -4,7 +4,6 @@ import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
-import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -35,15 +34,12 @@ public class Turret extends AIEntity {
 
         health = initialHealth;
 
-        this.weapon=  new BasicWeapon(name, 10, 30);
+        this.weapon=  new BasicWeapon(name, 25, 30, 1.5f);
 
         this.width = size;
 
         //this.behaviourTreeRoot = Behaviour.stationaryShootBehaviour();
-        this.behaviourTreeRoot = new Selector(
-                Behaviour.stationaryShootBehaviour(),
-                Behaviour.turretIdleBehaviour()
-        );
+        this.behaviourTreeRoot = Behaviour.turretTree();
 
         context.addPair(BKeyType.VIEW_RANGE, 600);
         context.addPair(BKeyType.CONTROLLED_ENTITY, this);
@@ -51,7 +47,7 @@ public class Turret extends AIEntity {
     }
 
     public Turret(String name, Point center){
-        this(name ,center, 100, ColorScheme.CHASER_COLOR, 100);
+        this(name ,center, 200, ColorScheme.CHASER_COLOR, 100);
     }
 
     public static Turret build(JSONObject jsonObject) throws JSONException {

@@ -149,7 +149,7 @@ public abstract class CompositeBNode extends BNode {
                 return status;
             }
         }
-        //all children have finished processing, return the Status for this condition
+        //all children have finished processing, return the Status for this eval
         this.setStatus(continueExecutionStatus);
         return getStatus();
     }

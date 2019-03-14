@@ -50,11 +50,11 @@ public abstract class MoveableEntity extends Entity {
     }
 
     public void setVelocity(Vector v){
-
+        this.velocity = v;
     }
 
     public Vector getVelocity(){
-        return new Vector(1,1);
+        return velocity;
     }
 
     protected void move(float secondsSinceLastGameTick, Shape shape, float rotationalDamping){
@@ -105,6 +105,10 @@ public abstract class MoveableEntity extends Entity {
         }
 
 
+
+    }
+
+    public void rotate(float secondsSinceLastGameTick, Shape shape, float rotationalDamping){
         Vector force;
         if (!getRotationVector().equals(Vector.ZERO_VECTOR)){
             force = getRotationVector();

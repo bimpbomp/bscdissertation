@@ -275,20 +275,6 @@ public class CollisionManager {
         }
     }
 
-    private void initSpatPatV3(){
-        SpatialBin spatialBin = new SpatialBin(0, levelState.getLevelBoundingBox());
-
-        spatialBins.add(spatialBin);
-
-        for (Collidable collidable : levelState.getStaticCollidables()){
-            spatialBin.addPermanent(collidable);
-
-            if (collidable instanceof Door){
-                spatialBin.addPermanent(((Door) collidable).getPrimaryField());
-            }
-        }
-    }
-
     private void initSpatPatV4(){
 
         UniqueID uniqueID = new UniqueID();
@@ -695,7 +681,7 @@ public class CollisionManager {
 
                 if (!blocked) {
                     for (Door door : levelState.getMap().getDoors().values()) {
-                        if (door.isOpen()) {
+                        if (!door.isOpen()) {
                             if (collisionCheckRay(door, ray)) {
                                 blocked = true;
                                 break;

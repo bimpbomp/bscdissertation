@@ -145,15 +145,7 @@ public class Level implements Runnable {
 
                     benchMarker.begin();
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
-
-                        //Log.d("hb::AI", "Checking meshploygon for " + aiEntity.getName());
-                        for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
-                            if (meshPolygon.getBoundingBox().intersecting(aiEntity.getBoundingBox())){
-                                aiEntity.getContext().addPair(BKeyType.CURRENT_MESH, meshPolygon);
-                                //Log.d("hb::AI", "Meshfound for " + aiEntity.getName() + ": " + meshPolygon.getId());
-                                break;
-                            }
-                        }
+                        mapToMesh(aiEntity);
                     }
                     benchMarker.output("meshCalc");
 
@@ -200,6 +192,17 @@ public class Level implements Runnable {
 
             } else if (levelState.isPaused() && levelState.isReadyToRender()){
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), 0f);
+            }
+        }
+    }
+
+    public void mapToMesh(AIEntity aiEntity){
+        //Log.d("hb::AI", "Checking meshploygon for " + aiEntity.getName());
+        for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
+            if (meshPolygon.getBoundingBox().intersecting(aiEntity.getBoundingBox())){
+                aiEntity.getContext().addPair(BKeyType.CURRENT_MESH, meshPolygon);
+                //Log.d("hb::AI", "Meshfound for " + aiEntity.getName() + ": " + meshPolygon.getId());
+                break;
             }
         }
     }

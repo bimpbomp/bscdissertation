@@ -70,6 +70,10 @@ public class BoundingBox {
         canvas.drawRect(tl.getX(),tl.getY(),br.getX(),br.getY(),paint);
     }
 
+    public Point getCenter(){
+        return getTopLeft().add((right-left)/2f, (bottom-top)/2f);
+    }
+
     public Point getTopLeft(){
         return new Point(left, top);
     }

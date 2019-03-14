@@ -39,17 +39,21 @@ public class AStar {
 
     private AIEntity controlled;
 
+    private Point targetPoint;
+
     public AStar(AIEntity controlled, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
         this.controlled = controlled;
 
         this.startNode = meshGraph.getNode(((MeshPolygon)controlled.getContext().getValue(CURRENT_MESH)).getId());
 
         LevelState levelState = (LevelState) controlled.getContext().getValue(LEVEL_STATE);
-        Point target = (Point) controlled.getContext().getValue(MOVE_TO);
+        targetPoint = (Point) controlled.getContext().getValue(MOVE_TO);
 
-        int targetMeshId = levelState.mapToMesh(target);
+        int targetMeshId = levelState.mapToMesh(targetPoint);
 
         this.targetNode = meshGraph.getNode(targetMeshId);
+
+        Log.d("ASTAR", "current mesh id: " + startNode.getNodeID() + ", target mesh id: " + targetNode.getNodeID());
 
         this.meshPolygonMap = meshPolygonMap;
         this.meshGraph = meshGraph;
@@ -73,12 +77,12 @@ public class AStar {
         this.waypointPath = new ArrayList<>();
     }
 
-    public void plotPath(){
+    public boolean plotPath(){
         reset();
 
         if (startNode == null || targetNode == null){
             Log.d("ASTAR", "start/target node is null for " + controlled.getName());
-            return;
+            return false;
         }
 
         Status PathFindingStatus = applyAStar();
@@ -133,10 +137,13 @@ public class AStar {
         Log.d("ASTAR", "status: " + PathFindingStatus + ", nodes: " + stringBuilder.toString());
 
         if (waypointPath.size() > 0 ){
+            waypointPath.add(targetPoint);
             Log.d("ASTAR", sb2.toString());
+            controlled.getContext().addPair(PATH, new PathWrapper(waypointPath));
+            return true;
         }
 
-        controlled.getContext().addPair(PATH, new PathWrapper(waypointPath));
+        return false;
     }
 
     private Status applyAStar(){
