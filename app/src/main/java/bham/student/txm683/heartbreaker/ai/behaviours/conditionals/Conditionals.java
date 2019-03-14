@@ -38,22 +38,29 @@ public class Conditionals {
 
     private static Condition canNotSeePlayerCondition = context -> !canSeePlayerCondition.eval(context);
 
+    private static Condition inCooldownCondition = context -> {
+        if (context.containsKeys(CONTROLLED_ENTITY)){
+            AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+
+            controlled.getWeapon().tickCooldown();
+
+            return controlled.getWeapon().inCooldown();
+        }
+        return false;
+    };
+
+    private static Condition notInCooldownCondition = context ->  !inCooldownCondition.eval(context);
 
     private Conditionals() {
 
     }
 
     public static ConditionalBNode inCooldown(BNode child){
-        return new ConditionalBNode(child, context -> {
-            if (context.containsKeys(CONTROLLED_ENTITY)){
-                AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+        return new ConditionalBNode(child, inCooldownCondition);
+    }
 
-                controlled.getWeapon().tickCooldown();
-
-                return controlled.getWeapon().inCooldown();
-            }
-            return false;
-        });
+    public static ConditionalBNode notInCooldown(BNode child){
+        return new ConditionalBNode(child, notInCooldownCondition);
     }
 
     public static ConditionalBNode healthBelowThreshold(BNode child){

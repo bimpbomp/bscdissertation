@@ -105,6 +105,10 @@ public abstract class MoveableEntity extends Entity {
         }
 
 
+
+    }
+
+    public void rotate(float secondsSinceLastGameTick, Shape shape, float rotationalDamping){
         Vector force;
         if (!getRotationVector().equals(Vector.ZERO_VECTOR)){
             force = getRotationVector();

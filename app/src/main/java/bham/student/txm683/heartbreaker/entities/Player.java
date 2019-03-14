@@ -57,7 +57,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     }
 
     public Player(Point center){
-        this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.UPPER_PLAYER_COLOR, 100);
+        this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.UPPER_PLAYER_COLOR, 100000);
     }
 
     public static Player build(JSONObject jsonObject) throws JSONException {
@@ -112,6 +112,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     @Override
     public void tick(float secondsSinceLastGameTick) {
         move(secondsSinceLastGameTick, shape, 1);
+        rotate(secondsSinceLastGameTick, shape, 1);
 
         /*if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR)) {
             Vector movementForce = getRequestedMovementVector().sMult(4);

@@ -5,6 +5,7 @@ import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
+import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.Player;
@@ -14,6 +15,7 @@ import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.List;
+import java.util.Random;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 import static bham.student.txm683.heartbreaker.ai.behaviours.Status.*;
@@ -189,7 +191,7 @@ public class Tasks {
                         v = v.setLength(400);
 
                     Log.d("TASKS", "target: " + v.getHead());
-                    context.addPair(TARGET, v.getHead());
+                    context.addPair(MOVE_TO, v.getHead());
 
                     return SUCCESS;
                 }
@@ -203,32 +205,48 @@ public class Tasks {
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(TARGET, CONTROLLED_ENTITY)){
-                    Log.d("TASKS", "rotateTo contains keys");
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                    Point target = (Point) context.getValue(TARGET);
-
-                    Vector rotVector = new Vector(controlled.getCenter(), target).getUnitVector();
-
-                    float angle = Vector.calculateAngleBetweenVectors(controlled.getForwardUnitVector(), rotVector);
-
-                    Log.d("TASKS", "rotation target: " + target);
-                    Log.d("TASKS", "rotVector: " + rotVector.relativeToString() + ", controlledForwardVector: " + controlled.getForwardUnitVector().relativeToString());
-
-                    if (Math.abs(angle) < 0.08){
-                        Log.d("TASKS", "no need to rotate... angle:  " + angle);
-                        controlled.setRotationVector(Vector.ZERO_VECTOR);
-                        return SUCCESS;
-                    } else {
-                        Log.d("TASKS", "rotating... angle:  " + angle);
-                        controlled.setRotationVector(rotVector);
-                        return RUNNING;
-                    }
-                }
-                Log.d("TASKS", "rotateTo doesnt contains keys");
-                return FAILURE;
+                return rotate(context, TARGET);
             }
         };
+    }
+
+    public static BNode rotateToMoveTo(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                return rotate(context, MOVE_TO);
+            }
+        };
+    }
+
+    private static Status rotate(BContext context, BKeyType point){
+
+        if (context.containsKeys(MOVE_TO, CONTROLLED_ENTITY)){
+
+            Point target = (Point) context.getValue(point);
+
+            Log.d("TASKS", "rotateTo contains keys");
+            AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+
+            Vector rotVector = new Vector(controlled.getCenter(), target).getUnitVector();
+
+            float angle = Vector.calculateAngleBetweenVectors(controlled.getForwardUnitVector(), rotVector);
+
+            Log.d("TASKS", "rotation target: " + target);
+            Log.d("TASKS", "rotVector: " + rotVector.relativeToString() + ", controlledForwardVector: " + controlled.getForwardUnitVector().relativeToString());
+
+            if (Math.abs(angle) < 0.08){
+                Log.d("TASKS", "no need to rotate... angle:  " + angle);
+                controlled.setRotationVector(Vector.ZERO_VECTOR);
+                return SUCCESS;
+            } else {
+                Log.d("TASKS", "rotating... angle:  " + angle);
+                controlled.setRotationVector(rotVector);
+                return RUNNING;
+            }
+        }
+        Log.d("TASKS", "rotateTo doesnt contains keys");
+        return FAILURE;
     }
 
     public static BNode idleRotDamp(){
@@ -251,14 +269,14 @@ public class Tasks {
         };
     }
 
-    public static BNode moveTowardsTarget(){
+    public static BNode moveTowardsPoint(){
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY, TARGET)){
+                if (context.containsKeys(CONTROLLED_ENTITY, MOVE_TO)){
 
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                    Point target = (Point) context.getValue(TARGET);
+                    Point target = (Point) context.getValue(MOVE_TO);
 
                     Vector movementVector = new Vector(controlled.getCenter(), target);
                     Log.d("TASKS", "movement vector: " + movementVector.relativeToString() + ", length: " + movementVector.getLength());
@@ -305,7 +323,7 @@ public class Tasks {
                     Vector vel = player.getVelocity();
                     Log.d("SHOOTING", "vel: " + vel.relativeToString());
                     Point playerVel = vel.getRelativeToTailPoint();
-                    Point playerPos = player.getFront();
+                    Point playerPos = player.getBoundingBox().getCenter();
                     Point aiPos = controlled.getCenter();
 
                     float a = square(playerVel.getX()) + square(playerVel.getY())
@@ -373,7 +391,15 @@ public class Tasks {
 
                     Point aimPoint = (Point) context.getValue(TARGET);
 
-                    levelState.addBullet(controlled.getWeapon().shoot(new Vector(controlled.getCenter(), aimPoint).getUnitVector()));
+                    Vector v = new Vector(controlled.getCenter(), aimPoint).getUnitVector();
+
+                    Random r = new Random();
+
+                    float angle = 0.3f * r.nextFloat();
+
+                    v = v.rotate((float)Math.cos(angle),(float) Math.sin(angle));
+
+                    levelState.addBullet(controlled.getWeapon().shoot(v));
 
                     return SUCCESS;
                 }

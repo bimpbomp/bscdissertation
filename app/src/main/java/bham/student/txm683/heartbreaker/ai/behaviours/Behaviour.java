@@ -41,15 +41,15 @@ public class Behaviour {
         return new Sequence(
                 Tasks.randomPointInMesh(),
                 Tasks.idleRotDamp(),
-                Tasks.rotateToTarget(),
+                Tasks.rotateToMoveTo(),
                 Tasks.doNothing()
         );
     }
 
     public static BNode walkToPointBehaviour(){
         return new Sequence(
-                Tasks.rotateToTarget(),
-                Tasks.moveTowardsTarget()
+                Tasks.rotateToMoveTo(),
+                Tasks.moveTowardsPoint()
         );
     }
 
@@ -66,7 +66,9 @@ public class Behaviour {
                         Tasks.attackRotDamp(),
                         Tasks.aim(),
                         Tasks.rotateToTarget(),
-                        Tasks.shoot()
+                        Conditionals.notInCooldown(
+                                Tasks.shoot()
+                        )
                 )
         );
     }
@@ -103,6 +105,26 @@ public class Behaviour {
         );
     }
 
+    public static BNode turretTree(){
+        BNode turretAttack = new Selector(
+                Conditionals.inCooldown(
+                        new Sequence(
+                                Tasks.attackRotDamp(),
+                                Tasks.aim(),
+                                Tasks.rotateToTarget()
+                        )
+                ),
+                Behaviour.stationaryShootBehaviour()
+        );
+
+        return new Selector(
+                Conditionals.canSeePlayer(
+                        turretAttack
+                ),
+                Behaviour.turretIdleBehaviour()
+        );
+    }
+
     public static BNode fleeToAlly(){
         return new Sequence(
                 Tasks.plotPathToAnAI(),
@@ -126,7 +148,10 @@ public class Behaviour {
         BNode droneAttack = new Sequence(
                     new Selector(
                             Conditionals.inCooldown(
-                                    walkToRandomPointBehaviour()
+                                    new Sequence(
+                                            Tasks.randomPointInMesh(),
+                                            Tasks.moveTowardsPoint()
+                                    )
                             ),
                             stationaryShootBehaviour()
                     ));

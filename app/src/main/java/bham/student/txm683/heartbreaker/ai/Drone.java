@@ -60,6 +60,7 @@ public class Drone extends AIEntity implements Shooter {
         context.addPair(BKeyType.CONTROLLED_ENTITY, this);
         context.addPair(BKeyType.TIME_PER_IDLE, 25);
         context.addPair(BKeyType.HEALTH_BOUND, 50);
+        context.addPair(BKeyType.ROT_DAMP, 0.5f);
     }
 
     public Drone(String name, Point center){
@@ -115,17 +116,10 @@ public class Drone extends AIEntity implements Shooter {
 
         behaviourTreeRoot.process(context);
 
-        /*if (getRequestedMovementVector().equals(new Vector()))
-            return;
+        move(secondsSinceLastGameTick, shape,(float) context.getValue(BKeyType.ROT_DAMP));
 
-        Vector movementVector = calculateMovementVector(secondsSinceLastGameTick);
-
-        Log.d("hb::ROTVECTOR",  getRotationVector().relativeToString());
-
-        shape.translateShape(movementVector);
-        shape.rotateShape(getRotationVector());*/
-
-        move(secondsSinceLastGameTick, shape,1);
+        if (!getRotationVector().equals(Vector.ZERO_VECTOR))
+            rotate(secondsSinceLastGameTick, shape, (float)context.getValue(BKeyType.ROT_DAMP));
     }
 
     @Override

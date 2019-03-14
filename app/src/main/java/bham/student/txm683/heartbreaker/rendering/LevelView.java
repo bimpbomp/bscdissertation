@@ -399,6 +399,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "RenderFPS: " + renderFPS
                         + " GameTickFPS: " + gameTickFPS,
                         new Point(viewWidth/2f, 50), Color.WHITE, 10);
+
+                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "HEALTH: " + levelState.getPlayer().getHealth(),
+                        new Point(viewWidth/2f, viewHeight-40), Color.WHITE, 10);
             }
             if (levelState.isPaused()) {
                 canvas.drawARGB(200, 0,0,0);
