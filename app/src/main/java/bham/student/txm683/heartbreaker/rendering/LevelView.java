@@ -317,7 +317,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             //draw meshGrid
-            if (debugInfo.renderVisSet()){
+            if (/*debugInfo.renderVisSet()*/true){
 
                 for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
                     meshPolygon.draw(canvas, renderOffset);

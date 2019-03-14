@@ -211,7 +211,7 @@ public class MapConstructor {
             stringBuilder.append("ENDOFROW\n");
         }
 
-        Log.d("hb::MeshPrint", stringBuilder.toString());
+        Log.d("MESHPRINT GRID", stringBuilder.toString());
     }
 
     /*@SuppressLint("UseSparseArrays")

@@ -69,13 +69,13 @@ class MeshConstructorV2 {
         currentScan = Scan.VERTICAL;
         vScan();
 
-        meshSetListPrint("hb::HSCAN",hScan);
+        meshSetListPrint("MESHPRINT HSCAN",hScan);
 
-        meshSetListPrint("hb::VSCAN", vScan);
+        meshSetListPrint("MESHPRINT VSCAN", vScan);
 
         intersectScans(hScan, vScan);
 
-        meshSetListPrint("hb::INTERSECTION", meshIntersectionSets);
+        meshSetListPrint("MESHPRINT INTERSECTION", meshIntersectionSets);
 
         /*//put any doors into their own set
         for (int i = 0; i < tileList.size(); i++){
@@ -298,7 +298,7 @@ class MeshConstructorV2 {
                 //int loopExitColumnValue = row.size()-1;
                 ExitValue loopExitValue = new ExitValue(row.size()-1);
 
-                if (row.get(startingTile.getX()) == -2){
+                if (/*row.get(startingTile.getX()) == -2*/false){
                     //starting tile is a door
                     addToMeshSet(activeMeshSet, startingTile);
                     loopExitValue.setExitVal(startingTile.getX()+1);
@@ -331,17 +331,17 @@ class MeshConstructorV2 {
     }
 
     private boolean analyseCell(int cell, Tile tile, MeshSet activeMeshSet, ExitValue exitValue){
-        if (cell == 0) {
+        if (cell == 0 || cell == -2) {
             //is empty, add to activeMeshSet
             addToMeshSet(activeMeshSet, tile);
 
             return false;
-        } else if (cell == -2){
+        } /*else if (cell == -2){
             //the cell is a door, add to it's own set, move on
             //addToMeshSet(activeMeshSet, tile);
             getActiveMeshSet(tile, 0, new ArrayList<>());
             exitValue.increment();
-        }
+        }*/
 
         return true;
     }
