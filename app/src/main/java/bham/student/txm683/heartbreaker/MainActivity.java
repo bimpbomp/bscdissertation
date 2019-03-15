@@ -12,13 +12,15 @@ import bham.student.txm683.heartbreaker.audio.AudioController;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelLauncher;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class MainActivity extends Activity {
 
     private static final String TAG = "hb::MainActivity";
 
-    private static final String SAVE_FILE_NAME = "bham.student.txm683.InLevelSaveFile";
     private static final String RESUME_FROM_SAVE_STATE_KEY = "resumeFromSavedState";
 
     private LevelView levelView;
@@ -46,16 +48,6 @@ public class MainActivity extends Activity {
         levelView = new LevelView(this, mapName);
 
         setContentView(levelView);
-
-        if (savedInstanceState != null && savedInstanceState.getBoolean(RESUME_FROM_SAVE_STATE_KEY)){
-            Log.d(TAG, "savedInstanceState is not null");
-
-            String stateString = readFromFile(SAVE_FILE_NAME);
-            this.levelView.loadSaveFromStateString(stateString);
-        } else {
-            Log.d(TAG, "savedInstanceState is null");
-        }
-
     }
 
     @Override
@@ -154,16 +146,11 @@ public class MainActivity extends Activity {
         }
     }
 
-    public String readFromFile(String fileName){
+    public String readFromFile(InputStream inputStream){
         StringBuilder readInString = new StringBuilder();
         try {
-            File file2 = new File(fileName);
-            Log.d(TAG, "fileSize: " + file2.length());
 
-            FileInputStream file = openFileInput(fileName);
-            Log.d(TAG, "reading from " + fileName);
-
-            InputStreamReader inputStreamReader = new InputStreamReader(file);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 
             char[] inputBuffer = new char[100];
             int charRead;

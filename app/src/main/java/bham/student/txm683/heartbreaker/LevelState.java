@@ -6,6 +6,7 @@ import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.Player;
+import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.map.Map;
@@ -13,7 +14,6 @@ import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
@@ -39,6 +39,8 @@ public class LevelState {
 
     private Core core;
 
+    private Portal portal;
+
     private CopyOnWriteArrayList<Pickup> pickups;
 
     private CopyOnWriteArrayList<Explosion> lingeringExplosions;
@@ -49,8 +51,6 @@ public class LevelState {
     private boolean paused;
 
     private DebugInfo debugInfo;
-
-    private Graph<Tile> graph;
 
     private LevelEnder levelEnder;
 
@@ -74,18 +74,20 @@ public class LevelState {
 
         this.pickups = new CopyOnWriteArrayList<>(map.getPickups());
 
-        this.core = map.getCore();
+        this.portal = map.getPortal();
 
-
-        for (AIEntity entity : aliveAIEntities){
-            Log.d("LEVELSTATE ", entity.getName() + " has had levelstate set");
-            entity.setLevelState(this);
+        this.core = null;
+        for (AIEntity aiEntity : aliveAIEntities){
+            if (aiEntity instanceof Core){
+                this.core = (Core) aiEntity;
+            }
         }
 
-        generateGraph();
-
         levelEnder = new LevelEnder();
+    }
 
+    public Portal getPortal() {
+        return portal;
     }
 
     public Tile getScreenDimensions() {
@@ -137,7 +139,6 @@ public class LevelState {
         collidables.addAll(explosions);
         collidables.addAll(bullets);
         collidables.addAll(pickups);
-        collidables.add(core);
 
         return collidables;
     }
@@ -150,95 +151,6 @@ public class LevelState {
 
         return collidables;
     }
-
-    private void generateGraph(){
-        this.graph = new Graph<>();
-
-        Tile[] nodeTiles = new Tile[]{
-                //room 0
-                new Tile(500,500),
-
-                //room 1
-                new Tile(1200,1200),
-
-                //room 2
-                new Tile(1900, 500),
-
-                //room 3
-                new Tile(600,2000),
-
-                //door 0
-                new Tile(700,700),
-                new Tile(900,700),
-                new Tile(1100,700),
-
-                //door 1
-                new Tile(1300,700),
-                new Tile(1500,700),
-                new Tile(1700,700),
-
-                //door 2
-                new Tile(700,1700),
-                new Tile(900,1700),
-                new Tile(1100,1700)
-        };
-
-        for (Tile tile : nodeTiles){
-            graph.addNode(tile);
-        }
-
-        addConnection(nodeTiles, 0, 4);
-        addConnection(nodeTiles, 4, 5);
-        addConnection(nodeTiles, 5, 6);
-        addConnection(nodeTiles, 6, 7);
-        addConnection(nodeTiles, 6, 1);
-        addConnection(nodeTiles, 6, 12);
-        addConnection(nodeTiles, 7, 1);
-        addConnection(nodeTiles, 7, 8);
-        addConnection(nodeTiles, 8, 9);
-        addConnection(nodeTiles, 9, 2);
-        addConnection(nodeTiles, 1, 12);
-        addConnection(nodeTiles, 12, 11);
-        addConnection(nodeTiles, 11, 10);
-        addConnection(nodeTiles, 10, 3);
-    }
-
-    private void addConnection(Tile[] nodeTiles, int i, int j){
-        /*graph.addConnection(graph.getNode(nodeTiles[i]), graph.getNode(nodeTiles[j]),
-                AIEntity.calculateEuclideanHeuristic(nodeTiles[i], nodeTiles[j]));*/
-    }
-
-    public Graph<Tile> getGraph() {
-        return graph;
-    }
-
-    public TileSet getTileSet(){
-        return map.getTileSet();
-    }
-
-    /*public LevelState(String stateString) throws ParseException, JSONException {
-        JSONObject jsonObject = new JSONObject(stateString);
-
-        this.uniqueID = new UniqueID(jsonObject.getInt("uniqueidcounter"));
-
-        this.player = new Player(jsonObject.getString("player"));
-
-        JSONArray statics = jsonObject.getJSONArray("statics");
-
-        this.staticEntities = new ArrayList<>();
-        for (int i = 0; i < statics.length(); i++){
-            this.staticEntities.add(new Entity((String)statics.get(i)));
-        }
-
-        JSONArray enemies = jsonObject.getJSONArray("enemies");
-
-        this.enemyEntities = new ArrayList<>();
-        for (int i = 0; i < enemies.length(); i++){
-            this.enemyEntities.add(new Drone(enemies.getString(i)));
-        }
-
-        this.debugInfo = new DebugInfo();
-    }*/
 
     public Core getCore() {
         return core;
@@ -331,18 +243,5 @@ public class LevelState {
 
     public void setAiManager(AIManager aiManager) {
         this.aiManager = aiManager;
-    }
-
-    /*public boolean inSameRoom(Entity entity1, Entity entity2){
-        for (Room room : map.getRooms().values()){
-            if (room.isEntityInRoom(entity1)){
-                return room.isEntityInRoom(entity2);
-            }
-        }
-        return false;
-    }*/
-
-    public BoundingBox getLevelBoundingBox(){
-        return new BoundingBox(0, 0, (int) map.getWidth(), (int) map.getHeight());
     }
 }

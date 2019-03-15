@@ -13,6 +13,7 @@ import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
+import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -26,6 +27,8 @@ public class Drone extends AIEntity implements Shooter {
     private Kite shape;
     private int health;
 
+    private Point spawn;
+
     private int currentTargetNodeInPath;
     private boolean atDestination;
 
@@ -37,6 +40,7 @@ public class Drone extends AIEntity implements Shooter {
     public Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
         super(name, maxSpeed);
 
+        this.spawn = center;
         List<Vector> vertices = Polygon.createTriangle(center, size*0.9f, size * 0.75f);
 
         this.shape = new Kite(center, new Vector[]{
@@ -67,10 +71,25 @@ public class Drone extends AIEntity implements Shooter {
         this(name, center, 100, ColorScheme.CHASER_COLOR, 600, 100);
     }
 
-    public static Drone build(JSONObject jsonObject) throws JSONException {
-        Point center = new Point(jsonObject.getJSONObject("center"));
+    public static Drone build(JSONObject jsonObject, int tileSize) throws JSONException {
+        Point center = new Point(jsonObject.getJSONObject("sp")).sMult(tileSize);
         String name = jsonObject.getString("name");
-        return new Drone(name, center);
+
+        Drone drone = new Drone(name, center);
+
+        if (jsonObject.has("osr")){
+            Vector osr = new Vector(new Point(jsonObject.getJSONObject("osr")));
+            drone.shape.rotateShape(osr);
+
+            drone.getContext().addVariable("osr", osr);
+        }
+
+        if (jsonObject.has("drops")){
+            PickupType drops = PickupType.valueOf(jsonObject.getString("drops"));
+            drone.setDrops(drops);
+        }
+
+        return drone;
     }
 
     @Override

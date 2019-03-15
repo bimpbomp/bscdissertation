@@ -6,7 +6,7 @@ import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.RectButtonBuilder;
-import bham.student.txm683.heartbreaker.map.MapConstructor;
+import bham.student.txm683.heartbreaker.map.MapLoader;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
@@ -43,14 +43,16 @@ public class Level implements Runnable {
     private int loops;
 
     private String mapName;
+    private String stage;
 
     private Popup diedPopup;
     private Popup completePopup;
 
-    public Level(LevelView levelView, String mapName){
+    public Level(LevelView levelView, String mapName, String stage){
         super();
 
         this.mapName = mapName;
+        this.stage = stage;
 
         this.messageBus = new MessageBus();
 
@@ -66,9 +68,15 @@ public class Level implements Runnable {
         if (this.levelState == null) {
 
             this.levelView.setTileSize(200);
-            MapConstructor mapConstructor = new MapConstructor(levelView.getContext());
+            //MapConstructor mapConstructor = new MapConstructor(levelView.getContext());
 
-            this.levelState = new LevelState(mapConstructor.loadMap(mapName, levelView.getTileSize()));
+            //this.levelState = new LevelState(mapConstructor.loadMap(mapName, stage, levelView.getTileSize()));
+            MapLoader mapLoader = new MapLoader(mapName, stage, levelView.getTileSize(), (MainActivity) levelView.getContext());
+            try {
+                this.levelState = new LevelState(mapLoader.loadMap());
+            } catch (Exception e){
+                levelView.returnToMenu();
+            }
 
             this.levelState.setScreenDimensions(levelView.getWidth(), levelView.getHeight());
 
@@ -168,13 +176,10 @@ public class Level implements Runnable {
 
                     //check level end conditions
                     if (levelState.getPlayer().getHealth() < 1){
-                        /*levelState.getLevelEnder().setStatus(LevelEndStatus.PLAYER_DIED);
-                        levelView.returnToMenu();*/
                         levelState.getLevelEnder().setStatus(LevelEndStatus.PLAYER_DIED);
                         inputManager.setActivePopup(diedPopup);
-                    } else if (levelState.getCore().getHealth() < 1) {
-                        /*levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
-                        levelView.returnToMenu();*/
+
+                    } else if (levelState.getCore() != null && levelState.getCore().getHealth() < 1) {
                         levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
                         inputManager.setActivePopup(completePopup);
                     }

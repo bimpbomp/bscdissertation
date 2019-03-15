@@ -51,21 +51,11 @@ public class Pickup extends InteractionField implements Renderable {
         this(name, type, center, 50);
     }
 
-    public static Pickup build(JSONObject jsonObject) throws JSONException {
-        String name = jsonObject.getString("name");
-        Point center = new Point(jsonObject.getJSONObject("center"));
+    public static Pickup build(JSONObject jsonObject, int id, int tileSize) throws JSONException {
+        Point center = new Point(jsonObject.getJSONObject("sp")).sMult(tileSize);
         PickupType type = PickupType.valueOf(jsonObject.getString("type"));
-        return new Pickup(name, type, center);
-    }
 
-    public JSONObject pack() throws JSONException{
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("name", getName());
-        jsonObject.put("center", getCenter().getStateObject());
-
-        jsonObject.put("type", pickupType.toString());
-
-        return jsonObject;
+        return new Pickup(type.name() + id, type, center);
     }
 
     public PickupType getPickupType() {

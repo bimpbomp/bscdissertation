@@ -7,8 +7,30 @@ public class BContext {
 
     private Map<BKeyType, Object> pairs;
 
+    private Map<String, Object> variables;
+
     public BContext(){
         this.pairs = new HashMap<>();
+        this.variables = new HashMap<>();
+    }
+
+    public void addVariable(String key, Object value){
+        variables.put(key, value);
+    }
+
+    public boolean containsVariables(String... keys){
+        if (keys == null || keys.length == 0)
+            return false;
+
+        for (String key : keys){
+            if (!variables.containsKey(key))
+                return false;
+        }
+        return true;
+    }
+
+    public Object getVariable(String key){
+        return variables.getOrDefault(key, null);
     }
 
     public boolean containsKeys(BKeyType... keys){

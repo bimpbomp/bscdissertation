@@ -46,6 +46,10 @@ public class Circle implements Renderable, Shape {
         return radius;
     }
 
+    public void setRadius(float radius){
+        this.radius = radius;
+    }
+
     public Point getCenter() {
         return center;
     }

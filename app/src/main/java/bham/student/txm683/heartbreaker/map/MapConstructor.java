@@ -3,18 +3,8 @@ package bham.student.txm683.heartbreaker.map;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
-import android.util.Pair;
-import android.util.SparseArray;
-import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.Core;
-import bham.student.txm683.heartbreaker.ai.Drone;
-import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.entities.Door;
-import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Wall;
-import bham.student.txm683.heartbreaker.pickups.Key;
-import bham.student.txm683.heartbreaker.pickups.Pickup;
-import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
@@ -24,53 +14,33 @@ import bham.student.txm683.heartbreaker.utils.graph.Edge;
 import java.util.*;
 
 public class MapConstructor {
-    private static final String TAG = "hb::MapConstructor";
-    private Map map;
     private int tileSize;
-    private Point centerOffset;
-    private Context context;
 
     private UniqueID uniqueID;
 
     private Queue<Tile> wallsToCheck;
 
-    //hardcoded mesh tileList for now till algorithm implemented
-    public static List<List<Integer>> tileList = new ArrayList<>();
-    static {
-        tileList.add(Arrays.asList(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,-1,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,-1,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,-1,-1,-1,-1,-1,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,-1,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,0,0,0,0,0,0,0,0,-1));
-        tileList.add(Arrays.asList(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1));
-    }
+    private Map map;
 
-    public MapConstructor(Context context){
+    private MeshConstructorV2 meshConstructor;
+    private MapReader mapReader;
+
+    public MapConstructor(Context context, Map map){
         this.uniqueID = new UniqueID();
-        this.context = context;
         this.wallsToCheck = new LinkedList<>();
+        this.meshConstructor = new MeshConstructorV2();
+        this.mapReader = new MapReader(context);
+
+        this.map = map;
     }
 
     @SuppressLint("UseSparseArrays")
-    public Map loadMap(String name, int tileSize){
-        map = new Map(name, tileSize);
-        this.tileSize = tileSize;
-
-        this.centerOffset = new Point(tileSize/2f, tileSize/2f);
-
-        //loadTestMap();
-
-        //MapLoader mapLoader = new MapLoader();
-        MapReader mapReader = new MapReader(context);
+    public Map loadMap(List<DoorBuilder> doorBuilders){
+        this.tileSize = map.getTileSize();
 
         try {
-            mapReader.loadMap(name, tileSize);
+            mapReader.loadMap(map.getName(), map.getStage(), tileSize, doorBuilders);
 
-            MeshConstructorV2 meshConstructor = new MeshConstructorV2();
             meshConstructor.constructMesh(mapReader.getMeshGenList());
 
             List<MeshPolygon> meshPolygons = meshConstructor.getMeshPolygons(tileSize);
@@ -80,114 +50,11 @@ public class MapConstructor {
             //GenerateBoundaryWalls
             List<Wall> walls = generateWallsV2(mapReader.getMeshGenList());
 
-            ArrayList<Door> doors = new ArrayList<>();
-            List<Pickup> pickups = new ArrayList<>();
-            ArrayList<AIEntity> enemies = new ArrayList<>();
-
-            Player player = null;
-            Core core = null;
-
-            for (Pair<Integer, Point> spawn : mapReader.getSpawnLocations()){
-                if (spawn.first == TileType.PLAYER){
-                    player = new Player(spawn.second);
-                } else if (spawn.first == TileType.DRONE){
-                    enemies.add(new Drone("DRONE" + uniqueID.id(), spawn.second));
-                } else if (spawn.first == TileType.CORE){
-                    core = new Core("CORE"+uniqueID.id(), spawn.second);
-                } else if (spawn.first == TileType.TURRET){
-                    enemies.add(new Turret("TURRET" + uniqueID.id(), spawn.second));
-                }
-            }
-
-            if (player == null) {
-                Log.d("MapConstructor", "null player");
-            }
-
-            if (core == null) {
-                Log.d("MapConstructor", "null core");
-            }
-
-
-            SparseArray<String> doorNames = new SparseArray<>();
-
-            for (DoorBuilder doorBuilder : mapReader.getDoorSpawns()){
-                Tile sideSets = null;
-                int doorSet = 0;
-
-                for (MeshPolygon meshSet : meshPolygons){
-
-                    if (meshSet.getBoundingBox().intersecting(doorBuilder.getCenter())){
-                        //if door center is in the polygon
-
-                        Log.d("hb::HASDOORTILE", meshSet.getId()+"");
-                        doorSet = meshSet.getId();
-
-                        List<Edge<Integer>> neighbours = meshConstructor.getMeshGraph().getNode(doorSet).getConnections();
-
-                        sideSets = new Tile(neighbours.get(0).traverse().getNodeID(),
-                                neighbours.get(1).traverse().getNodeID());
-                    }
-                }
-
-                //TODO add eval for locked doors
-                if (sideSets != null && doorSet != 0) {
-                    Door door = new Door(uniqueID.id(), doorBuilder.getCenter(), tileSize, tileSize,
-                            doorBuilder.isLocked(), doorBuilder.isVertical(), ColorScheme.DOOR_COLOR, doorSet, sideSets);
-                    doors.add(door);
-
-                    doorNames.put(doorBuilder.getKeyColor(), door.getName());
-                }
-            }
-
-            //sort out keys
-            for (KeyBuilder keyBuilder : mapReader.getKeyBuilders()){
-                String doorName = doorNames.get(keyBuilder.getUnlocks());
-
-                if (doorName != null){
-                    pickups.add(new Key(uniqueID.id(), doorName, keyBuilder.getCenter()));
-                }
-            }
-
-            //sort out pickups
-            for (Pair<Integer, Point> spawn : mapReader.getPickupLocations()) {
-                PickupType type;
-                String pickupName;
-
-                if (spawn.first == TileType.HEALTH) {
-                    type = PickupType.HEALTH;
-                    pickupName = "H";
-                } else if (spawn.first == TileType.BOMB) {
-                    type = PickupType.BOMB;
-                    pickupName = "B";
-                }else
-                    continue;
-
-                pickups.add(new Pickup(pickupName+uniqueID.id(), type, spawn.second));
-            }
-
-            //initialise meshgraph with door states
-            for (Door door : doors){
-                Tile sideSets = door.getSideSets();
-
-                if (door.isLocked()){
-                    meshConstructor.getMeshGraph().removeConnection(sideSets.getX(), door.getDoorSet());
-                    meshConstructor.getMeshGraph().removeConnection(sideSets.getY(), door.getDoorSet());
-                } else {
-                    meshConstructor.getMeshGraph().addConnection(sideSets.getX(), door.getDoorSet());
-                    meshConstructor.getMeshGraph().addConnection(sideSets.getY(), door.getDoorSet());
-                }
-            }
+            constructDoors();
 
             map.setWalls(walls);
             map.setWidthInTiles(mapReader.getWidth());
             map.setHeightInTiles(mapReader.getHeight());
-
-            map.setDoors(doors);
-            map.setPlayer(player);
-
-            map.setEnemies(enemies);
-            map.setPickups(pickups);
-            map.setCore(core);
 
             map.setMeshGraph(meshConstructor.getMeshGraph());
             map.setRootMeshPolygons(meshPolygons);
@@ -197,6 +64,52 @@ public class MapConstructor {
         }
 
         return map;
+    }
+
+    private void constructDoors(){
+        List<Door> doors = new ArrayList<>();
+        for (DoorBuilder doorBuilder : mapReader.getDoorSpawns()){
+            Tile sideSets = null;
+            int doorSet = 0;
+
+            for (MeshPolygon meshSet : map.getRootMeshPolygons().values()){
+
+                if (meshSet.getBoundingBox().intersecting(doorBuilder.getCenter())){
+                    //if door center is in the polygon
+
+                    Log.d("hb::HASDOORTILE", meshSet.getId()+"");
+                    doorSet = meshSet.getId();
+
+                    List<Edge<Integer>> neighbours = meshConstructor.getMeshGraph().getNode(doorSet).getConnections();
+
+                    if (neighbours.size() == 2) {
+                        sideSets = new Tile(neighbours.get(0).traverse().getNodeID(),
+                                neighbours.get(1).traverse().getNodeID());
+                    }
+                }
+            }
+
+            if (sideSets != null && doorSet != 0) {
+                Door door = new Door(doorBuilder.getName(), doorBuilder.getCenter(), tileSize, tileSize,
+                        doorBuilder.isLocked(), doorBuilder.isVertical(), ColorScheme.DOOR_COLOR, doorSet, sideSets);
+                doors.add(door);
+            }
+        }
+
+        //initialise meshgraph with door states
+        for (Door door : doors){
+            Tile sideSets = door.getSideSets();
+
+            if (door.isLocked()){
+                meshConstructor.getMeshGraph().removeConnection(sideSets.getX(), door.getDoorSet());
+                meshConstructor.getMeshGraph().removeConnection(sideSets.getY(), door.getDoorSet());
+            } else {
+                meshConstructor.getMeshGraph().addConnection(sideSets.getX(), door.getDoorSet());
+                meshConstructor.getMeshGraph().addConnection(sideSets.getY(), door.getDoorSet());
+            }
+        }
+
+        map.setDoors(doors);
     }
 
     private void printTileList(List<List<Integer>> tileList){
@@ -214,131 +127,7 @@ public class MapConstructor {
         Log.d("MESHPRINT GRID", stringBuilder.toString());
     }
 
-    /*@SuppressLint("UseSparseArrays")
-    private void loadTestMap(){
-
-        *//*
-         * Specify Map Layout
-         *//*
-
-        int mapWidth = 10;
-        int mapHeight = 10;
-
-        ArrayList<Perimeter> perimeters = new ArrayList<>();
-        ArrayList<Door> doors = new ArrayList<>();
-        List<Pickup> pickups = new ArrayList<>();
-        ArrayList<AIEntity> enemies = new ArrayList<>();
-
-        Player player;
-        Core core;
-
-        perimeters.add(new Perimeter(new Point[]{
-                new Point(0,0),
-                new Point(10,0),
-                new Point(10,10),
-                new Point(0,10)
-        }, Color.GREEN));
-
-        player = new Player("player", new Point(2*tileSize,2*tileSize), tileSize/2, tileSize*3,
-                ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.LOWER_PLAYER_COLOR, 100);
-
-        enemies.add(new Drone("DRONE"+uniqueID.id(), new Point(5*tileSize, 2*tileSize).add(centerOffset), tileSize/2,
-                ColorScheme.CHASER_COLOR, tileSize*1.5f, 100));
-
-        enemies.add(new Turret("TURRET"+ uniqueID.id(), getTileCenter(5,3), tileSize/2, ColorScheme.CHASER_COLOR, 100));
-
-        core = new Core("core", new Point(8*tileSize,8*tileSize).add(centerOffset), tileSize/2);
-
-        *//*
-         * Generate Map
-         *//*
-
-        MeshConstructorV2 meshConstructor = new MeshConstructorV2();
-        meshConstructor.constructMesh(tileList);
-
-        //convert perimeter coordinates to global with tileSize and add them to a room
-        HashMap<Integer, Room> rooms = new HashMap<>();
-        int count = 0;
-        for (Perimeter perimeter : perimeters){
-            perimeter.convertToGlobal(tileSize);
-            rooms.put(count, new Room(count, perimeter));
-            count++;
-        }
-
-        //GenerateBoundaryWalls
-        List<Wall> walls = generateWallsV2(tileList);
-
-        //add all statics to the tileset
-        TileSet tileSet = new TileSet(tileSize);
-
-        for (Wall wall : walls){
-            tileSet.addPermanentToGrid(wall);
-        }
-
-        for (Door door : doors){
-            tileSet.addPermanentToGrid(door);
-        }
-
-        Tile sideSets = null;
-        int doorSet = 0;
-        for (MeshSet meshSet : meshConstructor.getMeshIntersectionSets()){
-            if (meshSet.getContainedTiles().contains(new Tile(8,5))){
-                Log.d("hb::HASDOORTILE", meshSet.getId()+"");
-                doorSet = meshSet.getId();
-
-                List<Edge<Integer>> neighbours = meshConstructor.getMeshGraph().getNode(doorSet).getConnections();
-
-                sideSets = new Tile(neighbours.get(0).traverse().getNodeID(),
-                                neighbours.get(1).traverse().getNodeID());
-            }
-        }
-
-        if (sideSets != null && doorSet != 0) {
-            doors.add(new Door(uniqueID.id(), getTileCenter(8,5), tileSize, tileSize,
-                    true, false, ColorScheme.DOOR_COLOR, doorSet, sideSets));
-
-            pickups.add(new Key("K"+uniqueID.id(), doors.get(0).getName(),
-                    getTileCenter(6,8), tileSize/4));
-        }
-
-
-        //initialise meshgraph with door states
-        for (Door door : doors){
-            sideSets = door.getSideSets();
-
-            if (door.isLocked()){
-                meshConstructor.getMeshGraph().removeConnection(sideSets.getX(), door.getDoorSet());
-                meshConstructor.getMeshGraph().removeConnection(sideSets.getY(), door.getDoorSet());
-            } else {
-                meshConstructor.getMeshGraph().addConnection(sideSets.getX(), door.getDoorSet());
-                meshConstructor.getMeshGraph().addConnection(sideSets.getY(), door.getDoorSet());
-            }
-        }
-
-        //reset map object
-        map.setTileSet(tileSet);
-        map.setRooms(rooms);
-
-        map.setWalls(walls);
-        map.setWidthInTiles(mapWidth);
-        map.setHeightInTiles(mapHeight);
-
-        map.setDoors(doors);
-        map.setPlayer(player);
-
-        map.setEnemies(enemies);
-        map.setPickups(pickups);
-        map.setCore(core);
-
-        map.setMeshGraph(meshConstructor.getMeshGraph());
-        map.setRootMeshPolygons(meshConstructor.getMeshPolygons(tileSize));
-    }*/
-
-    private Point getTileCenter(int x, int y){
-        return new Point(x*tileSize, y*tileSize).add(centerOffset);
-    }
-
-    public List<Wall> generateWallsV2(List<List<Integer>> tileList){
+    private List<Wall> generateWallsV2(List<List<Integer>> tileList){
 
         List<Wall> walls = new ArrayList<>();
 
@@ -358,27 +147,13 @@ public class MapConstructor {
             if (neighbours.get(0) != null || neighbours.get(2) != null){
                 currentWall.addAll(walkInDirection(currentTile, new Tile(0, 1), tileList));
                 currentWall.addAll(walkInDirection(currentTile, new Tile(0, -1), tileList));
-                currentWall.sort((a,b) -> {
-                    if (a.getY() < b.getY())
-                        return -1;
-                    else if (a.getY() > b.getY())
-                        return 1;
-                    else
-                        return 0;
-                });
+                currentWall.sort(Comparator.comparingInt(Tile::getY));
 
             } else if (neighbours.get(1) != null || neighbours.get(3) != null){
                 currentWall.addAll(walkInDirection(currentTile, new Tile(1, 0), tileList));
                 currentWall.addAll(walkInDirection(currentTile, new Tile(-1, 0), tileList));
 
-                currentWall.sort((a,b) -> {
-                    if (a.getX() < b.getX())
-                        return -1;
-                    else if (a.getX() > b.getX())
-                        return 1;
-                    else
-                        return 0;
-                });
+                currentWall.sort(Comparator.comparingInt(Tile::getX));
             }
 
             Log.d("hb::GenWall", listToString(currentWall));
@@ -394,7 +169,7 @@ public class MapConstructor {
         return walls;
     }
 
-    public static <T> String listToString(List<T> list){
+    private static <T> String listToString(List<T> list){
         StringBuilder stringBuilder = new StringBuilder();
 
         for (Object object : list){
@@ -428,12 +203,6 @@ public class MapConstructor {
         return wallPieces;
     }
 
-    /**
-     * returns 4-way neighbours in a clockwise fashion
-     * @param tile
-     * @param tileList
-     * @return neighbours
-     */
     private List<Tile> getNeighbours(Tile tile, List<List<Integer>> tileList){
         List<Tile> list = new ArrayList<>();
 

@@ -24,6 +24,8 @@ import java.util.List;
 
 public class Player extends MoveableEntity implements Damageable, Renderable {
 
+    private Point spawn;
+
     private Kite shape;
 
     private int health;
@@ -54,15 +56,25 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
         this.keys = new ArrayList<>();
 
+        this.spawn = center;
+
     }
 
     public Player(Point center){
         this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.UPPER_PLAYER_COLOR, 100000);
     }
 
-    public static Player build(JSONObject jsonObject) throws JSONException {
-        Point center = new Point(jsonObject.getJSONObject("center"));
-        return new Player(center);
+    public static Player build(JSONObject jsonObject, int tileSize) throws JSONException {
+        Point center = new Point(jsonObject.getJSONObject("sp")).sMult(tileSize);
+
+        Player player = new Player(center);
+
+        if (jsonObject.has("osr")){
+            Vector osr = new Vector(new Point(jsonObject.getJSONObject("osr")));
+            player.shape.rotateShape(osr);
+        }
+
+        return player;
     }
 
     public void addKey(Key key){

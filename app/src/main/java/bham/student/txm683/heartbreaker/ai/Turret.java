@@ -10,6 +10,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
+import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -20,6 +21,8 @@ public class Turret extends AIEntity {
 
     private int health;
     private IsoscelesTriangle shape;
+
+    private Point spawn;
 
     private int width;
 
@@ -38,6 +41,8 @@ public class Turret extends AIEntity {
 
         this.width = size;
 
+        this.spawn = center;
+
         //this.behaviourTreeRoot = Behaviour.stationaryShootBehaviour();
         this.behaviourTreeRoot = Behaviour.turretTree();
 
@@ -50,9 +55,28 @@ public class Turret extends AIEntity {
         this(name ,center, 200, ColorScheme.CHASER_COLOR, 100);
     }
 
-    public static Turret build(JSONObject jsonObject) throws JSONException {
-        Point center = new Point(jsonObject.getJSONObject("center"));
+    public static Turret build(JSONObject jsonObject, int tileSize) throws JSONException {
+        Point center = new Point(jsonObject.getJSONObject("sp")).sMult(tileSize);
         String name = jsonObject.getString("name");
+
+        Turret turret = new Turret(name, center);
+
+        if (jsonObject.has("osr")){
+            Vector initialRotation = new Vector(new Point(jsonObject.getJSONObject("osr")));
+            turret.getContext().addVariable("osr", initialRotation);
+
+            turret.shape.rotateShape(initialRotation);
+        }
+
+        if (jsonObject.has("rotation_lock")){
+            turret.getContext().addVariable("rotation_lock", (float) jsonObject.getDouble("rotation_lock"));
+        }
+
+        if (jsonObject.has("drops")){
+            PickupType drops = PickupType.valueOf(jsonObject.getString("drops"));
+            turret.setDrops(drops);
+        }
+
         return new Turret(name, center);
     }
 
@@ -87,16 +111,7 @@ public class Turret extends AIEntity {
         behaviourTreeRoot.process(context);
 
         setRequestedMovementVector(Vector.ZERO_VECTOR);
-        move(secondsSinceLastGameTick, shape, (float) context.getValue(BKeyType.ROT_DAMP));
-
-        /*if (context.containsKeys(SIGHT_BLOCKED) && context.getValue(SIGHT_BLOCKED) instanceof  Boolean){
-            boolean sightBlocked = (boolean) context.getValue(SIGHT_BLOCKED);
-
-            if (!sightBlocked){
-                rotate(new Vector(getCenter(), levelState.getPlayer().getCenter()));
-                levelState.addBullet(weapon.aim(getForwardUnitVector()));
-            }
-        }*/
+        rotate(secondsSinceLastGameTick, shape, (float) context.getValue(BKeyType.ROT_DAMP));
     }
 
     @Override

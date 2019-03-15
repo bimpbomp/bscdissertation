@@ -1,161 +1,134 @@
 package bham.student.txm683.heartbreaker.map;
 
+import android.util.Log;
+import bham.student.txm683.heartbreaker.MainActivity;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.ai.Drone;
-import bham.student.txm683.heartbreaker.entities.Door;
+import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.Wall;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
+import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.graph.Graph;
+import bham.student.txm683.heartbreaker.utils.Tile;
+import bham.student.txm683.heartbreaker.utils.UniqueID;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MapLoader {
 
-    private static final String TEST_STRING = "{\n" +
-            "  \"graph\": [\n" +
-            "    {\n" +
-            "      \"id\": 1,\n" +
-            "      \"edges\": [\n" +
-            "        2,\n" +
-            "        3,\n" +
-            "        4\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"id\": 2,\n" +
-            "      \"edges\": [\n" +
-            "        1,\n" +
-            "        3\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"id\": 3,\n" +
-            "      \"edges\": [\n" +
-            "        2,\n" +
-            "        3\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"id\": 4,\n" +
-            "      \"edges\": [\n" +
-            "        1,\n" +
-            "        2,\n" +
-            "        3\n" +
-            "      ]\n" +
-            "    }\n" +
-            "  ],\n" +
-            "  \"mesh\": [\n" +
-            "    {\n" +
-            "      \"id\": 1,\n" +
-            "      \"center\": {\n" +
-            "        \"x\": 2,\n" +
-            "        \"y\": 3\n" +
-            "      },\n" +
-            "      \"vertices\": [\n" +
-            "        {\n" +
-            "          \"x\": 1,\n" +
-            "          \"y\": 3\n" +
-            "        },\n" +
-            "        {\n" +
-            "          \"x\": 3,\n" +
-            "          \"y\": 3\n" +
-            "        }\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"id\": 2,\n" +
-            "      \"center\": {\n" +
-            "        \"x\": 3,\n" +
-            "        \"y\": 4\n" +
-            "      },\n" +
-            "      \"vertices\": [\n" +
-            "        {\n" +
-            "          \"x\": 1,\n" +
-            "          \"y\": 3\n" +
-            "        },\n" +
-            "        {\n" +
-            "          \"x\": 3,\n" +
-            "          \"y\": 3\n" +
-            "        }\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"id\": 3,\n" +
-            "      \"center\": {\n" +
-            "        \"x\": 4,\n" +
-            "        \"y\": 5\n" +
-            "      },\n" +
-            "      \"vertices\": [\n" +
-            "        {\n" +
-            "          \"x\": 1,\n" +
-            "          \"y\": 3\n" +
-            "        },\n" +
-            "        {\n" +
-            "          \"x\": 3,\n" +
-            "          \"y\": 3\n" +
-            "        }\n" +
-            "      ]\n" +
-            "    },\n" +
-            "    {\n" +
-            "      \"id\": 4,\n" +
-            "      \"center\": {\n" +
-            "        \"x\": 6,\n" +
-            "        \"y\": 6\n" +
-            "      },\n" +
-            "      \"vertices\": [\n" +
-            "        {\n" +
-            "          \"x\": 1,\n" +
-            "          \"y\": 3\n" +
-            "        },\n" +
-            "        {\n" +
-            "          \"x\": 3,\n" +
-            "          \"y\": 3\n" +
-            "        }\n" +
-            "      ]\n" +
-            "    }\n" +
-            "  ]\n" +
-            "}";
+    private MainActivity mainActivity;
+    private Map map;
 
-    public MapLoader() {
+    public MapLoader(String mapName, String stage, int tileSize, MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
+
+        this.map = new Map(mapName, stage, tileSize);
     }
 
-    public Map loadMap(String mapString) throws JSONException {
-        Map map = new Map();
-        //TODO insert read from file logic here
+    public Map loadMap() throws JSONException {
+        String mapString;
+        try {
+            InputStream inputStream = mainActivity.getAssets().open(String.format(Locale.UK, "maps/%s/%s_%s.json",
+                    map.getName(), map.getName(), map.getStage()));
 
-        JSONObject jsonObject = new JSONObject(TEST_STRING);
+            mapString = mainActivity.readFromFile(inputStream);
 
-        //parse graph
-        map.setMeshGraph(parseMeshGraph(jsonObject.getJSONArray("graph")));
+        } catch (IOException e){
+            Log.d("MAPLOADER", "IOEXCEPTION reading in map file: " + e.getMessage());
+            return null;
+        }
 
-        //parse mesh polygons
-        map.setRootMeshPolygons(parseMeshPolygons(jsonObject.getJSONArray("mesh")));
+        JSONObject jsonObject = new JSONObject(mapString);
 
-        map.setDimInTiles(jsonObject.getInt("width"), jsonObject.getInt("height"));
-
-        map.setPlayer(Player.build(jsonObject.getJSONObject("player")));
-
-        map.setCore(Core.build(jsonObject.getJSONObject("core")));
+        map.setPlayer(Player.build(jsonObject.getJSONObject("player"), map.getTileSize()));
 
         map.setPickups(parsePickups(jsonObject.getJSONArray("pickups")));
 
-        map.setEnemies(parseEnemies(jsonObject.getJSONArray("enemies")));
+        map.setPortal(Portal.build(jsonObject.getJSONObject("portal"), map.getTileSize()));
 
-        map.setDoors(parseDoors(jsonObject.getJSONArray("doors")));
-        map.setWalls(parseWalls(jsonObject.getJSONArray("walls")));
+        List<AIEntity> enemies = new ArrayList<>();
+        if (jsonObject.has("drones"))
+            enemies.addAll(parseEnemies(jsonObject.getJSONArray("drones"), "drones"));
+
+        if (jsonObject.has("turrets"))
+            enemies.addAll(parseEnemies(jsonObject.getJSONArray("turrets"), "turrets"));
+
+        if (jsonObject.has("core"))
+            enemies.add(Core.build(jsonObject.getJSONObject("core"), map.getTileSize()));
+
+        map.setEnemies(enemies);
+
+        List<DoorBuilder> doorBuilders = new ArrayList<>();
+
+        if (jsonObject.has("doors"))
+            doorBuilders = parseDoors(jsonObject.getJSONArray("doors"));
+
+        MapConstructor mapConstructor = new MapConstructor(mainActivity, map);
+        mapConstructor.loadMap(doorBuilders);
 
         return map;
     }
 
-    private List<Wall> parseWalls(JSONArray jsonArray) throws JSONException{
+    private List<DoorBuilder> parseDoors(JSONArray jsonArray) throws  JSONException {
+        List<DoorBuilder> doorBuilders = new ArrayList<>();
+
+        for (int i = 0; i < jsonArray.length(); i++){
+
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+            String name = jsonObject.getString("name");
+            Tile tile = new Tile(jsonObject.getJSONObject("tile"));
+            boolean locked = jsonObject.getBoolean("locked");
+
+            doorBuilders.add(new DoorBuilder(name, tile, locked));
+        }
+
+        return doorBuilders;
+    }
+
+    private List<Pickup> parsePickups(JSONArray jsonArray) throws JSONException{
+        UniqueID uniqueID = new UniqueID();
+
+        List<Pickup> pickups = new ArrayList<>();
+
+        for (int i = 0; i < jsonArray.length(); i++){
+            pickups.add(Pickup.build(jsonArray.getJSONObject(i), uniqueID.id(), map.getTileSize()));
+        }
+
+        return pickups;
+    }
+
+    private List<AIEntity> parseEnemies(JSONArray jsonArray, String type) throws JSONException {
+        List<AIEntity> enemies = new ArrayList<>();
+
+        for (int i = 0; i < jsonArray.length(); i++){
+            AIEntity enemy = null;
+            JSONObject item = jsonArray.getJSONObject(i);
+
+            switch (type){
+                case "drones":
+                    enemy = Drone.build(item, map.getTileSize());
+                    break;
+                case "turrets":
+                    enemy = Turret.build(item, map.getTileSize());
+                    break;
+                default:
+                    break;
+            }
+            if (enemy != null)
+                enemies.add(enemy);
+        }
+        return enemies;
+    }
+
+    /*private List<Wall> parseWalls(JSONArray jsonArray) throws JSONException{
         List<Wall> walls = new ArrayList<>();
 
         for (int i = 0; i < jsonArray.length(); i++){
@@ -165,47 +138,6 @@ public class MapLoader {
         return walls;
     }
 
-    private List<Door> parseDoors(JSONArray jsonArray) throws JSONException {
-        List<Door> doors = new ArrayList<>();
-
-        for (int i = 0; i < jsonArray.length(); i++){
-            doors.add(Door.build(jsonArray.getJSONObject(i)));
-        }
-
-        return doors;
-    }
-
-    private List<Pickup> parsePickups(JSONArray jsonArray) throws JSONException{
-        List<Pickup> pickups = new ArrayList<>();
-
-        for (int i = 0; i < jsonArray.length(); i++){
-            pickups.add(Pickup.build(jsonArray.getJSONObject(i)));
-        }
-
-        return pickups;
-    }
-
-    public List<AIEntity> parseEnemies(JSONArray jsonArray) throws JSONException {
-        List<AIEntity> enemies = new ArrayList<>();
-
-        for (int i = 0; i < jsonArray.length(); i++){
-            AIEntity enemy;
-            JSONObject item = jsonArray.getJSONObject(i);
-
-            switch (item.getString("type")){
-                case "drone":
-                    enemy = Drone.build(item.getJSONObject("fields"));
-                    break;
-                case "turret":
-                    enemy = Drone.build(item.getJSONObject("fields"));
-                    break;
-                default:
-                    throw new JSONException("AI type is not recognised: " + item.getString("type"));
-            }
-            enemies.add(enemy);
-        }
-        return enemies;
-    }
     private Graph<Integer> parseMeshGraph(JSONArray graphArray) throws JSONException{
         Graph<Integer> graph = new Graph<>();
 
@@ -256,5 +188,5 @@ public class MapLoader {
         }
 
         return polygons;
-    }
+    }*/
 }

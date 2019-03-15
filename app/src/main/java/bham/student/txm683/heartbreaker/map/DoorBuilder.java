@@ -1,33 +1,50 @@
 package bham.student.txm683.heartbreaker.map;
 
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Tile;
 
 public class DoorBuilder {
-    private boolean locked;
-    private boolean vertical;
+    private Tile liesOn;
     private Point center;
-    private int color;
+    private boolean vertical;
+    private boolean locked;
+    private String name;
 
-    public DoorBuilder(boolean locked, boolean vertical, Point center, int color) {
+    public DoorBuilder(String name, Tile tile, boolean locked){
+        this.name = name;
+        this.liesOn = tile;
         this.locked = locked;
-        this.vertical = vertical;
+    }
+
+    public void setCenter(Point center) {
         this.center = center;
-        this.color = color;
     }
 
-    public boolean isLocked() {
-        return locked;
+    public void setVertical(boolean vertical) {
+        this.vertical = vertical;
     }
 
-    public int getKeyColor() {
-        return color;
+    public Point getCenter() {
+        return center;
+    }
+
+    public Tile getLiesOn() {
+        return liesOn;
     }
 
     public boolean isVertical() {
         return vertical;
     }
 
-    public Point getCenter() {
-        return center;
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
