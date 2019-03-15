@@ -76,6 +76,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void startLevel(){
+        //TODO add stage variable to levelview
         this.level = new Level(this, mapName);
 
         levelThread = new Thread(level);

@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.physics;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.entities.Bomb;
 import bham.student.txm683.heartbreaker.entities.Door;
+import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.utils.Tile;
 
@@ -44,6 +45,13 @@ public class EntityController {
                 if (projectile instanceof Bomb){
                     levelState.addExplosion(((Bomb) projectile).explode());
                 }
+            }
+        }
+
+        Portal portal = levelState.getPortal();
+        if (portal != null){
+            if (portal.isActive() && portal.getPortalType() == Portal.PortalType.ENTRANCE){
+                //TODO trigger loading of next stage...
             }
         }
     }
