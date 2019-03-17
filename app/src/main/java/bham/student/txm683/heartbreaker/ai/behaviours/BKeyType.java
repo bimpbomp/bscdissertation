@@ -27,6 +27,17 @@ public enum BKeyType {
     PATH (PathWrapper.class),
     ROT_DAMP (Float.class);
 
+    /*
+    //TODO change BKeyType to these keys
+
+    LEVEL_STATE (LevelState.class),
+    OVERLORD (),
+    CONTROLLED_ENTITY (AIEntity.class),
+    SIGHT_BLOCKED (Boolean.class),
+    FRIENDLY_BLOCKING_SIGHT (Boolean.class);
+
+    */
+
     private Class type;
 
     BKeyType(Class type) {
