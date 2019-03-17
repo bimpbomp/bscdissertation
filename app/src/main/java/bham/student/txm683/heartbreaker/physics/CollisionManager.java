@@ -123,23 +123,28 @@ public class CollisionManager {
             bin.clearTemps();
         }
 
-        boolean addedToBin;
         for (Collidable collidable : levelState.getNonStaticCollidables()){
-            addedToBin = false;
 
-            for (SpatialBin bin : spatialBins){
-                if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
-                    //if the collidable intersects this bin's bounding box, add it to the bin's temp list
-                    bin.addTemp(collidable);
-                    addedToBin = true;
+            if (!addToBin(collidable)){
+                Log.d("hb::CollisionManager", collidable.getName() + " is not in a room");
+
+                if (collidable instanceof MoveableEntity){
+                    collidable.setCenter(((MoveableEntity) collidable).getSpawn());
+                    addToBin(collidable);
                 }
             }
+        }
+    }
 
-            if (!addedToBin){
-                //TODO add flag for entities that aren't in a room, for correction later on
-                Log.d("hb::CollisionManager", collidable.getName() + " is not in a room");
+    private boolean addToBin(Collidable collidable){
+        for (SpatialBin bin : spatialBins){
+            if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
+                //if the collidable intersects this bin's bounding box, add it to the bin's temp list
+                bin.addTemp(collidable);
+                return true;
             }
         }
+        return false;
     }
 
     private void fineGrainCollisionDetection(){
@@ -216,6 +221,12 @@ public class CollisionManager {
                                     //collision occurred
                                     resolvePickupActivation((Pickup) nonSolidEntity, solidEntity);
                                 }
+                            } else if (nonSolidEntity instanceof Portal){
+                                pushVector = collisionCheckCircleAndPolygon(((Portal) nonSolidEntity).getCircle(), solidEntity);
+
+                                if (!pushVector.equals(Vector.ZERO_VECTOR)){
+                                    resolvePortalCollision((Portal) nonSolidEntity, solidEntity);
+                                }
                             }
 
                         } else {
@@ -239,6 +250,18 @@ public class CollisionManager {
                 door.setOpen(true);
             }else
                 door.setOpen(false);
+        }
+    }
+
+    private void resolvePortalCollision(Portal portal, Collidable collidable){
+        if (collidable instanceof Player){
+
+            if (portal.isActive()){
+                Log.d("PORTAL COLLISION", "portal active and player in bounds");
+                portal.setPlayerInBounds(true);
+            } else {
+                Log.d("PORTAL COLLISION", "player in bounds");
+            }
         }
     }
 
@@ -344,47 +367,6 @@ public class CollisionManager {
 
         //both entities are solid and the collision needs to be resolved.
         if (firstCollidable.canMove() && secondCollidable.canMove()) {
-
-            /*//resolve collisions with any statics that share a cell with either entity
-            isStaticCollision(firstCollidable, bin, true);
-            isStaticCollision(secondCollidable, bin, true);
-
-            //update position of first entity with half of the push vector
-            firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
-            newCenter = firstCollidable.getCenter().add(firstAmountMoved);
-            firstCollidable.setCenter(newCenter);
-
-            //update position of second entity with half of the inverted pushVector
-            //i.e pushes second entity away from first
-            secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
-            newCenter = secondCollidable.getCenter().add(secondAmountMoved);
-            secondCollidable.setCenter(newCenter);
-
-            //check if the entities now overlap any statics with their new positions
-            firstAbleToMove = isStaticCollision(firstCollidable, bin, false);
-            secondAbleToMove = isStaticCollision(secondCollidable, bin, false);
-
-            if (!secondAbleToMove) {
-                //if the second entity now overlaps a static, tick it back to it's original position
-                //and tick the first entity the other half of the distance so it doesn't overlap the second
-                //collision is resolved, tick to next entity pair
-                moveEntityCenter(firstCollidable, firstAmountMoved);
-                moveEntityCenter(secondCollidable, secondAmountMoved.sMult(-1f));
-
-                changeVelocity(firstCollidable, pushVector);
-
-            } else if (!firstAbleToMove) {
-                //if the first entity now overlaps a static, tick it back to it's original position
-                //and tick the second entity the other half of the distance so it doesn't overlap the first
-                //collision is resolved, tick to next entity pair
-                moveEntityCenter(firstCollidable, firstAmountMoved.sMult(-1f));
-                moveEntityCenter(secondCollidable, secondAmountMoved);
-
-                changeVelocity(secondCollidable, pushVector);
-            } else {
-                changeVelocity(firstCollidable, pushVector.sMult(0.5f));
-                changeVelocity(secondCollidable, pushVector.sMult(0.5f));
-            }*/
 
             //update position of first entity with half of the push vector
             firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
@@ -518,7 +500,7 @@ public class CollisionManager {
                         }
                     }
 
-                    if (collisionCheckRay(levelState.getCore(), ray)){
+                    if (levelState.getCore() != null && collisionCheckRay(levelState.getCore(), ray)){
                         friendlyBlocking = true;
                     }
                 }
@@ -604,51 +586,6 @@ public class CollisionManager {
         checkedPairNames.add(entity1.getName() + entity2.getName());
         checkedPairNames.add(entity2.getName() + entity1.getName());
     }
-    
-    /*private boolean isEntityAbleToBePushed(Collidable entity, Pair<Integer, Integer> binReference, boolean resolveCollision){
-
-        //look at adjacent cells in grid that the entity exists in (if they exist).
-        for (int i = binReference.first - 1; i < binReference.first + 2; i++){
-            for (int j = binReference.second - 1; j < binReference.second + 2; j++){
-
-                ArrayList<Collidable> bin = broadPhaseGrid.getBin(i, j);
-                //only check the grid references that the entity exists in
-                if (bin != null && bin.contains(entity)){
-                    //check if the entity collides with any statics in this cell
-                    boolean collided = isStaticCollision(entity, bin, resolveCollision);
-                    if (collided)
-                        return false;
-                }
-            }
-        }
-        return true;
-    }*/
-
-    //checks if the given entity collides with any statics in the given bin.
-    //resolveCollision determines if a collision should be resolved if one is detected or not
-    private boolean isStaticCollision(Collidable entity, List<Collidable> bin, boolean resolveCollision){
-
-        //TODO change to include non static entities
-        for (Collidable entityInBin : bin) {
-            if (!entityInBin.canMove()) {
-                //check if the two entities collide
-                Vector pushVector;
-
-                pushVector = collisionCheckTwoPolygons(entity, entityInBin);
-
-                if (!pushVector.equals(Vector.ZERO_VECTOR)) {
-                    if (resolveCollision){
-                        //if the collision is meant to be resolved at this stage, resolve it and mark
-                        //the entities as checked
-                        moveEntityCenter(entity, pushVector.getRelativeToTailPoint());
-                        addCheckedPairNames(entity, entityInBin);
-                    }
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     private static Vector getMinimumPushVector(List<Vector> pushVectors, Point center1, Point center2){
         Vector minPushVector = Vector.ZERO_VECTOR;
@@ -696,38 +633,6 @@ public class CollisionManager {
         }
         return Vector.ZERO_VECTOR;
     }
-    /*private static Vector isSeparatingAxis(Vector axis, Vector[] firstEntityVertices, Vector[] secondEntityVertices){
-        float firstEntityMinLength = Float.POSITIVE_INFINITY;
-        float firstEntityMaxLength = Float.NEGATIVE_INFINITY;
-
-        float secondEntityMinLength = Float.POSITIVE_INFINITY;
-        float secondEntityMaxLength = Float.NEGATIVE_INFINITY;
-
-        float projection;
-        for (Vector vertexVector : firstEntityVertices){
-            projection = vertexVector.dot(axis);
-
-            firstEntityMinLength = Math.min(firstEntityMinLength, projection);
-            firstEntityMaxLength = Math.max(firstEntityMaxLength, projection);
-        }
-
-        for (Vector vertexVector : secondEntityVertices){
-            projection = vertexVector.dot(axis);
-
-            secondEntityMinLength = Math.min(secondEntityMinLength, projection);
-            secondEntityMaxLength = Math.max(secondEntityMaxLength, projection);
-        }
-
-        if (firstEntityMaxLength >= secondEntityMinLength && secondEntityMaxLength >= firstEntityMinLength) {
-            float pushVectorLength = Math.min((secondEntityMaxLength - firstEntityMinLength), (firstEntityMaxLength - secondEntityMinLength));
-
-            //push a bit more than needed so they dont overlap in future tests to compensate for float precision error
-            pushVectorLength += PUSH_VECTOR_ERROR;
-
-            return axis.getUnitVector().sMult(pushVectorLength);
-        }
-        return Vector.ZERO_VECTOR;
-    }*/
 
     private static Pair<Float, Float> projectOntoAxis(Vector axis, Point... vertices){
         float minLength = Float.POSITIVE_INFINITY;

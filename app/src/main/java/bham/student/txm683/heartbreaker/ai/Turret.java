@@ -31,7 +31,7 @@ public class Turret extends AIEntity {
     private BNode behaviourTreeRoot;
 
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
-        super(name, 0);
+        super(name, center, 0);
 
         shape = new IsoscelesTriangle(center, Polygon.createTriangle(center, size, size).toArray(new Vector[0]), colorValue);
 

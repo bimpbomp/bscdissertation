@@ -415,9 +415,12 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsKeys(LEVEL_STATE)){
                     LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
-                    context.addPair(MOVE_TO, levelState.getCore().getCenter());
 
-                    return SUCCESS;
+                    if (levelState.getCore() != null) {
+                        context.addPair(MOVE_TO, levelState.getCore().getCenter());
+
+                        return SUCCESS;
+                    }
                 }
                 return FAILURE;
             }

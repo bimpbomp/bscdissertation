@@ -38,6 +38,8 @@ public class Portal extends Entity implements ICircle, Renderable {
 
     private List<String> guards;
 
+    private boolean playerInBounds;
+
     public Portal(String name, Point center, PortalType portalType, ActivateCondition activateCondition, String leadsTo, List<String> guards) {
         super(name);
         shape = new Circle(center, 50, Color.MAGENTA);
@@ -49,6 +51,8 @@ public class Portal extends Entity implements ICircle, Renderable {
 
         this.portalType = portalType;
         this.activateCondition = activateCondition;
+
+        this.playerInBounds = false;
     }
 
     public static Portal build(JSONObject jsonObject, int tileSize) throws JSONException {
@@ -96,6 +100,14 @@ public class Portal extends Entity implements ICircle, Renderable {
 
     public List<String> getGuards() {
         return guards;
+    }
+
+    public boolean isPlayerInBounds() {
+        return playerInBounds;
+    }
+
+    public void setPlayerInBounds(boolean playerInBounds) {
+        this.playerInBounds = playerInBounds;
     }
 
     public void setActive(boolean active) {

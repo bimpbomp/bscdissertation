@@ -27,7 +27,7 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
     private String owner;
 
     public Projectile(String name, String owner, Point center, float radius, float maxSpeed, int damage, int lifeInTicks, int color){
-        super(name, maxSpeed);
+        super(name, center, maxSpeed);
 
         this.owner = owner;
 

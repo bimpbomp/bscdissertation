@@ -1,10 +1,12 @@
 package bham.student.txm683.heartbreaker.rendering;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -25,6 +27,7 @@ import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 
+@SuppressLint("ViewConstructor")
 public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "hb::LevelView";
@@ -76,14 +79,27 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void startLevel(){
-        //TODO add stage variable to levelview
         this.level = new Level(this, mapName);
 
         levelThread = new Thread(level);
         levelThread.start();
     }
 
-    public void endLevel(){
+    public void loadStage(String stage){
+        endLevelThread();
+
+        levelThread = new Thread(level);
+
+        level.setStage(stage);
+
+        levelThread.start();
+
+        drawLoading();
+
+        Log.d("LOADING", "levelThread ended, stage changed, and new thread started");
+    }
+
+    public void endLevelThread(){
         boolean retry = true;
 
         while(retry){
@@ -98,7 +114,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void restartLevel(){
-        endLevel();
+        endLevelThread();
         startLevel();
     }
 
@@ -109,26 +125,18 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     public void returnToMenu(){
 
         shutDown();
+        endLevelThread();
+
+        Bundle bundle = new Bundle();
+
+        if (levelState != null)
+            bundle = levelState.getLevelEnder().createBundle();
 
         Intent intent = new Intent(context, MenuActivity.class);
 
-        intent.putExtra("bundle", levelState.getLevelEnder().createBundle());
+        intent.putExtra("bundle", bundle);
 
         context.startActivity(intent);
-    }
-
-    /**
-     * Creates the LevelState object based off of the given JSON formatted string
-     * @param stateString String containing state LevelState in JSON format
-     */
-    public void loadSaveFromStateString(String stateString){
-        /*Log.d(TAG, "stateStringLengthInBytes: " + stateString.getBytes().length + ", stateString: " + stateString);
-        try {
-            this.levelState = new LevelState(stateString);
-        } catch (Exception e){
-            Log.d(TAG,"Parsing error: " + e.getMessage());
-            this.levelState = null;
-        }*/
     }
 
     public void setLevelState(LevelState levelState){
@@ -251,7 +259,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        endLevel();
+        endLevelThread();
         Log.d(TAG, "surfaceDestroyed");
     }
 
@@ -337,6 +345,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     pickup.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
+            //draw portal
+            if (levelState.getPortal() != null){
+                if (isOnScreen(levelState.getPortal())){
+                    levelState.getPortal().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+                }
+            }
+
             //draw dead ai
             for (AIEntity deadAI : levelState.getDeadAI()){
                 if (isOnScreen(deadAI)){
@@ -362,7 +377,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     entity.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
-            if (isOnScreen(levelState.getCore()))
+            if (levelState.getCore() != null && isOnScreen(levelState.getCore()))
                 levelState.getCore().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
 
             //draw explosions

@@ -25,7 +25,7 @@ public class Core extends AIEntity implements Damageable {
     private int width;
 
     public Core(String name, Point center, int size) {
-        super(name, 0);
+        super(name, center, 0);
         health = 500;
 
         this.width = size;

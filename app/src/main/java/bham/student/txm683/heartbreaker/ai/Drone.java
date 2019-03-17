@@ -38,7 +38,7 @@ public class Drone extends AIEntity implements Shooter {
     private int width;
 
     public Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
-        super(name, maxSpeed);
+        super(name, center, maxSpeed);
 
         this.spawn = center;
         List<Vector> vertices = Polygon.createTriangle(center, size*0.9f, size * 0.75f);

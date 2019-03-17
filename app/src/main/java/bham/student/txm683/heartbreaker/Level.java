@@ -1,11 +1,13 @@
 package bham.student.txm683.heartbreaker;
 
 import android.graphics.Color;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.RectButtonBuilder;
+import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.MapLoader;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
@@ -18,7 +20,6 @@ import bham.student.txm683.heartbreaker.utils.BenchMarker;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
 
 public class Level implements Runnable {
-    private final String TAG = "hb::Level";
 
     private LevelView levelView;
     private LevelState levelState;
@@ -48,11 +49,11 @@ public class Level implements Runnable {
     private Popup diedPopup;
     private Popup completePopup;
 
-    public Level(LevelView levelView, String mapName, String stage){
+    public Level(LevelView levelView, String mapName){
         super();
 
         this.mapName = mapName;
-        this.stage = stage;
+        this.stage = "1";
 
         this.messageBus = new MessageBus();
 
@@ -62,21 +63,39 @@ public class Level implements Runnable {
         renderFPSMonitor = new FPSMonitor();
     }
 
+    public LevelState getLevelState() {
+        return levelState;
+    }
+
+    public String getStage() {
+        return stage;
+    }
+
+    public void setStage(String stage) {
+        this.stage = stage;
+    }
+
     private void load(){
         levelView.drawLoading();
 
-        if (this.levelState == null) {
+        if (this.levelState == null || !levelState.getMap().getStage().equals(this.stage)) {
 
             this.levelView.setTileSize(200);
-            //MapConstructor mapConstructor = new MapConstructor(levelView.getContext());
 
-            //this.levelState = new LevelState(mapConstructor.loadMap(mapName, stage, levelView.getTileSize()));
+            Log.d("LOADING", "Starting to load...");
+
             MapLoader mapLoader = new MapLoader(mapName, stage, levelView.getTileSize(), (MainActivity) levelView.getContext());
+
+            Map map;
             try {
-                this.levelState = new LevelState(mapLoader.loadMap());
+                map = mapLoader.loadMap();
             } catch (Exception e){
+                Log.d("EXCEPTION LOADING LEVEL", e.getMessage());
                 levelView.returnToMenu();
+                return;
             }
+
+            this.levelState = new LevelState(map);
 
             this.levelState.setScreenDimensions(levelView.getWidth(), levelView.getHeight());
 
@@ -89,8 +108,7 @@ public class Level implements Runnable {
             levelView.setDebugInfo(levelState.getDebugInfo());
 
             RectButtonBuilder[] buttonBuilders = new RectButtonBuilder[]{
-                    //TODO set restart function
-                    new RectButtonBuilder("Restart", 40, () -> {levelView.restartLevel();}),
+                    new RectButtonBuilder("Restart", 40, () -> levelView.restartLevel()),
                     new RectButtonBuilder("Return To Menu", 60, () -> levelView.returnToMenu())
             };
 
@@ -111,7 +129,7 @@ public class Level implements Runnable {
             this.completePopup = inputManager.createMOSPopup(buttonBuilders, textBuilders);
 
             //initialise systems
-            entityController = new EntityController(levelState);
+            entityController = new EntityController(this);
             collisionManager = new CollisionManager(levelState);
 
             levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
@@ -121,10 +139,14 @@ public class Level implements Runnable {
         levelState.setReadyToRender(true);
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e){
             //do nothing
         }
+    }
+
+    public LevelView getLevelView() {
+        return levelView;
     }
 
     @Override
@@ -201,7 +223,7 @@ public class Level implements Runnable {
         }
     }
 
-    public void mapToMesh(AIEntity aiEntity){
+    private void mapToMesh(AIEntity aiEntity){
         //Log.d("hb::AI", "Checking meshploygon for " + aiEntity.getName());
         for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
             if (meshPolygon.getBoundingBox().intersecting(aiEntity.getBoundingBox())){
@@ -213,7 +235,7 @@ public class Level implements Runnable {
     }
 
     public void shutDown(){
-        levelState.getAiManager().shutDown();
+        //levelState.getAiManager().shutDown();
     }
 
     public void setRunning(boolean isRunning){

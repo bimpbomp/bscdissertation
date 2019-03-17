@@ -140,6 +140,9 @@ public class LevelState {
         collidables.addAll(bullets);
         collidables.addAll(pickups);
 
+        if (portal != null)
+            collidables.add(portal);
+
         return collidables;
     }
 

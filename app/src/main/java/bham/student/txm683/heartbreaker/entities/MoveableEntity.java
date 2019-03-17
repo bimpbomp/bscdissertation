@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.entities;
 
 import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
+import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 public abstract class MoveableEntity extends Entity {
@@ -12,7 +13,9 @@ public abstract class MoveableEntity extends Entity {
 
     private Vector velocity;
 
-    public MoveableEntity(String name, float maxSpeed){
+    private Point spawn;
+
+    public MoveableEntity(String name, Point spawn, float maxSpeed){
         super(name);
 
         this.maxSpeed = maxSpeed;
@@ -20,6 +23,12 @@ public abstract class MoveableEntity extends Entity {
         this.rotationVector = Vector.ZERO_VECTOR;
 
         this.velocity = Vector.ZERO_VECTOR;
+
+        this.spawn =spawn;
+    }
+
+    public Point getSpawn() {
+        return spawn;
     }
 
     public Vector getRotationVector() {

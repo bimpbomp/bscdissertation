@@ -49,19 +49,33 @@ public class MapLoader {
 
         map.setPlayer(Player.build(jsonObject.getJSONObject("player"), map.getTileSize()));
 
-        map.setPickups(parsePickups(jsonObject.getJSONArray("pickups")));
+        if (jsonObject.has("pickups"))
+            map.setPickups(parsePickups(jsonObject.getJSONArray("pickups")));
+        else
+            map.setPickups(new ArrayList<>());
 
-        map.setPortal(Portal.build(jsonObject.getJSONObject("portal"), map.getTileSize()));
+        Log.d("LOADING", "LOADED PAST pickups");
+
+        if (jsonObject.has("portal"))
+            map.setPortal(Portal.build(jsonObject.getJSONObject("portal"), map.getTileSize()));
+
+        Log.d("LOADING", "LOADED PAST portal");
 
         List<AIEntity> enemies = new ArrayList<>();
         if (jsonObject.has("drones"))
             enemies.addAll(parseEnemies(jsonObject.getJSONArray("drones"), "drones"));
 
+        Log.d("LOADING", "LOADED PAST dribes");
+
         if (jsonObject.has("turrets"))
             enemies.addAll(parseEnemies(jsonObject.getJSONArray("turrets"), "turrets"));
 
+        Log.d("LOADING", "LOADED PAST turrets");
+
         if (jsonObject.has("core"))
             enemies.add(Core.build(jsonObject.getJSONObject("core"), map.getTileSize()));
+
+        Log.d("LOADING", "LOADED PAST core");
 
         map.setEnemies(enemies);
 
@@ -70,8 +84,12 @@ public class MapLoader {
         if (jsonObject.has("doors"))
             doorBuilders = parseDoors(jsonObject.getJSONArray("doors"));
 
+        Log.d("LOADING", "LOADED PAST doors");
+
         MapConstructor mapConstructor = new MapConstructor(mainActivity, map);
         mapConstructor.loadMap(doorBuilders);
+
+        Log.d("LOADING", "LOADED PAST map constructor");
 
         return map;
     }

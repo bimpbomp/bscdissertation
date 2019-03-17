@@ -10,6 +10,7 @@ import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
+import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -23,8 +24,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     protected PickupType drops;
 
-    public AIEntity(String name, float maxSpeed) {
-        super(name, maxSpeed);
+    public AIEntity(String name, Point spawn, float maxSpeed) {
+        super(name, spawn, maxSpeed);
         context = new BContext();
     }
 
