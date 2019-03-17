@@ -223,6 +223,8 @@ public class Level implements Runnable {
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), 0f);
             }
         }
+
+        Log.d("LOADING", "GAME LOOP ENDING");
     }
 
     private void mapToMesh(AIEntity aiEntity){

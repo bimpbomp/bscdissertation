@@ -88,18 +88,21 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     public void loadStage(String stage){
         drawLoading();
 
-        Level newLevel = new Level(this, mapName);
-        Thread newLevelThread = new Thread(newLevel);
-        newLevel.setStage(stage);
 
-        newLevelThread.start();
+        Level oldLevel = level;
+        Thread oldLevelThread = levelThread;
 
-        endLevelThread();
+        level = new Level(this, mapName);
+        levelThread = new Thread(level);
+        level.setStage(stage);
 
-        Log.d("LOADING", "levelThread ended, stage changed, and new thread started");
+        levelThread.start();
+
+        endLevelThread(oldLevel, oldLevelThread);
+
     }
 
-    public void endLevelThread(){
+    public void endLevelThread(Level level, Thread levelThread){
         boolean retry = true;
 
         while(retry){
@@ -107,6 +110,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 level.setRunning(false);
                 levelThread.join();
             } catch (InterruptedException e){
+                Log.d("LOADING", "INTERRUPTED EXCEPTION JOINING LEVELTHREAD");
                 e.printStackTrace();
             }
             retry = false;
@@ -114,7 +118,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void restartLevel(){
-        endLevelThread();
+        endLevelThread(level, levelThread);
         startLevel();
     }
 
@@ -133,10 +137,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         intent.putExtra("bundle", bundle);
 
+        Log.d("LOADING", "ACTIVITY CREATED, SHUTTING DOWN LEVEL THREAD");
+        shutDown();
+        endLevelThread(level, levelThread);
+
+        Log.d("LOADING", "LEVEL THREAD DEAD");
         context.startActivity(intent);
 
-        shutDown();
-        endLevelThread();
     }
 
     public void setLevelState(LevelState levelState){
@@ -259,7 +266,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        endLevelThread();
+        endLevelThread(level, levelThread);
         Log.d(TAG, "surfaceDestroyed");
     }
 
