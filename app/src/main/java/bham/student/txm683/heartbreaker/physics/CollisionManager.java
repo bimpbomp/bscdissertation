@@ -6,6 +6,7 @@ import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.*;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -137,14 +138,15 @@ public class CollisionManager {
     }
 
     private boolean addToBin(Collidable collidable){
+        boolean added = false;
         for (SpatialBin bin : spatialBins){
             if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
                 //if the collidable intersects this bin's bounding box, add it to the bin's temp list
                 bin.addTemp(collidable);
-                return true;
+                added = true;
             }
         }
-        return false;
+        return added;
     }
 
     private void fineGrainCollisionDetection(){
@@ -172,7 +174,9 @@ public class CollisionManager {
                         secondCollidable = bin.get(j);
 
                         //if both entities are static or not solid, skip
-                        if (firstCollidable instanceof Damageable || secondCollidable instanceof Damageable){
+                        if (firstCollidable instanceof Core || secondCollidable instanceof Core){
+                            //do nothing
+                        } else if (firstCollidable instanceof Damageable || secondCollidable instanceof Damageable){
                             //do nothing
                         } else if ((!firstCollidable.canMove() && !secondCollidable.canMove()) ||
                                 (!firstCollidable.isSolid() && !secondCollidable.isSolid())) {

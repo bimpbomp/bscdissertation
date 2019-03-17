@@ -35,7 +35,7 @@ public class Core extends AIEntity implements Damageable {
     }
 
     public Core(String name, Point center){
-        this(name, center, 200);
+        this(name, center, 400);
     }
 
     public static Core build(JSONObject jsonObject, int tileSize) throws JSONException {
@@ -108,7 +108,7 @@ public class Core extends AIEntity implements Damageable {
 
     @Override
     public void tick(float secondsSinceLastGameTick) {
-        float angle = 0.261799f;
+        float angle = 0.061799f;
 
         innerShape.rotateBy(-1 * angle);
         outerShape.rotateBy(angle/2);

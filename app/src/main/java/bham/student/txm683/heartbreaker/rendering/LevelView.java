@@ -16,7 +16,6 @@ import bham.student.txm683.heartbreaker.LevelEndStatus;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.MenuActivity;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
@@ -326,19 +325,13 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw background
             canvas.drawColor(Color.GREEN);
 
-            //draw room backgrounds
-            for (Perimeter room : levelState.getMap().getRoomPerimeters()){
-                if (isOnScreen(room))
-                    room.draw(canvas, renderOffset, secondsSinceLastGameTick, false);
-            }
-
-            //draw meshGrid
-            if (/*debugInfo.renderVisSet()*/true){
+            /*//draw meshGrid
+            if (*//*debugInfo.renderVisSet()*//*true){
 
                 for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
                     meshPolygon.draw(canvas, renderOffset);
                 }
-            }
+            }*/
 
             //draw doors
             for (Renderable door : levelState.getMap().getDoors().values()){
@@ -373,7 +366,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
-            //level.getCollisionManager().drawBins(canvas, renderOffset);
+            level.getCollisionManager().drawBins(canvas, renderOffset);
 
             //draw player
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
