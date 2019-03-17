@@ -50,14 +50,14 @@ public class MapConstructor {
             //GenerateBoundaryWalls
             List<Wall> walls = generateWallsV2(mapReader.getMeshGenList());
 
-            constructDoors();
-
             map.setWalls(walls);
             map.setWidthInTiles(mapReader.getWidth());
             map.setHeightInTiles(mapReader.getHeight());
 
             map.setMeshGraph(meshConstructor.getMeshGraph());
             map.setRootMeshPolygons(meshPolygons);
+
+            constructDoors();
 
         } catch (MapConversionException e){
             Log.d("MapConstructor", "Map conversion error: " + e.getMessage() + "...\n");

@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.map;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.exceptions.MCEReason;
@@ -145,7 +146,9 @@ public class MapReader {
             return;
 
         for (DoorBuilder doorBuilder : doorSpawns){
+            Log.d("LOADING", doorBuilder.getName() + " is being checked in MapReader....");
             if (doorBuilder.getLiesOn().equals(coordinatesOfDoor)){
+                Log.d("LOADING", "doorbuilder coordinate match on: " + coordinatesOfDoor);
                 doorBuilder.setVertical(vertical);
                 doorBuilder.setCenter(convertToGlobal(coordinatesOfDoor));
             }

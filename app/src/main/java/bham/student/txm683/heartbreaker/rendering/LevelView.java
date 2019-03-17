@@ -325,13 +325,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw background
             canvas.drawColor(Color.GREEN);
 
-            /*//draw meshGrid
-            if (*//*debugInfo.renderVisSet()*//*true){
+            //draw meshGrid
+            for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
+                meshPolygon.draw(canvas, renderOffset);
+            }
 
-                for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
-                    meshPolygon.draw(canvas, renderOffset);
-                }
-            }*/
+            //level.getCollisionManager().drawBins(canvas, renderOffset);
 
             //draw doors
             for (Renderable door : levelState.getMap().getDoors().values()){
@@ -365,8 +364,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 if (isOnScreen(bullet))
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
-
-            level.getCollisionManager().drawBins(canvas, renderOffset);
 
             //draw player
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());

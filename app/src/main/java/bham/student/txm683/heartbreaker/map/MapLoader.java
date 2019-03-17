@@ -106,6 +106,8 @@ public class MapLoader {
             boolean locked = jsonObject.getBoolean("locked");
 
             doorBuilders.add(new DoorBuilder(name, tile, locked));
+
+            Log.d("LOADING", name + " added to doorbuilder list in parseDoors...");
         }
 
         return doorBuilders;

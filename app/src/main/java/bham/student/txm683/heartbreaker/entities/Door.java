@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
@@ -36,6 +37,8 @@ public class Door extends Entity implements Renderable {
                 boolean vertical, int doorColor, int doorSet, Tile sideSets){
 
         super(name);
+
+        Log.d("LOADING", name + " created");
 
         this.doorSet = doorSet;
         this.sideSets = sideSets;
