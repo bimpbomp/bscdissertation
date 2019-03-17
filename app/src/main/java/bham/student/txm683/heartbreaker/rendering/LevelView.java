@@ -86,15 +86,15 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void loadStage(String stage){
-        endLevelThread();
-
-        levelThread = new Thread(level);
-
-        level.setStage(stage);
-
-        levelThread.start();
-
         drawLoading();
+
+        Level newLevel = new Level(this, mapName);
+        Thread newLevelThread = new Thread(newLevel);
+        newLevel.setStage(stage);
+
+        newLevelThread.start();
+
+        endLevelThread();
 
         Log.d("LOADING", "levelThread ended, stage changed, and new thread started");
     }
@@ -124,9 +124,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void returnToMenu(){
 
-        shutDown();
-        endLevelThread();
-
         Bundle bundle = new Bundle();
 
         if (levelState != null)
@@ -137,6 +134,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         intent.putExtra("bundle", bundle);
 
         context.startActivity(intent);
+
+        shutDown();
+        endLevelThread();
     }
 
     public void setLevelState(LevelState levelState){

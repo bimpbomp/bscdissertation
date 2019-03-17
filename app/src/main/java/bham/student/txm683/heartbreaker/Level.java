@@ -95,6 +95,8 @@ public class Level implements Runnable {
                 return;
             }
 
+            Log.d("LOADING", "map files loaded");
+
             this.levelState = new LevelState(map);
 
             this.levelState.setScreenDimensions(levelView.getWidth(), levelView.getHeight());
