@@ -71,21 +71,25 @@ public abstract class MoveableEntity extends Entity {
             velocity = Vector.ZERO_VECTOR;
 
         if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR)) {
-            Vector movementForce = getRequestedMovementVector();
+            Vector movementForce = getRequestedMovementVector().sMult(1000);
 
             float dot = 0f;
-            if (velocity.equals(Vector.ZERO_VECTOR)){
-                movementForce = movementForce.sMult(1000);
-            } else {
-                 dot = velocity.dot(movementForce);
 
-                 if (dot > 0){
-                     movementForce = movementForce.sMult(10 * dot);
-                 } else {
-                     movementForce = movementForce.sMult(1000 * Math.abs(dot));
-                 }
+            dot = velocity.getUnitVector().dot(movementForce.getUnitVector());
 
-            }
+            float angle = (float) Math.acos(Math.min(dot, 1f));
+
+            Log.d("MOVEMENT", "dot: " + dot + "angle: " + angle + " prop: " + (angle/ (float) Math.PI));
+            Log.d("MOVEMENT:", "vel: " + velocity.relativeToString() + " move: " + movementForce.relativeToString());
+
+            movementForce = movementForce.sMult(angle/ (float) Math.PI);
+
+//                 if (dot > 0){
+//                     movementForce = movementForce.sMult(10 * dot);
+//                 } else {
+//                     movementForce = movementForce.sMult(1000 * Math.abs(dot));
+//                 }
+
             //float dot = movementForce.dot(shape.getForwardUnitVector());
 
             //movementForce = movementForce.sMult((float) Math.pow(dot, 2));
@@ -126,7 +130,18 @@ public abstract class MoveableEntity extends Entity {
             force = getRequestedMovementVector();
 
         if (!force.equals(Vector.ZERO_VECTOR)) {
+            float dot = Math.min(shape.getForwardUnitVector().det(force.getUnitVector()), 1f);
+            float det = shape.getForwardUnitVector().det(force.getUnitVector());
+
+            float angle = (float) Math.acos(dot);
+
+            if (det < 0f)
+                angle *= -1;
+
             Vector momArm = new Vector(getCenter(), getCenter().add(shape.getForwardUnitVector().sMult(20f).getRelativeToTailPoint()));
+
+            momArm.rotate(dot, det);
+
             Vector parCom = momArm.sMult(force.dot(momArm) / momArm.getLength());
 
             Vector angF = force.vSub(parCom).sMult(rotationalDamping);
