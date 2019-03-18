@@ -10,6 +10,7 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
+import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -25,6 +26,8 @@ public class Tasks {
     private Tasks(){
 
     }
+
+
 
     public static BNode doNothing(){
         return new BNode() {
@@ -82,6 +85,51 @@ public class Tasks {
         };
     }
 
+    public static BNode courseCorrect(){
+        return new BNode() {
+
+            @Override
+            public Status process(BContext context) {
+
+
+                if (context.containsKeys(CONTROLLED_ENTITY, COLLISION_MANAGER) && context.containsVariables("course_correct:heading")){
+
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+
+                    Point heading = (Point) context.getVariable("course_correct:heading");
+
+                    CollisionManager collisionManager = (CollisionManager) context.getValue(COLLISION_MANAGER);
+
+                    List<Point> pathAroundObstacle = collisionManager.getPathAroundObstacle(controlled, heading);
+
+                    if (pathAroundObstacle == null || pathAroundObstacle.size() == 0){
+                        setStatus(SUCCESS);
+                        return SUCCESS;
+                    }
+
+                    Point target = new Point();
+                    for (Point point : pathAroundObstacle){
+                        if (CollisionManager.euclideanHeuristic(controlled.getFront(), point) > 50){
+                            target = point;
+                            break;
+                        }
+                    }
+
+                    Vector v = new Vector(controlled.getCenter(), target);
+
+                    controlled.setRotationVector(v);
+                    controlled.setRequestedMovementVector(v);
+
+                    setStatus(RUNNING);
+                    return RUNNING;
+                }
+
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
     public static BNode plotPath(){
         return new BNode() {
             @Override
@@ -99,9 +147,12 @@ public class Tasks {
 
                     boolean plotted = a.plotPath();
 
-                    if (plotted)
+                    if (plotted) {
+                        setStatus(SUCCESS);
                         return SUCCESS;
+                    }
                 }
+                setStatus(FAILURE);
                 return FAILURE;
             }
         };
@@ -109,23 +160,22 @@ public class Tasks {
 
     public static BNode followPath(){
         return new BNode() {
-            private int pointInPath;
-
-            @Override
-            public void construct() {
-                super.construct();
-                pointInPath = 0;
-            }
-
-            @Override
-            public void reset(BContext context) {
-                super.reset(context);
-                pointInPath = 0;
-            }
 
             @Override
             public Status process(BContext context) {
                 if (context.containsKeys(CONTROLLED_ENTITY, PATH)){
+
+                    int pointInPath = 0;
+
+                    if (getStatus() == RUNNING){
+                        try {
+                            pointInPath = (int) context.getVariable("follow:point_in_path");
+
+                        } catch (Exception e){
+                            setStatus(FAILURE);
+                            return FAILURE;
+                        }
+                    }
 
                     AIEntity aiEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
                     List<Point> path = ((PathWrapper) context.getValue(PATH)).path();
@@ -143,17 +193,20 @@ public class Tasks {
 
                     if (pointInPath >= path.size()-1) {
                         Log.d("TASK followPath", "path completed!");
+                        setStatus(SUCCESS);
                         return SUCCESS;
                     }
 
                     Point currentPoint = path.get(pointInPath);
 
-                    if (new Vector(aiEntity.getCenter(), currentPoint).getLength() < 100){
+                    if (new Vector(aiEntity.getCenter(), currentPoint).getLength() < 50){
                         pointInPath++;
 
                         if (pointInPath > path.size()-1) {
                             Log.d("TASK followPath", "path completed!!");
                             aiEntity.setRequestedMovementVector(Vector.ZERO_VECTOR);
+
+                            setStatus(SUCCESS);
                             return SUCCESS;
                         }
 
@@ -163,12 +216,19 @@ public class Tasks {
                     Vector closenessV = new Vector(aiEntity.getCenter(), currentPoint).getUnitVector();
 
                     Log.d("TASK followPath", "heading to: " + currentPoint + ", vector to point: " + closenessV.relativeToString());
+
+                    context.addVariable("course_correct:heading", currentPoint);
+
                     aiEntity.setRequestedMovementVector(closenessV);
                     aiEntity.setRotationVector(closenessV);
+
+                    setStatus(RUNNING);
                     return RUNNING;
 
                 }
                 Log.d("TASK followPath", "task failed...");
+
+                setStatus(FAILURE);
                 return FAILURE;
             }
         };

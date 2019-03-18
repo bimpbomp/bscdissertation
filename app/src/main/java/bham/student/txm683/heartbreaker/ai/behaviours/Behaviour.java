@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.ai.behaviours;
 
+import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.ForgetfulSequence;
@@ -12,10 +13,11 @@ import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Tasks;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.CONTROLLED_ENTITY;
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 
 public class Behaviour {
 
@@ -34,6 +36,33 @@ public class Behaviour {
         return new Sequence(
                 Tasks.randomPointInMesh(),
                 walkToPointBehaviour()
+        );
+    }
+
+    public static BNode walkToRandomMeshBehaviour(){
+        BNode randomMesh = new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(LEVEL_STATE)){
+                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+
+                    List<Integer> keySet = new ArrayList<>(levelState.getRootMeshPolygons().keySet());
+
+                    Random r = new Random();
+
+                    context.addPair(MOVE_TO, levelState.getRootMeshPolygons().get(keySet.get(r.nextInt(keySet.size()))).getCenter());
+
+                    return Status.SUCCESS;
+                }
+                return Status.FAILURE;
+            }
+        };
+
+        return new Sequence(
+                randomMesh,
+                Tasks.plotPath(),
+                followPathBehaviour(),
+                Tasks.courseCorrect()
         );
     }
 
@@ -155,8 +184,9 @@ public class Behaviour {
                             ),
                             stationaryShootBehaviour()
                     ));
+        return walkToRandomMeshBehaviour();
 
-        return new Selector(
+        /*return new Selector(
                 Conditionals.canSeePlayer(
                     new Selector(
                             Conditionals.healthAboveThreshold(
@@ -170,6 +200,6 @@ public class Behaviour {
                 ),
 
                 Behaviour.idleBehaviour()
-        );
+        );*/
     }
 }

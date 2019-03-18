@@ -38,7 +38,7 @@ public class Drone extends AIEntity implements Shooter {
     private int width;
 
     public Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
-        super(name, center, maxSpeed);
+        super(name, center, size, maxSpeed);
 
         this.spawn = center;
         List<Vector> vertices = Polygon.createTriangle(center, size*0.9f, size * 0.75f);
@@ -69,6 +69,11 @@ public class Drone extends AIEntity implements Shooter {
 
     public Drone(String name, Point center){
         this(name, center, 100, ColorScheme.CHASER_COLOR, 600, 100);
+    }
+
+    @Override
+    public Point getFront() {
+        return shape.getVertices()[0];
     }
 
     public static Drone build(JSONObject jsonObject, int tileSize) throws JSONException {

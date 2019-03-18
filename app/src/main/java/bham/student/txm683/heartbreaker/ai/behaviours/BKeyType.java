@@ -6,6 +6,7 @@ import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
+import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -25,6 +26,7 @@ public enum BKeyType {
     TIME_PER_IDLE (Integer.class),
     TIME_LEFT_IN_IDLE (Integer.class),
     PATH (PathWrapper.class),
+    COLLISION_MANAGER (CollisionManager.class),
     ROT_DAMP (Float.class);
 
     /*
@@ -34,7 +36,11 @@ public enum BKeyType {
     OVERLORD (),
     CONTROLLED_ENTITY (AIEntity.class),
     SIGHT_BLOCKED (Boolean.class),
-    FRIENDLY_BLOCKING_SIGHT (Boolean.class);
+    FRIENDLY_BLOCKING_SIGHT (Boolean.class),
+    ROTATE_TO (Point.class),
+    MOVE_TO (Point.class),
+    CURRENT_MESH (MeshPolygon.class),
+    COLLISION_MANAGER (CollisionManager.class);
 
     */
 

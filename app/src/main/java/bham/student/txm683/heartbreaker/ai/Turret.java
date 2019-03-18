@@ -31,7 +31,7 @@ public class Turret extends AIEntity {
     private BNode behaviourTreeRoot;
 
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
-        super(name, center, 0);
+        super(name, center, size, 0);
 
         shape = new IsoscelesTriangle(center, Polygon.createTriangle(center, size, size).toArray(new Vector[0]), colorValue);
 
@@ -53,6 +53,11 @@ public class Turret extends AIEntity {
 
     public Turret(String name, Point center){
         this(name ,center, 200, ColorScheme.CHASER_COLOR, 100);
+    }
+
+    @Override
+    public Point getFront() {
+        return shape.getVertices()[0];
     }
 
     public static Turret build(JSONObject jsonObject, int tileSize) throws JSONException {

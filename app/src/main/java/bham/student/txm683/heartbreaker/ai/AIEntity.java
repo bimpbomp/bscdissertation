@@ -24,8 +24,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     protected PickupType drops;
 
-    public AIEntity(String name, Point spawn, float maxSpeed) {
-        super(name, spawn, maxSpeed);
+    public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed) {
+        super(name, spawn, maxDimension, maxSpeed);
         context = new BContext();
     }
 
@@ -36,6 +36,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     public void setDrops(PickupType drops) {
         this.drops = drops;
     }
+
+    public abstract Point getFront();
 
     public abstract Weapon getWeapon();
 

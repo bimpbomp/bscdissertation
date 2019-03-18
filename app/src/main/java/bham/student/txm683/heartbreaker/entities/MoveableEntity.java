@@ -15,7 +15,9 @@ public abstract class MoveableEntity extends Entity {
 
     private Point spawn;
 
-    public MoveableEntity(String name, Point spawn, float maxSpeed){
+    private int maxDimension;
+
+    public MoveableEntity(String name, Point spawn, int maxDimension, float maxSpeed){
         super(name);
 
         this.maxSpeed = maxSpeed;
@@ -24,7 +26,13 @@ public abstract class MoveableEntity extends Entity {
 
         this.velocity = Vector.ZERO_VECTOR;
 
-        this.spawn =spawn;
+        this.spawn = spawn;
+
+        this.maxDimension = maxDimension;
+    }
+
+    public int getMaxDimension() {
+        return maxDimension;
     }
 
     public Point getSpawn() {
@@ -71,7 +79,7 @@ public abstract class MoveableEntity extends Entity {
             velocity = Vector.ZERO_VECTOR;
 
         if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR)) {
-            Vector movementForce = getRequestedMovementVector().sMult(1000);
+            Vector movementForce = getRequestedMovementVector().sMult(100);
 
             float dot = 0f;
 
@@ -82,21 +90,14 @@ public abstract class MoveableEntity extends Entity {
             Log.d("MOVEMENT", "dot: " + dot + "angle: " + angle + " prop: " + (angle/ (float) Math.PI));
             Log.d("MOVEMENT:", "vel: " + velocity.relativeToString() + " move: " + movementForce.relativeToString());
 
-            movementForce = movementForce.sMult(angle/ (float) Math.PI);
-
-//                 if (dot > 0){
-//                     movementForce = movementForce.sMult(10 * dot);
-//                 } else {
-//                     movementForce = movementForce.sMult(1000 * Math.abs(dot));
-//                 }
-
-            //float dot = movementForce.dot(shape.getForwardUnitVector());
-
-            //movementForce = movementForce.sMult((float) Math.pow(dot, 2));
-
-
+            if (angle > 5)
+                movementForce = movementForce.sMult(angle/ (float) Math.PI);
 
             Vector acc = movementForce;
+
+            if (acc.getLength() > 300){
+                acc = acc.setLength(300);
+            }
 
             velocity = velocity.vAdd(acc);
 
@@ -109,16 +110,14 @@ public abstract class MoveableEntity extends Entity {
                     acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " +
                     getRequestedMovementVector().relativeToString() + " dot: " + dot);
 
-            shape.translateShape(velocity.sMult(secondsSinceLastGameTick));
 
         } else {
             velocity = velocity.sMult(0.25f);
-
-            shape.translateShape(velocity.sMult(secondsSinceLastGameTick));
         }
 
+        Vector v = velocity.sMult(secondsSinceLastGameTick);
 
-
+        shape.translateShape(v);
     }
 
     public void rotate(float secondsSinceLastGameTick, Shape shape, float rotationalDamping){
@@ -132,11 +131,6 @@ public abstract class MoveableEntity extends Entity {
         if (!force.equals(Vector.ZERO_VECTOR)) {
             float dot = Math.min(shape.getForwardUnitVector().det(force.getUnitVector()), 1f);
             float det = shape.getForwardUnitVector().det(force.getUnitVector());
-
-            float angle = (float) Math.acos(dot);
-
-            if (det < 0f)
-                angle *= -1;
 
             Vector momArm = new Vector(getCenter(), getCenter().add(shape.getForwardUnitVector().sMult(20f).getRelativeToTailPoint()));
 

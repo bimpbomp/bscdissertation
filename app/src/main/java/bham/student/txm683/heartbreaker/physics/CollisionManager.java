@@ -7,6 +7,7 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
+import bham.student.txm683.heartbreaker.ai.HexBubble;
 import bham.student.txm683.heartbreaker.entities.*;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -17,6 +18,8 @@ import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.*;
+import bham.student.txm683.heartbreaker.utils.graph.Graph;
+import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -520,6 +523,65 @@ public class CollisionManager {
             aiEntity.getContext().addPair(SIGHT_BLOCKED, blocked);
             aiEntity.getContext().addPair(FRIENDLY_BLOCKING_SIGHT, friendlyBlocking);
         }
+    }
+
+    public List<SpatialBin> getBinsWithRay(Vector ray){
+
+        return null;
+    }
+
+    public List<Point> getPathAroundObstacle(AIEntity entity, Point end){
+
+        Vector ray = new Vector(entity.getFront(), end);
+
+        Collidable closestCollidable = null;
+        int smallestDistance = Integer.MAX_VALUE;
+
+        for (Collidable collidable : levelState.getAvoidables()){
+
+            if (collidable.getName().equals(entity.getName()))
+                continue;
+
+            if (collidable instanceof MoveableEntity){
+
+                int distance = euclideanHeuristic(entity.getFront(), collidable.getCenter());
+
+                if (collisionCheckRay(collidable, ray) && distance < smallestDistance){
+                    smallestDistance = distance;
+                    closestCollidable = collidable;
+                }
+            }
+        }
+
+        if (closestCollidable == null)
+            return new ArrayList<>();
+
+
+        HexBubble hexBubble = new HexBubble(closestCollidable.getCenter(), ((MoveableEntity) closestCollidable).getMaxDimension());
+
+        Graph<Point> graph = hexBubble.getGraph();
+
+        Node<Point> startNode = mapToNearestNode(entity.getCenter(), graph);
+        Node<Point> endNode = mapToNearestNode(end, graph);
+
+        return graph.applyAStar(startNode, endNode, CollisionManager::euclideanHeuristic);
+    }
+
+    private static Node<Point> mapToNearestNode(Point point, Graph<Point> graph){
+        Node<Point> nearest = null;
+        int distance = Integer.MAX_VALUE;
+
+        for (Node<Point> node : graph.getNodes()){
+            if (euclideanHeuristic(node.getNodeID(), point) < distance){
+                nearest = node;
+            }
+        }
+
+        return nearest;
+    }
+
+    public static int euclideanHeuristic(Point point, Point point1){
+        return (int) new Vector(point, point1).getLength();
     }
 
     private static boolean collisionCheckRay(Collidable collidable, Vector ray){

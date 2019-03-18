@@ -133,6 +133,15 @@ public class LevelState {
         aiManager.removeAI(aiEntity);
     }
 
+    public List<Collidable> getAvoidables(){
+        List<Collidable> collidables = new ArrayList<>(aliveAIEntities);
+        collidables.add(map.getPlayer());
+        collidables.addAll(explosions);
+        collidables.addAll(bullets);
+
+        return collidables;
+    }
+
     public List<Collidable> getNonStaticCollidables(){
         List<Collidable> collidables = new ArrayList<>(aliveAIEntities);
         collidables.add(map.getPlayer());

@@ -36,9 +36,9 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     private List<Key> keys;
 
     public Player(String name, Point center, int size, float maxSpeed, int upperTriColor, int lowerTriColor, int initialHealth) {
-        super(name, center, maxSpeed);
+        super(name, center, size, maxSpeed);
 
-        float width = size * 0.9f;
+        float width = size;
 
         List<Vector> vertices = Polygon.createTriangle(center, width, size * 0.75f);
 

@@ -25,7 +25,7 @@ public class Core extends AIEntity implements Damageable {
     private int width;
 
     public Core(String name, Point center, int size) {
-        super(name, center, 0);
+        super(name, center, size, 0);
         health = 500;
 
         this.width = size;
@@ -57,6 +57,11 @@ public class Core extends AIEntity implements Damageable {
         }
 
         return core;
+    }
+
+    @Override
+    public Point getFront() {
+        return outerShape.getVertices()[0];
     }
 
     @Override

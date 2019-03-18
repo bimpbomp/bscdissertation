@@ -1,21 +1,18 @@
 package bham.student.txm683.heartbreaker.utils;
 
 import android.util.Log;
-import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
-import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
-import bham.student.txm683.heartbreaker.utils.graph.Edge;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
-import static bham.student.txm683.heartbreaker.ai.behaviours.Status.FAILURE;
-import static bham.student.txm683.heartbreaker.ai.behaviours.Status.SUCCESS;
 
 public class AStar {
 
@@ -24,16 +21,6 @@ public class AStar {
 
     private Map<Integer, MeshPolygon> meshPolygonMap;
     private Graph<Integer> meshGraph;
-
-    //creates a priority queue based on a Tile's fCost (Lowest cost at head)
-    private PriorityQueue<Pair<Node<Integer>, Integer>> openSet;
-
-    //each key is the tile coordinate of a tile. It's value is the gcost spent to get to that tile from the start
-    private Map<Node<Integer>, Integer> costSoFar;
-
-    //each key is the tile coordinate of a tile, it's value is the 'parent' of this tile.
-    //i.e. the tile that comes before the key tile in the path
-    private Map<Node<Integer>, Node<Integer>> cameFrom;
 
     private List<Point> waypointPath;
 
@@ -60,20 +47,10 @@ public class AStar {
 
         this.waypointPath = new ArrayList<>();
 
-        openSet = new PriorityQueue<>(10, (a, b) -> {
-            if (a.second < b.second)
-                return -1;
-            else if (a.second.equals(b.second))
-                return 0;
-            return 1; });
-
         reset();
     }
 
     private void reset(){
-        this.openSet.clear();
-        this.cameFrom = new HashMap<>();
-        this.costSoFar = new HashMap<>();
         this.waypointPath = new ArrayList<>();
     }
 
@@ -85,14 +62,7 @@ public class AStar {
             return false;
         }
 
-        Status PathFindingStatus = applyAStar();
-
-        Integer[] roughPath;
-
-        if (PathFindingStatus == SUCCESS)
-            roughPath = PathFinding.tracePath(PathFinding.formPathStack(cameFrom, targetNode));
-        else
-            roughPath = new Integer[0];
+        Integer[] roughPath  = meshGraph.applyAStar(startNode, targetNode, this::calculateEuclideanHeuristic).toArray(new Integer[0]);
 
         StringBuilder stringBuilder = new StringBuilder();
         StringBuilder sb2 = new StringBuilder();
@@ -134,8 +104,6 @@ public class AStar {
             stringBuilder.append("NO NODES IN PATH");
         }
 
-        Log.d("ASTAR", "status: " + PathFindingStatus + ", nodes: " + stringBuilder.toString());
-
         if (waypointPath.size() > 0 ){
             waypointPath.add(targetPoint);
             Log.d("ASTAR", sb2.toString());
@@ -146,7 +114,7 @@ public class AStar {
         return false;
     }
 
-    private Status applyAStar(){
+    /*private Status applyAStar(){
 
         //initialise sets by adding the start tile with 0 costs
         openSet.add(new Pair<>(startNode, 0));
@@ -196,7 +164,7 @@ public class AStar {
             }
         }
         return FAILURE;
-    }
+    }*/
 
     private int calculateEuclideanHeuristic(int currentId, int neighbourId){
         MeshPolygon currentMesh = meshPolygonMap.get(currentId);
