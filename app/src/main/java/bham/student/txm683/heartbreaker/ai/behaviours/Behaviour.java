@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.ai.behaviours;
 
+import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
@@ -14,8 +15,8 @@ import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 
@@ -40,17 +41,49 @@ public class Behaviour {
     }
 
     public static BNode walkToRandomMeshBehaviour(){
-        BNode randomMesh = new BNode() {
+        BNode patrol = new BNode() {
+
+            List<Integer> patrolPath;
+
+            @Override
+            public void construct() {
+                super.construct();
+                patrolPath = new ArrayList<>();
+                patrolPath.addAll(Arrays.asList(4, 19, 55, 34, 56));
+            }
+
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(LEVEL_STATE)){
+                if (context.containsKeys(LEVEL_STATE, CONTROLLED_ENTITY)){
                     LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
 
-                    List<Integer> keySet = new ArrayList<>(levelState.getRootMeshPolygons().keySet());
+                    if (!context.containsVariables("patrol")){
+                        context.addVariable("patrol", 0);
+                    }
 
-                    Random r = new Random();
+                    int patrolIdx = (int) context.getVariable("patrol");
+                    Point point = levelState.getRootMeshPolygons().get(patrolPath.get(patrolIdx)).getCenter();
 
-                    context.addPair(MOVE_TO, levelState.getRootMeshPolygons().get(keySet.get(r.nextInt(keySet.size()))).getCenter());
+                    float distance = new Vector(controlled.getFront(), point).getLength();
+
+                    if (distance < 70){
+                        Log.d("AVOID", "arrived at: " + patrolPath.get(patrolIdx));
+                        patrolIdx++;
+
+                        if (patrolIdx >= patrolPath.size()){
+                            patrolIdx = 0;
+                        }
+                    } else {
+                        Log.d("AVOID", "not arrived to patrol point in mesh " + patrolPath.get(patrolIdx) + " yet, " +
+                                "distance to go: " + distance);
+                    }
+
+                    context.addVariable("patrol", patrolIdx);
+
+                    Log.d("AVOID", "heading to: " + patrolPath.get(patrolIdx));
+
+                    context.addPair(MOVE_TO, point);
 
                     return Status.SUCCESS;
                 }
@@ -58,10 +91,10 @@ public class Behaviour {
             }
         };
 
-        return new Sequence(
-                randomMesh,
+        return new ForgetfulSequence(
+                patrol,
                 Tasks.plotPath(),
-                followPathBehaviour(),
+                Tasks.followPath(),
                 Tasks.courseCorrect()
         );
     }

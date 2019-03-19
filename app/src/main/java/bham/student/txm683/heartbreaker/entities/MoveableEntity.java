@@ -1,9 +1,13 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.util.Log;
+import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class MoveableEntity extends Entity {
     private Vector requestedMovementVector;
@@ -17,6 +21,8 @@ public abstract class MoveableEntity extends Entity {
 
     private int maxDimension;
 
+    private List<Vector> extraForces;
+
     public MoveableEntity(String name, Point spawn, int maxDimension, float maxSpeed){
         super(name);
 
@@ -29,7 +35,11 @@ public abstract class MoveableEntity extends Entity {
         this.spawn = spawn;
 
         this.maxDimension = maxDimension;
+
+        this.extraForces = new ArrayList<>();
     }
+
+    public abstract Vector getForwardUnitVector();
 
     public int getMaxDimension() {
         return maxDimension;
@@ -74,29 +84,41 @@ public abstract class MoveableEntity extends Entity {
         return velocity;
     }
 
+    public void addForce(Vector force){
+        this.extraForces.add(force);
+    }
+
     protected void move(float secondsSinceLastGameTick, Shape shape, float rotationalDamping){
         if (velocity.getLength() < 5f)
             velocity = Vector.ZERO_VECTOR;
 
-        if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR)) {
-            Vector movementForce = getRequestedMovementVector().sMult(100);
+        if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR) || this instanceof AIEntity) {
+            Vector movementForce = Vector.ZERO_VECTOR;
 
-            float dot = 0f;
+            if (!(this instanceof AIEntity))
+                movementForce = getRequestedMovementVector().sMult(200);
 
-            dot = velocity.getUnitVector().dot(movementForce.getUnitVector());
+            float dot = velocity.getUnitVector().dot(movementForce.getUnitVector());
 
             float angle = (float) Math.acos(Math.min(dot, 1f));
 
-            Log.d("MOVEMENT", "dot: " + dot + "angle: " + angle + " prop: " + (angle/ (float) Math.PI));
-            Log.d("MOVEMENT:", "vel: " + velocity.relativeToString() + " move: " + movementForce.relativeToString());
+            Log.d("MOVEMENT", getName() + ": dot: " + dot + " angle: " + angle + " prop: " + (angle/ (float) Math.PI));
+            Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " move: " + movementForce.relativeToString());
 
-            if (angle > 5)
+            if (angle > 0.175f)
                 movementForce = movementForce.sMult(angle/ (float) Math.PI);
+
+            for (Vector force : extraForces){
+                Log.d("MOVEMENT", getName() + " extra force: " + force.relativeToString());
+                movementForce = movementForce.vAdd(force);
+            }
+            extraForces.clear();
 
             Vector acc = movementForce;
 
-            if (acc.getLength() > 300){
-                acc = acc.setLength(300);
+            int maxAcc = 300;
+            if (acc.getLength() > maxAcc){
+                acc = acc.setLength(maxAcc);
             }
 
             velocity = velocity.vAdd(acc);

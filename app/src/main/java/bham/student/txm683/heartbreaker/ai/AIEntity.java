@@ -45,8 +45,6 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         return context;
     }
 
-    public abstract Vector getForwardUnitVector();
-
     public abstract void rotate(Vector rotationVector);
 
     public abstract void rotateBy(float angle);

@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
+import bham.student.txm683.heartbreaker.ai.HexBubble;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
@@ -35,8 +36,12 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     private List<Key> keys;
 
+    private HexBubble hexBubble;
+
     public Player(String name, Point center, int size, float maxSpeed, int upperTriColor, int lowerTriColor, int initialHealth) {
         super(name, center, size, maxSpeed);
+
+        hexBubble = null;
 
         float width = size;
 
@@ -62,6 +67,11 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     public Player(Point center){
         this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.UPPER_PLAYER_COLOR, 100000);
+    }
+
+    @Override
+    public Vector getForwardUnitVector() {
+        return shape.getForwardUnitVector();
     }
 
     public static Player build(JSONObject jsonObject, int tileSize) throws JSONException {
@@ -125,55 +135,6 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     public void tick(float secondsSinceLastGameTick) {
         move(secondsSinceLastGameTick, shape, 1);
         rotate(secondsSinceLastGameTick, shape, 1);
-
-        /*if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR)) {
-            Vector movementForce = getRequestedMovementVector().sMult(4);
-
-            float dot = movementForce.dot(shape.getForwardUnitVector());
-
-            movementForce = movementForce.sMult((float) Math.pow(dot, 2));
-
-            Vector acc = movementForce;
-
-            velocity = velocity.vAdd(acc);
-
-            float max = getMaxSpeed();
-
-            if (velocity.getLength() > max)
-                velocity = velocity.setLength(max);
-
-            *//*Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " +
-                    acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " +
-                    getRequestedMovementVector().relativeToString() + " dot: " + dot);*//*
-
-            shape.translateShape(velocity.sMult(secondsSinceLastGameTick));
-
-        } else {
-            velocity = velocity.sMult(0.25f);
-
-            shape.translateShape(velocity.sMult(secondsSinceLastGameTick));
-        }
-
-        Vector force;
-        if (!getRotationVector().equals(Vector.ZERO_VECTOR)){
-            force = getRotationVector();
-
-        } else
-            force = getRequestedMovementVector();
-
-        if (!force.equals(Vector.ZERO_VECTOR)) {
-            Vector momArm = new Vector(getCenter(), getCenter().add(shape.getForwardUnitVector().sMult(10f).getRelativeToTailPoint()));
-            Vector parCom = momArm.sMult(force.dot(momArm) / momArm.getLength());
-
-            Vector angF = force.vSub(parCom);
-
-            float angularAcc = momArm.det(angF);
-
-            float angularVelocity = angularAcc * secondsSinceLastGameTick;
-
-            shape.rotateBy(angularVelocity);
-        }*/
-
     }
 
     @Override
@@ -210,12 +171,18 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
-        //shape.setColor(primaryWeapon.getSymbolisingColor());
+
+        if (hexBubble != null)
+            hexBubble.draw(canvas, renderOffset);
 
         shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
+    }
+
+    public void setHexBubble(HexBubble hexBubble) {
+        this.hexBubble = hexBubble;
     }
 
     public Point getFront(){

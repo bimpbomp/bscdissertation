@@ -92,37 +92,51 @@ public class Tasks {
             public Status process(BContext context) {
 
 
-                if (context.containsKeys(CONTROLLED_ENTITY, COLLISION_MANAGER) && context.containsVariables("course_correct:heading")){
+                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE) && context.containsVariables("course_correct:heading")){
 
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
 
                     Point heading = (Point) context.getVariable("course_correct:heading");
 
-                    CollisionManager collisionManager = (CollisionManager) context.getValue(COLLISION_MANAGER);
+                    CollisionManager collisionManager = ((LevelState) context.getValue(LEVEL_STATE)).getCollisionManager();
 
-                    List<Point> pathAroundObstacle = collisionManager.getPathAroundObstacle(controlled, heading);
+                    Vector steeringAxis = collisionManager.getPathAroundObstacle(controlled, heading);
+
+                    if (!steeringAxis.equals(Vector.ZERO_VECTOR)){
+                        //correction needs to take place
+
+
+                        controlled.addForce(steeringAxis.sMult(100));
+                    } else {
+                        Log.d("AVOID", "no obstacles in way");
+                    }
+
+                    /*List<Point> pathAroundObstacle = collisionManager.getPathAroundObstacle(controlled, heading);
 
                     if (pathAroundObstacle == null || pathAroundObstacle.size() == 0){
+                        Log.d("AVOID", "no obstacles in way");
                         setStatus(SUCCESS);
                         return SUCCESS;
                     }
 
                     Point target = new Point();
                     for (Point point : pathAroundObstacle){
-                        if (CollisionManager.euclideanHeuristic(controlled.getFront(), point) > 50){
+                        if (CollisionManager.euclideanHeuristic(controlled.getFront(), point) > 70){
+
                             target = point;
                             break;
                         }
-                    }
+                    }*/
 
-                    Vector v = new Vector(controlled.getCenter(), target);
+                    /*Vector v = new Vector(controlled.getCenter(), target);
 
                     controlled.setRotationVector(v);
-                    controlled.setRequestedMovementVector(v);
+                    controlled.setRequestedMovementVector(v);*/
 
                     setStatus(RUNNING);
                     return RUNNING;
                 }
+                Log.d("AVOID", "FAILED");
 
                 setStatus(FAILURE);
                 return FAILURE;
@@ -219,11 +233,14 @@ public class Tasks {
 
                     context.addVariable("course_correct:heading", currentPoint);
 
-                    aiEntity.setRequestedMovementVector(closenessV);
+                    aiEntity.addForce(closenessV.sMult(100));
                     aiEntity.setRotationVector(closenessV);
 
-                    setStatus(RUNNING);
-                    return RUNNING;
+                    /*aiEntity.setRequestedMovementVector(closenessV);
+                    aiEntity.setRotationVector(closenessV);*/
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
 
                 }
                 Log.d("TASK followPath", "task failed...");

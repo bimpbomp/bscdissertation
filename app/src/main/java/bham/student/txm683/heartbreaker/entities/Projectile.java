@@ -70,6 +70,11 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
         lifeInTicks--;
     }
 
+    @Override
+    public Vector getForwardUnitVector() {
+        return Vector.ZERO_VECTOR;
+    }
+
     private Point interpolateCenter(float secondsSinceLastGameTick){
         return new Vector(currentCenter, nextTickCenter).sMult(secondsSinceLastGameTick).getHead();
     }

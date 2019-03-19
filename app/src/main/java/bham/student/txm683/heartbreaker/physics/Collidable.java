@@ -19,4 +19,6 @@ public interface Collidable {
 
     Point getCenter();
     void setCenter(Point newCenter);
+
+    //Vector getForwardUnitVector();
 }

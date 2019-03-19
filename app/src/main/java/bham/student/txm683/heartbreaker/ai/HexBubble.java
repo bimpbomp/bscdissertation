@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.ai;
 
+import android.graphics.Canvas;
 import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Hexagon;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
@@ -27,6 +28,10 @@ public class HexBubble {
         }
 
         addConnection(vertices[0], vertices[vertices.length-1]);
+    }
+
+    public void draw(Canvas canvas, Point renderOffset){
+        hex.draw(canvas, renderOffset, 0, false);
     }
 
     private void addConnection(Point point, Point point1){

@@ -38,25 +38,13 @@ public class MeshPolygon {
         this.area = area;
     }
 
-    public Map<Integer, Line> getEdgesToNeighbours() {
-        return edgesToNeighbours;
-    }
-
-    public Point getPointOnLineToNeighbour(int neighbourId, Point p){
-        if (edgesToNeighbours.containsKey(neighbourId)){
-
-            return edgesToNeighbours.get(neighbourId).projectOnToLine(p);
-        }
-        return new Point();
-    }
-
     public Point getNearestPoint(Point p, int widthOfEntity){
         BoundingBox b = area.getBoundingBox();
         return new Point(mapToRange(p.getX(), widthOfEntity, b.getLeft(), b.getRight()), mapToRange(p.getY(), widthOfEntity, b.getTop(), b.getBottom()));
     }
 
     private float mapToRange(float x, int width, float min, float max){
-        width = width / 2;
+        //width = width / 2;
 
         if (x-width <= min)
             return min+width;

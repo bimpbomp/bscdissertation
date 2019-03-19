@@ -12,6 +12,7 @@ import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.Collidable;
+import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
@@ -54,6 +55,8 @@ public class LevelState {
 
     private LevelEnder levelEnder;
 
+    private CollisionManager collisionManager;
+
     public LevelState(Map map){
         this.map = map;
 
@@ -84,6 +87,14 @@ public class LevelState {
         }
 
         levelEnder = new LevelEnder();
+    }
+
+    public void setCollisionManager(CollisionManager collisionManager) {
+        this.collisionManager = collisionManager;
+    }
+
+    public CollisionManager getCollisionManager() {
+        return collisionManager;
     }
 
     public Portal getPortal() {

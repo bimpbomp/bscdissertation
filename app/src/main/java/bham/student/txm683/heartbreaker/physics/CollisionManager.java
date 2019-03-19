@@ -1,15 +1,16 @@
 package bham.student.txm683.heartbreaker.physics;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Core;
-import bham.student.txm683.heartbreaker.ai.HexBubble;
 import bham.student.txm683.heartbreaker.entities.*;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
@@ -213,7 +214,7 @@ public class CollisionManager {
                                     resolveProjectileHit((Projectile) nonSolidEntity, solidEntity);
                                 }
                             } else if (nonSolidEntity instanceof DoorField){
-                                pushVector = collisionCheckTwoPolygons(nonSolidEntity, solidEntity);
+                                pushVector = collisionCheckTwoPolygonalCollidables(nonSolidEntity, solidEntity);
                                 //Log.d("hb::SolidNonSolid", "solid: " + solidEntity.getName() + ", and nonSolid: " + nonSolidEntity.getName() + " with owner " + ((DoorField) nonSolidEntity).getOwner());
                                 //Log.d("hb:: DoorCollision", pushVector.relativeToString());
 
@@ -222,7 +223,7 @@ public class CollisionManager {
                                     resolveDoorFieldActivation((DoorField) nonSolidEntity, solidEntity);
                                 }
                             } else if (nonSolidEntity instanceof Pickup){
-                                pushVector = collisionCheckTwoPolygons(nonSolidEntity, solidEntity);
+                                pushVector = collisionCheckTwoPolygonalCollidables(nonSolidEntity, solidEntity);
 
                                 if (!pushVector.equals(Vector.ZERO_VECTOR)){
                                     //collision occurred
@@ -238,7 +239,7 @@ public class CollisionManager {
 
                         } else {
                             //both collidables are solid
-                            pushVector = collisionCheckTwoPolygons(firstCollidable, secondCollidable);
+                            pushVector = collisionCheckTwoPolygonalCollidables(firstCollidable, secondCollidable);
 
                             if (!pushVector.equals(Vector.ZERO_VECTOR)) {
                                 //collision occurred
@@ -525,17 +526,21 @@ public class CollisionManager {
         }
     }
 
-    public List<SpatialBin> getBinsWithRay(Vector ray){
-
-        return null;
-    }
-
-    public List<Point> getPathAroundObstacle(AIEntity entity, Point end){
-
-        Vector ray = new Vector(entity.getFront(), end);
+    public Vector getPathAroundObstacle(AIEntity entity, Point end){
 
         Collidable closestCollidable = null;
         int smallestDistance = Integer.MAX_VALUE;
+
+        Vector fUnit = entity.getForwardUnitVector();
+        Vector steeringAxis = fUnit.rotateAntiClockwise90();
+
+        float height = 200f;
+        Point center = fUnit.sMult(height).getHead();
+
+        Rectangle rect = new Rectangle(center, entity.getWidth(), height, Color.GRAY);
+        Point[] rectVertices = rect.getVertices();
+
+        Vector pV;
 
         for (Collidable collidable : levelState.getAvoidables()){
 
@@ -546,7 +551,10 @@ public class CollisionManager {
 
                 int distance = euclideanHeuristic(entity.getFront(), collidable.getCenter());
 
-                if (collisionCheckRay(collidable, ray) && distance < smallestDistance){
+                pV = collisionCheckTwoPolygons(collidable.getCollisionVertices(), collidable.getCenter(), collidable.getShapeIdentifier(),
+                        rectVertices, rect.getCenter(), rect.getShapeIdentifier());
+
+                if (!pV.equals(Vector.ZERO_VECTOR) && distance < smallestDistance){
                     smallestDistance = distance;
                     closestCollidable = collidable;
                 }
@@ -554,17 +562,33 @@ public class CollisionManager {
         }
 
         if (closestCollidable == null)
-            return new ArrayList<>();
+            return Vector.ZERO_VECTOR;
 
+        Log.d("AVOID", closestCollidable.getName() + " is in the way");
 
-        HexBubble hexBubble = new HexBubble(closestCollidable.getCenter(), ((MoveableEntity) closestCollidable).getMaxDimension());
+        Vector ray = new Vector(entity.getCenter(), closestCollidable.getCenter()).getUnitVector();
 
-        Graph<Point> graph = hexBubble.getGraph();
+        float det = fUnit.det(ray);
 
-        Node<Point> startNode = mapToNearestNode(entity.getCenter(), graph);
-        Node<Point> endNode = mapToNearestNode(end, graph);
+        if (det < 0) {
+            steeringAxis = steeringAxis.sMult(-1f);
+        }
 
-        return graph.applyAStar(startNode, endNode, CollisionManager::euclideanHeuristic);
+        /*Vector fUnit = ((MoveableEntity) closestCollidable).getForwardUnitVector();
+        Vector steeringAxis = fUnit.rotateAntiClockwise90();
+
+        float height = 200f;
+        Point center = fUnit.sMult(height).getHead();
+
+        Rectangle rect = new Rectangle(center, entity.getWidth(), height, Color.GRAY);
+
+        float det = fUnit.det(ray.getUnitVector());
+
+        if (det < 0) {
+            steeringAxis = steeringAxis.sMult(-1f);
+        }*/
+
+        return steeringAxis;
     }
 
     private static Node<Point> mapToNearestNode(Point point, Graph<Point> graph){
@@ -596,19 +620,25 @@ public class CollisionManager {
 
     //Separating axis theorem for two polygons
     //returns the overlap or the empty vector
-    public static Vector collisionCheckTwoPolygons(Collidable polygon1, Collidable polygon2){
-        Point[] firstEntityVertices = polygon1.getCollisionVertices();
-        Point[] secondEntityVertices = polygon2.getCollisionVertices();
+    public static Vector collisionCheckTwoPolygonalCollidables(Collidable polygon1, Collidable polygon2){
+        return collisionCheckTwoPolygons(polygon1.getCollisionVertices(), polygon1.getCenter(), polygon1.getShapeIdentifier(),
+                polygon2.getCollisionVertices(), polygon2.getCenter(), polygon2.getShapeIdentifier());
+    }
 
-        ArrayList<Vector> edges = new ArrayList<>(getEdges(polygon1.getShapeIdentifier(), firstEntityVertices));
-        edges.addAll(getEdges(polygon2.getShapeIdentifier(), secondEntityVertices));
+    //Separating axis theorem for two polygons
+    //returns the overlap or the empty vector
+    public static Vector collisionCheckTwoPolygons(Point[] firstEntityVertices, Point firstCenter, ShapeIdentifier firstShape,
+                                                   Point[] secondEntityVertices, Point secondCenter, ShapeIdentifier secondShape){
+
+        ArrayList<Vector> edges = new ArrayList<>(getEdges(firstShape, firstEntityVertices));
+        edges.addAll(getEdges(secondShape, secondEntityVertices));
 
         Vector[] orthogonalAxes = getEdgeNormals(edges);
 
         List<Vector> pushVectors = applySAT(orthogonalAxes, firstEntityVertices, secondEntityVertices);
 
         if (pushVectors.size() == orthogonalAxes.length) {
-            return getMinimumPushVector(pushVectors, polygon1.getCenter(), polygon2.getCenter());
+            return getMinimumPushVector(pushVectors, firstCenter, secondCenter);
         }
         return Vector.ZERO_VECTOR;
     }

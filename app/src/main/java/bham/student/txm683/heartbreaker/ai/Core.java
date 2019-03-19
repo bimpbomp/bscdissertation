@@ -66,7 +66,7 @@ public class Core extends AIEntity implements Damageable {
 
     @Override
     public Vector getForwardUnitVector() {
-        return null;
+        return Vector.ZERO_VECTOR;
     }
 
     @Override

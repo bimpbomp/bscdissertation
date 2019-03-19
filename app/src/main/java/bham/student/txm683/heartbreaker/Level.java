@@ -135,6 +135,7 @@ public class Level implements Runnable {
             entityController = new EntityController(this);
             collisionManager = new CollisionManager(levelState);
 
+            levelState.setCollisionManager(collisionManager);
             levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
         }
 
