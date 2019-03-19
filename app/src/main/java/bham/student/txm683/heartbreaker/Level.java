@@ -18,6 +18,7 @@ import bham.student.txm683.heartbreaker.rendering.popups.Popup;
 import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
 import bham.student.txm683.heartbreaker.utils.BenchMarker;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
+import org.json.JSONException;
 
 public class Level implements Runnable {
 
@@ -89,7 +90,7 @@ public class Level implements Runnable {
             Map map;
             try {
                 map = mapLoader.loadMap();
-            } catch (Exception e){
+            } catch (JSONException e){
                 Log.d("EXCEPTION LOADING LEVEL", e.getMessage());
                 levelView.returnToMenu();
                 return;

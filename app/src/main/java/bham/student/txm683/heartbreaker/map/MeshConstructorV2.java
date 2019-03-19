@@ -19,7 +19,8 @@ class MeshConstructorV2 {
     private List<MeshSet> hScan;
     private List<MeshSet> vScan;
 
-    private UniqueID uniqueID;
+    private UniqueID meshSetId;
+    private UniqueID intersectionId;
 
     private enum Scan {
         VERTICAL,
@@ -38,7 +39,8 @@ class MeshConstructorV2 {
         hScan = new ArrayList<>();
         vScan = new ArrayList<>();
 
-        uniqueID = new UniqueID(1);
+        meshSetId = new UniqueID(1);
+        intersectionId = new UniqueID(1);
     }
 
     List<MeshPolygon> getMeshPolygons(int tileSize){
@@ -60,7 +62,7 @@ class MeshConstructorV2 {
      * Assumes that the tileList is properly padded so all columns are aligned
      * @param tileList Grid of integers stating their availability. 0 = free, -1 = wall, MININT = column padding
      */
-    void constructMesh(List<List<Integer>> tileList){
+    void constructMesh(List<List<Integer>> tileList, List<DoorBuilder> doorBuilders){
         this.tileList = tileList;
 
         currentScan = Scan.HORIZONTAL;
@@ -76,6 +78,29 @@ class MeshConstructorV2 {
         intersectScans(hScan, vScan);
 
         meshSetListPrint("MESHPRINT INTERSECTION", meshIntersectionSets);
+
+
+        //make sure doors are in their own set
+        for (DoorBuilder doorBuilder : doorBuilders){
+            Tile doorTile = doorBuilder.getLiesOn();
+
+            MeshSet doorSet = null;
+
+            for (MeshSet meshSet : meshIntersectionSets){
+                List<Tile> containedTiles = meshSet.getContainedTiles();
+
+                if (containedTiles.contains(doorTile) && containedTiles.size() > 1){
+                    meshSet.removeTile(doorTile);
+
+                    doorSet = new MeshSet(intersectionId.id(), doorTile, 0);
+                }
+            }
+
+            if (doorSet != null){
+                meshIntersectionSets.add(doorSet);
+                meshGraph.addNode(doorSet.getId());
+            }
+        }
 
         /*//put any doors into their own set
         for (int i = 0; i < tileList.size(); i++){
@@ -372,7 +397,7 @@ class MeshConstructorV2 {
 
         if (activeMeshSet == null){
             //either previous row didnt have any meshsets or the previous row doesnt have any compatible meshsets
-            activeMeshSet = new MeshSet(uniqueID.id(), startingTile, distanceToWall);
+            activeMeshSet = new MeshSet(meshSetId.id(), startingTile, distanceToWall);
         }
 
         if (!setAlreadyExists) {
@@ -460,14 +485,13 @@ class MeshConstructorV2 {
     }
 
     private void intersectScans(List<MeshSet> scanMesh1, List<MeshSet> scanMesh2){
-        UniqueID meshIdGen = new UniqueID(1);
 
         for (MeshSet meshSet : scanMesh1){
             for (MeshSet secondMeshSet : scanMesh2){
                 List<Tile> intersection = meshSet.intersection(secondMeshSet);
 
                 if (intersection.size() > 0) {
-                    int newId = meshIdGen.id();
+                    int newId = intersectionId.id();
                     meshIntersectionSets.add(new MeshSet(newId, intersection));
                     meshGraph.addNode(newId);
                 }
