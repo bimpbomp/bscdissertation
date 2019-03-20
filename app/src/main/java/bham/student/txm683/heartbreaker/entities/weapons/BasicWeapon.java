@@ -14,10 +14,10 @@ public class BasicWeapon extends Weapon {
     private int bulletLife;
 
     public BasicWeapon(String owner){
-        super(owner, 3, AmmoType.BULLET, speed);
+        super(owner, 25, AmmoType.BULLET, speed);
 
         this.bulletRadius = 20f;
-        this.damage = 10;
+        this.damage = 40;
 
         this.symbolisingColor = Color.MAGENTA;
 

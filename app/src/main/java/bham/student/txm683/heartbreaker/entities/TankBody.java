@@ -3,10 +3,10 @@ package bham.student.txm683.heartbreaker.entities;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.util.Log;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.entities.entityshapes.TankShape;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
@@ -15,25 +15,36 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 
 public class TankBody implements Renderable, Shape {
 
-    private Kite body;
+    private TankShape body;
     private Rectangle turret;
     private Rectangle barrel;
 
     private Vector barrelPosition;
     private float barrelDistance;
 
+    private float lengthToBarrelTip;
+
     public TankBody(Point center, int size, int color){
-        this.body = Kite.constructKite(center, size, color);
 
-        float turretSize = size/4f;
-        this.turret = new Rectangle(center, turretSize, turretSize, ColorScheme.manipulateColor(color, 0.7f));
+        int tw = (int) (size * 0.9f);
+        int bw = (int) (size * 0.75f);
+        int mh = (int) (size * 0.8f);
+        int ph = (int) (size * 0.2f);
 
-        float barrelLength = size/2f;
+        this.body = TankShape.build(center, tw, bw, mh, ph, color);
+
+        float turretSize = size * 0.35f;
+        int turretColor = ColorScheme.manipulateColor(color, 0.7f);
+        this.turret = new Rectangle(center, turretSize, turretSize, turretColor);
+
+        float barrelLength = size/2.5f;
         float barrelWidth = size/6f;
 
         Point barrelCenter = center.add(0, -1 * (barrelLength/2f + turretSize/2f));
         this.barrelPosition = new Vector(center, barrelCenter);
         this.barrelDistance = barrelPosition.getLength();
+
+        this.lengthToBarrelTip = turretSize/2f + barrelLength;
 
         Log.d("TANK", "barrel distance: " + barrelDistance);
 
@@ -112,33 +123,48 @@ public class TankBody implements Renderable, Shape {
     @Override
     public void rotate(float angle) {
         body.rotate(angle);
-        turret.rotate(angle);
+    }
 
-        barrel.rotate(angle);
+    private void rotateBarrel(float angle){
         barrelPosition = barrelPosition.rotate((float) Math.cos(angle), (float) Math.sin(angle));
 
         Vector v = turret.getForwardUnitVector().setLength(barrelDistance);
 
         barrel.translate(v.getHead());
-
-        Log.d("TANK", "v head: " + v.getHead());
     }
 
-    @Override
-    public void rotate(Vector v) {
-        body.rotate(v);
+    public void rotateTurret(float angle){
+        turret.rotate(angle);
+
+        barrel.rotate(angle);
+
+        rotateBarrel(angle);
+    }
+
+    public void rotateTurret(Vector v){
         turret.rotate(v);
 
         barrel.rotate(v);
 
         float angle = Vector.calculateAngleBetweenVectors(barrelPosition, v);
 
-        barrelPosition = barrelPosition.rotate((float) Math.cos(angle), (float) Math.sin(angle));
+        rotateBarrel(angle);
+    }
 
-        Vector a = turret.getForwardUnitVector().setLength(barrelDistance);
+    public Vector getTurretFUnit(){
+        return new Vector(turret.getCenter(), barrel.getCenter()).getUnitVector();
+    }
 
+    public Vector getShootingVector(){
+        Vector v = getTurretFUnit().setLength(lengthToBarrelTip);
+        Log.d("TANK", "shootvector: " + v + ", turretcenter: "  + turret.getCenter() );
+        return v;
+    }
 
-        barrel.translate(a.getHead());
+    @Override
+    public void rotate(Vector v) {
+        body.rotate(v);
+
 
         Log.d("TANK", "a head: " + v.getHead());
     }

@@ -77,7 +77,9 @@ public abstract class MoveableEntity extends Entity {
 
     public void tick(float secondsSinceLastGameTick){
         applyMovementForces(secondsSinceLastGameTick);
-        applyRotationalForces(secondsSinceLastGameTick);
+
+        if (this instanceof AIEntity)
+            applyRotationalForces(secondsSinceLastGameTick);
 
         extraForces.clear();
         rotationForces.clear();
@@ -96,10 +98,12 @@ public abstract class MoveableEntity extends Entity {
         return requestedMovementVector;
     }
 
+    @Override
     public void setVelocity(Vector v){
         this.velocity = v;
     }
 
+    @Override
     public Vector getVelocity(){
         return velocity;
     }
@@ -163,46 +167,70 @@ public abstract class MoveableEntity extends Entity {
         Vector v = velocity.sMult(secondsSinceLastGameTick);
 
         shape.translate(v);
+
+        if (this instanceof Player){
+
+            //rotate body
+            float angularVelocity = getAngularVelocity(v.getUnitVector(), secondsSinceLastGameTick, shape.getForwardUnitVector());
+
+            float maxAngularVel = 1f;
+
+            if (angularVelocity > maxAngularVel)
+                angularVelocity = maxAngularVel;
+
+            shape.rotate(angularVelocity);
+
+            //rotate turret
+            Vector turretFUnit = ((TankBody) shape).getTurretFUnit();
+
+            if (getRotationVector().equals(Vector.ZERO_VECTOR))
+
+                ((TankBody) shape).rotateTurret(angularVelocity);
+            else {
+                angularVelocity = getAngularVelocity(getRotationVector(), secondsSinceLastGameTick,
+                        turretFUnit);
+
+                if (angularVelocity > maxAngularVel)
+                    angularVelocity = maxAngularVel;
+
+                ((TankBody) shape).rotateTurret(angularVelocity);
+            }
+        }
     }
 
     protected void applyRotationalForces(float secondsSinceLastGameTick){
         Vector force = Vector.ZERO_VECTOR;
-        if (!getRotationVector().equals(Vector.ZERO_VECTOR)){
+        if (!getRotationVector().equals(Vector.ZERO_VECTOR)) {
             force = getRotationVector();
-
-        } else
-            force = getRequestedMovementVector();
+        }
 
         if (this instanceof AIEntity) {
-            /*for (Vector extraForce : rotationForces) {
-                Log.d("MOVEMENT", "rotation: " + getName() + " extra force: " + extraForce.relativeToString());
-                force = force.vAdd(extraForce);
-            }
-            Log.d("MOVEMENT", "rotation: " + getName() + " resultant force: " + force.relativeToString());
-
-            force = force.getUnitVector();*/
 
             force = velocity.getUnitVector();
         }
 
         if (!force.equals(Vector.ZERO_VECTOR)) {
-            /*float dot = Math.min(shape.getForwardUnitVector().det(force.getUnitVector()), 1f);
-            float det = shape.getForwardUnitVector().det(force.getUnitVector());*/
 
-            Vector momArm = new Vector(getCenter(), getCenter().add(shape.getForwardUnitVector().sMult(20f).getRelativeToTailPoint()));
-
-            //momArm = momArm.applyRotationalForces(dot, det);
-
-            Vector parCom = momArm.sMult(force.dot(momArm) / momArm.getLength());
-
-            Vector angF = force.vSub(parCom);
-
-            float angularAcc = momArm.det(angF);
-
-            float angularVelocity = angularAcc * secondsSinceLastGameTick;
-
+            float angularVelocity = getAngularVelocity(force, secondsSinceLastGameTick, shape.getForwardUnitVector());
             shape.rotate(angularVelocity);
         }
+    }
+
+    private float getAngularVelocity(Vector force, float secondsSinceLastGameTick, Vector forwardUnitVector){
+        /*float dot = Math.min(shape.getForwardUnitVector().det(force.getUnitVector()), 1f);
+            float det = shape.getForwardUnitVector().det(force.getUnitVector());*/
+
+        Vector momArm = new Vector(getCenter(), getCenter().add(forwardUnitVector.sMult(20f).getRelativeToTailPoint()));
+
+        //momArm = momArm.applyRotationalForces(dot, det);
+
+        Vector parCom = momArm.sMult(force.dot(momArm) / momArm.getLength());
+
+        Vector angF = force.vSub(parCom);
+
+        float angularAcc = momArm.det(angF);
+
+        return angularAcc * secondsSinceLastGameTick;
     }
 
     @Override

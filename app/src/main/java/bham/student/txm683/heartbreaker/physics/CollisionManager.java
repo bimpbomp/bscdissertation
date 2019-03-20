@@ -211,7 +211,7 @@ public class CollisionManager {
 
                                 if (!pushVector.equals(Vector.ZERO_VECTOR)){
                                     //collision occurred
-                                    resolveProjectileHit((Projectile) nonSolidEntity, solidEntity);
+                                    resolveProjectileHit((Projectile) nonSolidEntity, solidEntity, pushVector);
                                 }
                             } else if (nonSolidEntity instanceof DoorField){
                                 pushVector = collisionCheckTwoPolygonalCollidables(nonSolidEntity, solidEntity);
@@ -313,7 +313,7 @@ public class CollisionManager {
         }
     }
 
-    private void resolveProjectileHit(Projectile projectile, Collidable collidable){
+    private void resolveProjectileHit(Projectile projectile, Collidable collidable, Vector pV){
         //if the projectile damages on contact and the collidable can take damage, damage it
 
         if (!(projectile instanceof Bomb)) {
@@ -331,8 +331,12 @@ public class CollisionManager {
                 }
             }
 
-            if (!projectile.getOwner().equals(collidable.getName()))
+            if (!projectile.getOwner().equals(collidable.getName())) {
                 levelState.getBullets().remove(projectile);
+
+                /*moveEntityCenter(projectile, pV.getRelativeToTailPoint());
+                projectile.setRequestedMovementVector(reflectVectorAcrossPushVector(projectile.getRequestedMovementVector(), pV));*/
+            }
 
 
         }
@@ -362,19 +366,14 @@ public class CollisionManager {
     }
 
     private void resolveSolidsCollision(Collidable firstCollidable, Collidable secondCollidable, Vector pushVector, List<Collidable> bin){
-        //true if the entity doesnt collide with any statics after applying
-        //pushVector.
-        boolean firstAbleToMove;
-        boolean secondAbleToMove;
-
         Point newCenter;
-
-        //amount added to the entity's center to allow reverting to previous state
-        Point firstAmountMoved;
-        Point secondAmountMoved;
 
         //both entities are solid and the collision needs to be resolved.
         if (firstCollidable.canMove() && secondCollidable.canMove()) {
+
+            //amount added to the entity's center to allow reverting to previous state
+            Point firstAmountMoved;
+            Point secondAmountMoved;
 
             //update position of first entity with half of the push vector
             firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
@@ -387,49 +386,71 @@ public class CollisionManager {
             newCenter = secondCollidable.getCenter().add(secondAmountMoved);
             secondCollidable.setCenter(newCenter);
 
-            changeVelocity(firstCollidable, pushVector.sMult(0.5f));
-            changeVelocity(secondCollidable, pushVector.sMult(0.5f));
+            restitutionCollision((Entity) firstCollidable, (Entity) secondCollidable, 0.2f);
 
-        } else if (firstCollidable.canMove()) {
+        } else {
 
-            //if only the first entity can tick (is not static), resolution is to add all push
-            //vector to first entity
-            //collision is resolved, tick to next entity pair
-            firstAmountMoved = pushVector.getRelativeToTailPoint();
-            newCenter = firstCollidable.getCenter().add(firstAmountMoved);
-            firstCollidable.setCenter(newCenter);
 
-            changeVelocity(firstCollidable, pushVector);
+            MoveableEntity moveableCollidable;
 
-        } else if (secondCollidable.canMove()) {
-            //if only the second entity can tick (is not static), resolution is to add all push
-            //vector to second entity
-            //collision is resolved, tick to next entity pair
-            secondAmountMoved = pushVector.sMult(-1).getRelativeToTailPoint();
-            newCenter = secondCollidable.getCenter().add(secondAmountMoved);
-            secondCollidable.setCenter(newCenter);
+            Collidable staticCollidable;
 
-            changeVelocity(secondCollidable, pushVector);
+            if (firstCollidable.canMove()) {
+                moveableCollidable = (MoveableEntity) firstCollidable;
+                staticCollidable = secondCollidable;
+
+            } else {
+                moveableCollidable = (MoveableEntity) secondCollidable;
+                staticCollidable = firstCollidable;
+
+                pushVector = pushVector.sMult(-1f);
+            }
+
+            Point amountToMove = pushVector.getRelativeToTailPoint();
+            newCenter = moveableCollidable.getCenter().add(amountToMove);
+            moveableCollidable.setCenter(newCenter);
+
+            //bigger the angle, smaller the force
+            float angle = Vector.calculateAngleBetweenVectors(moveableCollidable.getVelocity().sMult(-1), pushVector);
+            float prop = 1 - (angle / (float)Math.PI);
+
+            Log.d("TANK", "prop: " + prop + "push vector: " + pushVector.relativeToString());
+
+            moveableCollidable.addForce(pushVector.setLength(100).sMult(prop));
+
         }
     }
 
-    private void changeVelocity(Collidable collidable, Vector pushVector){
+    private void restitutionCollision(Entity a, Entity b, float cor){
+        Vector ua = a.getVelocity();
+        Vector ub = b.getVelocity();
+
+        Vector uaAddub = ua.vAdd(ub);
+
+        Vector va = uaAddub.vAdd(ub.vSub(ua)).sMult(0.5f);
+        Vector vb = uaAddub.vAdd(ua.vSub(ub)).sMult(0.5f);
+
+        a.setVelocity(va);
+        b.setVelocity(vb);
+    }
+
+    private void changeVelocityForBounce(Collidable collidable, Vector pushVector){
 
         if (collidable instanceof MoveableEntity){
             Vector normal = pushVector.rotateAntiClockwise90().getUnitVector();
             Vector vel = ((MoveableEntity) collidable).getVelocity();
 
-            float dot = (normal.dot(vel));
+            float dot = pushVector.dot(vel);
+            Vector newV = pushVector.sMult(-1 * dot * 0.5f);
 
-            float velLength = vel.getLength();
-
-            float coeff = dot/(velLength * velLength);
-
-            Vector newV = normal.sMult(dot);
+            Vector v = reflectVectorAcrossPushVector(vel, pushVector);
 
             Log.d("VEL", "dot: " + dot + ", vel: " + vel.relativeToString() + ", norm: " + normal.relativeToString() + ", newV: " + newV.relativeToString());
 
-            ((MoveableEntity) collidable).setVelocity(newV);
+            //((MoveableEntity) collidable).setVelocity(newV);
+
+            ((MoveableEntity) collidable).setVelocity(v);
+            //((MoveableEntity) collidable).addForce(v);
         }
     }
 
@@ -648,8 +669,10 @@ public class CollisionManager {
     }
 
     private static Vector reflectVectorAcrossPushVector(Vector initialVector, Vector pushVector){
-        float angle = Vector.calculateAngleBetweenVectors(pushVector, initialVector);
-        return initialVector.rotate((float)Math.cos(angle), (float) Math.cos(angle)).sMult(-1f);
+        pushVector = pushVector.getUnitVector();
+        float dot = pushVector.dot(initialVector);
+
+        return initialVector.vSub(pushVector.sMult(dot*2));
     }
 
     private static Point[] getCircleVerticesForAxis(Vector axis, Point center, float radius){

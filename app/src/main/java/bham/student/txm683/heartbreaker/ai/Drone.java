@@ -6,8 +6,7 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.entities.Shooter;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
+import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
@@ -18,8 +17,6 @@ import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.List;
 
 public class Drone extends AIEntity implements Shooter {
     private int health;
@@ -52,14 +49,16 @@ public class Drone extends AIEntity implements Shooter {
     }
 
     private static Shape constructShape(Point center, int size, int colorValue){
-        List<Vector> vertices = Polygon.createTriangle(center, size*0.9f, size * 0.75f);
+        /*List<Vector> vertices = Polygon.createTriangle(center, size*0.9f, size * 0.75f);
 
         return new Kite(center, new Vector[]{
                 vertices.get(0),
                 vertices.get(1),
                 new Vector(center, center.add(new Point(0, 0.5f * size))),
                 vertices.get(2)
-        }, colorValue, colorValue);
+        }, colorValue, colorValue);*/
+
+        return new TankBody(center, size, colorValue);
     }
 
     public static Drone build(JSONObject jsonObject, int tileSize) throws JSONException {

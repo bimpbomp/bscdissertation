@@ -35,12 +35,10 @@ public class Kite extends Polygon implements Renderable {
         this.paint.setAntiAlias(true);
     }
 
-    public Kite(Point center, Vector[] vertexVectors, int color) throws IllegalArgumentException{
-        this(center, vertexVectors, color, color);
-    }
-
     public static Kite constructKite(Point center, int size, int color){
         List<Vector> vertices = Polygon.createTriangle(center, size, size * 0.75f);
+
+        center = new Point(center.getX(), vertices.get(1).getHead().getY());
 
         return new Kite(center, new Vector[]{
                 vertices.get(0),
@@ -67,13 +65,8 @@ public class Kite extends Polygon implements Renderable {
         * also ignoring the renderEntityName boolean as it doesn't have a name
         * */
 
-        //draw upper triangle
         paint.setColor(currentUpperTriColor);
-        canvas.drawPath(getPathWithPoints(offsetVertices(upperTriangleVertices(), renderOffset)), paint);
-
-        //draw lower triangle
-        paint.setColor(currentLowerTriColor);
-        canvas.drawPath(getPathWithPoints(offsetVertices(lowerTriangleVertices(), renderOffset)), paint);
+        canvas.drawPath(getPathWithPoints(getVertices(renderOffset)), paint);
     }
 
     @Override

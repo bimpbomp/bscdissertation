@@ -133,6 +133,7 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
     @Override
     public void setCenter(Point newCenter) {
         this.currentCenter = newCenter;
+        this.nextTickCenter = newCenter;
     }
 
     public int getDamage() {

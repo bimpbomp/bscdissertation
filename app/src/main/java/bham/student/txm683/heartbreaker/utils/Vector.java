@@ -193,6 +193,9 @@ public class Vector implements SaveableState {
      * @return The angle between the given vectors
      */
     public static float calculateAngleBetweenVectors(Vector primaryVector, Vector movementVector){
+        primaryVector = primaryVector.getUnitVector();
+        movementVector = movementVector.getUnitVector();
+
         float dot = primaryVector.dot(movementVector);
         float det = primaryVector.det(movementVector);
 
@@ -298,12 +301,4 @@ public class Vector implements SaveableState {
         jsonObject.put("tail", tail.getStateObject());
         return jsonObject;
     }
-
-    /*public static Point[] getVertices(Vector[] vertexVectors) {
-        Point[] vertices = new Point[vertexVectors.length];
-        for (int i = 0; i < vertexVectors.length; i++){
-            vertices[i] = vertexVectors[i].getHead();
-        }
-        return vertices;
-    }*/
 }

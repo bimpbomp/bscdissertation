@@ -21,6 +21,15 @@ public class ColorScheme {
         return Color.rgb(random.nextInt(256),random.nextInt(256),random.nextInt(256));
     }
 
+    public static int randomGreen(){
+        return Color.rgb(0, 77 + random.nextInt(79), 0);
+    }
+
+    public static int randomGrey(){
+        int colorV = random.nextInt(256);
+        return Color.rgb(colorV, colorV, colorV);
+    }
+
     //Credit: Gary McGowan: https://stackoverflow.com/questions/33072365/how-to-darken-a-given-color-int
     public static int manipulateColor(int color, float factor) {
         int a = Color.alpha(color);

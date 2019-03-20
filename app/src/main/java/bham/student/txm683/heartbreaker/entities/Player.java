@@ -40,7 +40,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     }
 
     private Player(Point center){
-        this("player", center, 100, 600, ColorScheme.PLAYER_COLOR, 100000);
+        this("player", center, 150, 600, ColorScheme.PLAYER_COLOR, 100000);
     }
 
     public static Player build(JSONObject jsonObject, int tileSize) throws JSONException {
@@ -51,6 +51,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         if (jsonObject.has("osr")){
             Vector osr = new Vector(new Point(jsonObject.getJSONObject("osr")));
             player.getShape().rotate(osr);
+            ((TankBody)player.getShape()).rotateTurret(osr);
         }
 
         return player;
@@ -89,7 +90,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     }
 
     public Projectile[] shoot(){
-        return primaryWeapon.shoot(calcBulletPlacement(primaryWeapon.getBulletRadius()));
+        return primaryWeapon.shoot(((TankBody)getShape()).getShootingVector());
     }
 
     public Projectile[] shootSecondary(){

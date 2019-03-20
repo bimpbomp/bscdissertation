@@ -91,7 +91,7 @@ public class MeshPolygon {
         Point center = topLeft.add((bottomRight.getX() - topLeft.getX())/2f,
                 (bottomRight.getY() - topLeft.getY())/2f);
 
-        this.area = new Rectangle(center, topLeft, bottomRight, Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256)));
+        this.area = new Rectangle(center, topLeft, bottomRight, ColorScheme.randomGreen());
     }
 
     public Point getRandomPointInMesh(){
