@@ -6,11 +6,9 @@ import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.entities.Wall;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Perimeter;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,8 +25,6 @@ public class Map {
     private List<Wall> walls;
 
     private HashMap<String, Door> doors;
-
-    private List<Perimeter> perimeters;
 
     private List<Pickup> pickups;
 
@@ -47,8 +43,6 @@ public class Map {
         this.doors = new HashMap<>();
 
         this.rootMeshPolygons = new HashMap<>();
-
-        this.perimeters = new ArrayList<>();
 
     }
 
@@ -118,10 +112,6 @@ public class Map {
 
     public List<AIEntity> getEnemies() {
         return enemies;
-    }
-
-    public List<Perimeter> getRoomPerimeters() {
-        return perimeters;
     }
 
     public HashMap<String, Door> getDoors() {

@@ -28,7 +28,33 @@ public class Circle implements Renderable, Shape {
     }
 
     @Override
-    public void rotateBy(float angle) {
+    public Point[] getVertices() {
+        return getBoundingBox().getCollisionVertices();
+    }
+
+    @Override
+    public Point[] getVertices(Point offset) {
+        Point[] vertices = getBoundingBox().getCollisionVertices();
+
+        for (int i = 0; i < vertices.length; i++){
+            vertices[i] = vertices[i].add(offset);
+        }
+
+        return vertices;
+    }
+
+    @Override
+    public void translate(Point newCenter) {
+        this.center = newCenter;
+    }
+
+    @Override
+    public void rotate(Vector v) {
+
+    }
+
+    @Override
+    public void rotate(float angle) {
 
     }
 
@@ -88,7 +114,7 @@ public class Circle implements Renderable, Shape {
     }
 
     @Override
-    public void translateShape(Vector movementVector) {
+    public void translate(Vector movementVector) {
         center.add(movementVector.getRelativeToTailPoint());
     }
 }

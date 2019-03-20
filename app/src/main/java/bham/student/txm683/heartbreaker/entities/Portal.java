@@ -184,6 +184,6 @@ public class Portal extends Entity implements ICircle, Renderable {
 
     @Override
     public void setCenter(Point newCenter) {
-        this.shape.translateShape(new Vector(shape.getCenter(), newCenter));
+        this.shape.translate(new Vector(shape.getCenter(), newCenter));
     }
 }

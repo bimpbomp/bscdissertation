@@ -7,7 +7,6 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Octagon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.Damageable;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONArray;
@@ -19,19 +18,17 @@ import java.util.List;
 
 public class Core extends AIEntity implements Damageable {
     private Octagon innerShape;
-    private Hexagon outerShape;
 
     private int health;
     private int width;
 
     public Core(String name, Point center, int size) {
-        super(name, center, size, 0);
+        super(name, center, size, 0, new Hexagon(center, size, Color.BLACK));
         health = 500;
 
         this.width = size;
 
         this.innerShape = new Octagon(center, size/2, Color.WHITE);
-        this.outerShape = new Hexagon(center, size, Color.BLACK);
     }
 
     public Core(String name, Point center){
@@ -60,18 +57,8 @@ public class Core extends AIEntity implements Damageable {
     }
 
     @Override
-    public Point getFront() {
-        return outerShape.getVertices()[0];
-    }
-
-    @Override
     public Vector getForwardUnitVector() {
         return Vector.ZERO_VECTOR;
-    }
-
-    @Override
-    public void rotate(Vector rotationVector) {
-
     }
 
     @Override
@@ -82,12 +69,6 @@ public class Core extends AIEntity implements Damageable {
     @Override
     public int getWidth() {
         return width;
-    }
-
-    @Override
-    public void rotateBy(float angle) {
-        this.outerShape.rotateBy(angle);
-        this.innerShape.rotateBy(angle);
     }
 
     @Override
@@ -115,13 +96,8 @@ public class Core extends AIEntity implements Damageable {
     public void tick(float secondsSinceLastGameTick) {
         float angle = 0.061799f;
 
-        innerShape.rotateBy(-1 * angle);
-        outerShape.rotateBy(angle/2);
-    }
-
-    @Override
-    public Point[] getCollisionVertices() {
-        return outerShape.getVertices();
+        innerShape.rotate(-1 * angle);
+        getShape().rotate(angle/2);
     }
 
     @Override
@@ -140,19 +116,14 @@ public class Core extends AIEntity implements Damageable {
     }
 
     @Override
-    public Point getCenter() {
-        return innerShape.getCenter();
-    }
-
-    @Override
     public void setCenter(Point newCenter) {
-        innerShape.translateShape(new Vector(innerShape.getCenter(), newCenter));
-        outerShape.translateShape(new Vector(outerShape.getCenter(), newCenter));
+        innerShape.translate(newCenter);
+        getShape().translate(newCenter);
     }
 
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
-        outerShape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+        getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
         innerShape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
     }
 
@@ -164,10 +135,5 @@ public class Core extends AIEntity implements Damageable {
     @Override
     public void revertToDefaultColor() {
         innerShape.revertToDefaultColor();
-    }
-
-    @Override
-    public BoundingBox getBoundingBox() {
-        return outerShape.getBoundingBox();
     }
 }

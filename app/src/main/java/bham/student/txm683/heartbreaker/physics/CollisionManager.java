@@ -549,7 +549,7 @@ public class CollisionManager {
 
             if (collidable instanceof MoveableEntity){
 
-                int distance = euclideanHeuristic(entity.getFront(), collidable.getCenter());
+                int distance = euclideanHeuristic(entity.getCenter(), collidable.getCenter());
 
                 pV = collisionCheckTwoPolygons(collidable.getCollisionVertices(), collidable.getCenter(), collidable.getShapeIdentifier(),
                         rectVertices, rect.getCenter(), rect.getShapeIdentifier());
@@ -574,19 +574,6 @@ public class CollisionManager {
             steeringAxis = steeringAxis.sMult(-1f);
         }
 
-        /*Vector fUnit = ((MoveableEntity) closestCollidable).getForwardUnitVector();
-        Vector steeringAxis = fUnit.rotateAntiClockwise90();
-
-        float height = 200f;
-        Point center = fUnit.sMult(height).getHead();
-
-        Rectangle rect = new Rectangle(center, entity.getWidth(), height, Color.GRAY);
-
-        float det = fUnit.det(ray.getUnitVector());
-
-        if (det < 0) {
-            steeringAxis = steeringAxis.sMult(-1f);
-        }*/
 
         return steeringAxis;
     }

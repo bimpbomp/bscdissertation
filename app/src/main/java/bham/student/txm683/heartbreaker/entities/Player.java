@@ -1,10 +1,6 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
-import bham.student.txm683.heartbreaker.ai.HexBubble;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Kite;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
-import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.BombThrower;
@@ -14,7 +10,6 @@ import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -25,10 +20,6 @@ import java.util.List;
 
 public class Player extends MoveableEntity implements Damageable, Renderable {
 
-    private Point spawn;
-
-    private Kite shape;
-
     private int health;
 
     private Weapon primaryWeapon;
@@ -36,23 +27,9 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     private List<Key> keys;
 
-    private HexBubble hexBubble;
-
-    public Player(String name, Point center, int size, float maxSpeed, int upperTriColor, int lowerTriColor, int initialHealth) {
-        super(name, center, size, maxSpeed);
-
-        hexBubble = null;
-
-        float width = size;
-
-        List<Vector> vertices = Polygon.createTriangle(center, width, size * 0.75f);
-
-        this.shape = new Kite(center, new Vector[]{
-                vertices.get(0),
-                vertices.get(1),
-                new Vector(center, center.add(new Point(0, 0.5f * size))),
-                vertices.get(2)
-        }, upperTriColor, lowerTriColor);
+    private Player(String name, Point center, int size, float maxSpeed, int color, int initialHealth) {
+        //super(name, center, size, maxSpeed, Kite.constructKite(center, size, upperTriColor));
+        super(name, center, size, maxSpeed, new TankBody(center, size, color));
 
         this.health = initialHealth;
 
@@ -60,18 +37,10 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         this.secondaryWeapon = new BombThrower(name);
 
         this.keys = new ArrayList<>();
-
-        this.spawn = center;
-
     }
 
-    public Player(Point center){
-        this("player", center, 100, 600, ColorScheme.UPPER_PLAYER_COLOR, ColorScheme.UPPER_PLAYER_COLOR, 100000);
-    }
-
-    @Override
-    public Vector getForwardUnitVector() {
-        return shape.getForwardUnitVector();
+    private Player(Point center){
+        this("player", center, 100, 600, ColorScheme.PLAYER_COLOR, 100000);
     }
 
     public static Player build(JSONObject jsonObject, int tileSize) throws JSONException {
@@ -81,7 +50,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
         if (jsonObject.has("osr")){
             Vector osr = new Vector(new Point(jsonObject.getJSONObject("osr")));
-            player.shape.rotateShape(osr);
+            player.getShape().rotate(osr);
         }
 
         return player;
@@ -128,18 +97,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     }
 
     private Vector calcBulletPlacement(float bulletRadius){
-         return shape.getForwardUnitVector();
-    }
-
-    @Override
-    public void tick(float secondsSinceLastGameTick) {
-        move(secondsSinceLastGameTick, shape, 1);
-        rotate(secondsSinceLastGameTick, shape, 1);
-    }
-
-    @Override
-    public Point[] getCollisionVertices() {
-        return shape.getVertices();
+         return new Vector(getCenter(), getForwardUnitVector().getHead());
     }
 
     @Override
@@ -172,51 +130,20 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
 
-        if (hexBubble != null)
-            hexBubble.draw(canvas, renderOffset);
-
-        shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+        getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
     }
 
-    public void setHexBubble(HexBubble hexBubble) {
-        this.hexBubble = hexBubble;
-    }
-
-    public Point getFront(){
-        return shape.getVertices()[0];
-    }
-
-    @Override
-    public BoundingBox getBoundingBox() {
-        return shape.getBoundingBox();
-    }
-
     @Override
     public void setColor(int color) {
-        shape.setColor(color);
+        getShape().setColor(color);
     }
 
     @Override
     public void revertToDefaultColor() {
-        shape.revertToDefaultColor();
-    }
-
-    @Override
-    public ShapeIdentifier getShapeIdentifier() {
-        return shape.getShapeIdentifier();
-    }
-
-    @Override
-    public Point getCenter() {
-        return shape.getCenter();
-    }
-
-    @Override
-    public void setCenter(Point newCenter) {
-        shape.translateShape(new Vector (shape.getCenter(), newCenter));
+        getShape().revertToDefaultColor();
     }
 
     @Override

@@ -85,6 +85,68 @@ public class Tasks {
         };
     }
 
+    public static BNode arrival(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(CONTROLLED_ENTITY) && context.containsVariables("heading")){
+
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    Point heading = (Point) context.getVariable("heading");
+
+                    Vector desiredVel = new Vector(controlled.getCenter(), heading);
+                    float distance = desiredVel.getLength();
+
+                    final float SLOWING_DISTANCE = 200;
+
+                    float rampedSpeed = controlled.getMaxSpeed() * distance/SLOWING_DISTANCE;
+                    float clampedSpeed = Math.min(rampedSpeed, controlled.getMaxSpeed());
+
+                    desiredVel = desiredVel.setLength(clampedSpeed);
+
+                    Vector steering = desiredVel.vSub(controlled.getVelocity()).setLength(100);
+
+                    controlled.addRotationForce(steering.getUnitVector());
+                    controlled.addForce(steering);
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
+                }
+
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode seek(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(CONTROLLED_ENTITY) && context.containsVariables("heading")){
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    Point heading = (Point) context.getVariable("heading");
+
+                    Vector vel = controlled.getVelocity();
+                    Point pos = controlled.getCenter();
+
+                    Vector desiredVel = new Vector(pos, heading).setLength(controlled.getMaxSpeed());
+
+                    Vector steeringForce = desiredVel.vSub(vel).setLength(100);
+
+                    controlled.addForce(steeringForce);
+                    controlled.addRotationForce(steeringForce.getUnitVector());
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
+                }
+
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
     public static BNode courseCorrect(){
         return new BNode() {
 
@@ -92,11 +154,11 @@ public class Tasks {
             public Status process(BContext context) {
 
 
-                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE) && context.containsVariables("course_correct:heading")){
+                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE) && context.containsVariables("heading")){
 
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
 
-                    Point heading = (Point) context.getVariable("course_correct:heading");
+                    Point heading = (Point) context.getVariable("heading");
 
                     CollisionManager collisionManager = ((LevelState) context.getValue(LEVEL_STATE)).getCollisionManager();
 
@@ -105,33 +167,10 @@ public class Tasks {
                     if (!steeringAxis.equals(Vector.ZERO_VECTOR)){
                         //correction needs to take place
 
-
                         controlled.addForce(steeringAxis.sMult(100));
                     } else {
                         Log.d("AVOID", "no obstacles in way");
                     }
-
-                    /*List<Point> pathAroundObstacle = collisionManager.getPathAroundObstacle(controlled, heading);
-
-                    if (pathAroundObstacle == null || pathAroundObstacle.size() == 0){
-                        Log.d("AVOID", "no obstacles in way");
-                        setStatus(SUCCESS);
-                        return SUCCESS;
-                    }
-
-                    Point target = new Point();
-                    for (Point point : pathAroundObstacle){
-                        if (CollisionManager.euclideanHeuristic(controlled.getFront(), point) > 70){
-
-                            target = point;
-                            break;
-                        }
-                    }*/
-
-                    /*Vector v = new Vector(controlled.getCenter(), target);
-
-                    controlled.setRotationVector(v);
-                    controlled.setRequestedMovementVector(v);*/
 
                     setStatus(RUNNING);
                     return RUNNING;
@@ -218,7 +257,7 @@ public class Tasks {
 
                         if (pointInPath > path.size()-1) {
                             Log.d("TASK followPath", "path completed!!");
-                            aiEntity.setRequestedMovementVector(Vector.ZERO_VECTOR);
+                            //aiEntity.setRequestedMovementVector(Vector.ZERO_VECTOR);
 
                             setStatus(SUCCESS);
                             return SUCCESS;
@@ -231,12 +270,11 @@ public class Tasks {
 
                     Log.d("TASK followPath", "heading to: " + currentPoint + ", vector to point: " + closenessV.relativeToString());
 
-                    context.addVariable("course_correct:heading", currentPoint);
+                    //context.addVariable("course_correct:heading", currentPoint);
 
-                    aiEntity.addForce(closenessV.sMult(100));
-                    aiEntity.setRotationVector(closenessV);
+                    context.addVariable("heading", currentPoint);
 
-                    /*aiEntity.setRequestedMovementVector(closenessV);
+                    /*aiEntity.addForce(closenessV.sMult(100));
                     aiEntity.setRotationVector(closenessV);*/
 
                     setStatus(SUCCESS);
@@ -313,7 +351,7 @@ public class Tasks {
             Log.d("TASKS", "rotVector: " + rotVector.relativeToString() + ", controlledForwardVector: " + controlled.getForwardUnitVector().relativeToString());
 
             if (Math.abs(angle) < 0.08){
-                Log.d("TASKS", "no need to rotate... angle:  " + angle);
+                Log.d("TASKS", "no need to applyRotationalForces... angle:  " + angle);
                 controlled.setRotationVector(Vector.ZERO_VECTOR);
                 return SUCCESS;
             } else {

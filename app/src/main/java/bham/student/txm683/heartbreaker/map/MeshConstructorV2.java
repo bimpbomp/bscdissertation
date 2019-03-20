@@ -362,7 +362,7 @@ class MeshConstructorV2 {
 
             return false;
         } /*else if (cell == -2){
-            //the cell is a door, add to it's own set, move on
+            //the cell is a door, add to it's own set, applyMovementForces on
             //addToMeshSet(activeMeshSet, tile);
             getActiveMeshSet(tile, 0, new ArrayList<>());
             exitValue.increment();

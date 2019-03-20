@@ -65,7 +65,7 @@ public class Behaviour {
                     int patrolIdx = (int) context.getVariable("patrol");
                     Point point = levelState.getRootMeshPolygons().get(patrolPath.get(patrolIdx)).getCenter();
 
-                    float distance = new Vector(controlled.getFront(), point).getLength();
+                    float distance = new Vector(controlled.getCenter(), point).getLength();
 
                     if (distance < 70){
                         Log.d("AVOID", "arrived at: " + patrolPath.get(patrolIdx));
@@ -95,6 +95,7 @@ public class Behaviour {
                 patrol,
                 Tasks.plotPath(),
                 Tasks.followPath(),
+                Tasks.seek(),
                 Tasks.courseCorrect()
         );
     }

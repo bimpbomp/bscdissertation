@@ -5,6 +5,7 @@ import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
@@ -12,7 +13,6 @@ import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
-import bham.student.txm683.heartbreaker.utils.Vector;
 
 public abstract class AIEntity extends MoveableEntity implements Renderable, Damageable {
 
@@ -24,8 +24,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     protected PickupType drops;
 
-    public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed) {
-        super(name, spawn, maxDimension, maxSpeed);
+    public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed, Shape shape) {
+        super(name, spawn, maxDimension, maxSpeed, shape);
         context = new BContext();
     }
 
@@ -37,17 +37,11 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         this.drops = drops;
     }
 
-    public abstract Point getFront();
-
     public abstract Weapon getWeapon();
 
     public BContext getContext() {
         return context;
     }
-
-    public abstract void rotate(Vector rotationVector);
-
-    public abstract void rotateBy(float angle);
 
     public abstract int getWidth();
 

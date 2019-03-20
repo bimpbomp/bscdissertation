@@ -128,7 +128,7 @@ public class MapReader {
             tileType = mapImage.getPixel(coordinates.getX()+xDiff, coordinates.getY()+yDiff);
 
         } catch (IllegalArgumentException e){
-            //pixel doesn't exist, ignore and move on
+            //pixel doesn't exist, ignore and applyMovementForces on
         }
         return tileType;
     }

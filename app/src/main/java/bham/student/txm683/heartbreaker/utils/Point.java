@@ -42,6 +42,10 @@ public class Point implements SaveableState {
         return new Point(this.x + x, this.y + y);
     }
 
+    public Point sub(Point p) {
+        return add(p.sMult(-1f));
+    }
+
     public Point sMult(float scalar){
         return new Point(x*scalar, y*scalar);
     }

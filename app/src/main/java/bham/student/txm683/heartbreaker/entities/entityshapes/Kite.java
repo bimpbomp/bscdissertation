@@ -7,6 +7,8 @@ import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
+import java.util.List;
+
 public class Kite extends Polygon implements Renderable {
     private int defaultUpperTriColor;
     private int currentUpperTriColor;
@@ -31,6 +33,21 @@ public class Kite extends Polygon implements Renderable {
 
         this.paint = new Paint();
         this.paint.setAntiAlias(true);
+    }
+
+    public Kite(Point center, Vector[] vertexVectors, int color) throws IllegalArgumentException{
+        this(center, vertexVectors, color, color);
+    }
+
+    public static Kite constructKite(Point center, int size, int color){
+        List<Vector> vertices = Polygon.createTriangle(center, size, size * 0.75f);
+
+        return new Kite(center, new Vector[]{
+                vertices.get(0),
+                vertices.get(1),
+                new Vector(center, center.add(new Point(0, 0.5f * size))),
+                vertices.get(2)
+        }, color, color);
     }
 
     @Override
@@ -67,18 +84,12 @@ public class Kite extends Polygon implements Renderable {
     @Override
     public void setColor(int color) {
         this.currentLowerTriColor = color;
-    }
-
-    public void setUpperTriColor(int color){
         this.currentUpperTriColor = color;
     }
 
     @Override
     public void revertToDefaultColor() {
         this.currentLowerTriColor = defaultLowerTriColor;
-    }
-
-    public void revertUppertriToDefaultColor(){
         this.currentUpperTriColor = defaultUpperTriColor;
     }
 

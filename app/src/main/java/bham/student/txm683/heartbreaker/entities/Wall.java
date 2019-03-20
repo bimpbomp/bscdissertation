@@ -133,6 +133,6 @@ public class Wall extends Entity implements Renderable {
 
     @Override
     public void setCenter(Point newCenter) {
-        shape.translateShape(new Vector(shape.getCenter(), newCenter));
+        shape.translate(new Vector(shape.getCenter(), newCenter));
     }
 }

@@ -11,7 +11,7 @@ public abstract class Polygon implements Shape{
     private ShapeIdentifier shapeIdentifier;
     Vector[] vertexVectors;
     Vector forwardUnitVector;
-    Point center;
+    private Point center;
 
     Polygon(Point center, Vector[] vertexVectors, ShapeIdentifier shapeIdentifier){
         this.vertexVectors = vertexVectors;
@@ -36,7 +36,8 @@ public abstract class Polygon implements Shape{
      * Rotates the shape to the direction of the given vector
      * @param movementVector Vector to align direction with
      **/
-    public void rotateShape(Vector movementVector){
+    @Override
+    public void rotate(Vector movementVector){
 
         float angle = Vector.calculateAngleBetweenVectors(forwardUnitVector, movementVector.getUnitVector());
 
@@ -53,7 +54,9 @@ public abstract class Polygon implements Shape{
         setForwardUnitVector();
     }
 
-    public void rotateBy(float angle){
+
+
+    public void rotate(float angle){
         float cos = (float) Math.cos(angle);
         float sin = (float) Math.sin(angle);
 
@@ -68,7 +71,7 @@ public abstract class Polygon implements Shape{
      * Translates the vertices of this shape by the given movement vector.
      * @param movementVector Direction and magnitude to translate each vertex by
      */
-    public void translateShape(Vector movementVector){
+    public void translate(Vector movementVector){
         Point amountToTranslate = movementVector.getRelativeToTailPoint();
 
         center = center.add(amountToTranslate);
@@ -76,6 +79,11 @@ public abstract class Polygon implements Shape{
         for (int i = 0; i < vertexVectors.length; i++){
             vertexVectors[i] = vertexVectors[i].translate(amountToTranslate);
         }
+    }
+
+    @Override
+    public void translate(Point newCenter) {
+        translate(new Vector(center, newCenter));
     }
 
     /**
@@ -159,7 +167,7 @@ public abstract class Polygon implements Shape{
         return vertices;
     }
 
-    public static Vector[] generateVertexVectors(Point center, int armLength, float angleBetweenArms, int numberOfVertices){
+    static Vector[] generateVertexVectors(Point center, int armLength, float angleBetweenArms, int numberOfVertices){
         Vector[] vertexVectors = new Vector[numberOfVertices];
 
         vertexVectors[0] = new Vector(center, center.add(0, -1 * armLength));

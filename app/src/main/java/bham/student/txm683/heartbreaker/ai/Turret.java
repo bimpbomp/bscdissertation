@@ -6,12 +6,10 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.entities.entityshapes.IsoscelesTriangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Polygon;
-import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -20,9 +18,6 @@ import org.json.JSONObject;
 public class Turret extends AIEntity {
 
     private int health;
-    private IsoscelesTriangle shape;
-
-    private Point spawn;
 
     private int width;
 
@@ -31,17 +26,14 @@ public class Turret extends AIEntity {
     private BNode behaviourTreeRoot;
 
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
-        super(name, center, size, 0);
-
-        shape = new IsoscelesTriangle(center, Polygon.createTriangle(center, size, size).toArray(new Vector[0]), colorValue);
+        super(name, center, size, 0,
+                new IsoscelesTriangle(center, Polygon.createTriangle(center, size, size).toArray(new Vector[0]), colorValue));
 
         health = initialHealth;
 
         this.weapon=  new BasicWeapon(name, 25, 30, 1.5f);
 
         this.width = size;
-
-        this.spawn = center;
 
         //this.behaviourTreeRoot = Behaviour.stationaryShootBehaviour();
         this.behaviourTreeRoot = Behaviour.turretTree();
@@ -55,11 +47,6 @@ public class Turret extends AIEntity {
         this(name ,center, 200, ColorScheme.CHASER_COLOR, 100);
     }
 
-    @Override
-    public Point getFront() {
-        return shape.getVertices()[0];
-    }
-
     public static Turret build(JSONObject jsonObject, int tileSize) throws JSONException {
         Point center = new Point(jsonObject.getJSONObject("sp")).sMult(tileSize);
         String name = jsonObject.getString("name");
@@ -70,7 +57,7 @@ public class Turret extends AIEntity {
             Vector initialRotation = new Vector(new Point(jsonObject.getJSONObject("osr")));
             turret.getContext().addVariable("osr", initialRotation);
 
-            turret.shape.rotateShape(initialRotation);
+            turret.getShape().rotate(initialRotation);
         }
 
         if (jsonObject.has("rotation_lock")){
@@ -91,23 +78,8 @@ public class Turret extends AIEntity {
     }
 
     @Override
-    public Vector getForwardUnitVector() {
-        return shape.getForwardUnitVector();
-    }
-
-    @Override
     public boolean canMove() {
         return false;
-    }
-
-    @Override
-    public void rotate(Vector rotationVector) {
-        shape.rotateShape(rotationVector);
-    }
-
-    @Override
-    public void rotateBy(float angle) {
-        shape.rotateBy(angle);
     }
 
     @Override
@@ -115,8 +87,7 @@ public class Turret extends AIEntity {
 
         behaviourTreeRoot.process(context);
 
-        setRequestedMovementVector(Vector.ZERO_VECTOR);
-        rotate(secondsSinceLastGameTick, shape, (float) context.getValue(BKeyType.ROT_DAMP));
+        applyRotationalForces(secondsSinceLastGameTick);
     }
 
     @Override
@@ -125,33 +96,8 @@ public class Turret extends AIEntity {
     }
 
     @Override
-    public Point[] getCollisionVertices() {
-        return shape.getVertices();
-    }
-
-    @Override
-    public BoundingBox getBoundingBox() {
-        return shape.getBoundingBox();
-    }
-
-    @Override
     public boolean isSolid() {
         return true;
-    }
-
-    @Override
-    public ShapeIdentifier getShapeIdentifier() {
-        return ShapeIdentifier.TRIANGLE;
-    }
-
-    @Override
-    public Point getCenter() {
-        return shape.getCenter();
-    }
-
-    @Override
-    public void setCenter(Point newCenter) {
-        shape.translateShape(new Vector(shape.getCenter(), newCenter));
     }
 
     @Override
@@ -177,16 +123,16 @@ public class Turret extends AIEntity {
 
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
-        shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+        getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
     }
 
     @Override
     public void setColor(int color) {
-        shape.setColor(color);
+        getShape().setColor(color);
     }
 
     @Override
     public void revertToDefaultColor() {
-        shape.revertToDefaultColor();
+        getShape().revertToDefaultColor();
     }
 }

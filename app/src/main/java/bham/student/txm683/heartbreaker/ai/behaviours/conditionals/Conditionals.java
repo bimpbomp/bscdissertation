@@ -27,7 +27,7 @@ public class Conditionals {
             } else if ((Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
                 ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.YELLOW);
             } else {
-                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).rotate((Vector) context.getValue(SIGHT_VECTOR));
+                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).applyRotationalForces((Vector) context.getValue(SIGHT_VECTOR));
                 ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.BLACK);
 
                 return true;

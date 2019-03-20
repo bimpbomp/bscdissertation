@@ -3,6 +3,8 @@ package bham.student.txm683.heartbreaker.entities;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
+import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
@@ -19,12 +21,17 @@ public abstract class MoveableEntity extends Entity {
 
     private Point spawn;
 
+    private Shape shape;
+
     private int maxDimension;
 
     private List<Vector> extraForces;
+    private List<Vector> rotationForces;
 
-    public MoveableEntity(String name, Point spawn, int maxDimension, float maxSpeed){
+    public MoveableEntity(String name, Point spawn, int maxDimension, float maxSpeed, Shape shape){
         super(name);
+
+        this.shape = shape;
 
         this.maxSpeed = maxSpeed;
         this.requestedMovementVector = Vector.ZERO_VECTOR;
@@ -37,9 +44,16 @@ public abstract class MoveableEntity extends Entity {
         this.maxDimension = maxDimension;
 
         this.extraForces = new ArrayList<>();
+        this.rotationForces = new ArrayList<>();
     }
 
-    public abstract Vector getForwardUnitVector();
+    public Shape getShape() {
+        return shape;
+    }
+
+    public Vector getForwardUnitVector(){
+        return shape.getForwardUnitVector();
+    }
 
     public int getMaxDimension() {
         return maxDimension;
@@ -61,7 +75,13 @@ public abstract class MoveableEntity extends Entity {
         this.rotationVector = rotationVector;
     }
 
-    public abstract void tick(float secondsSinceLastGameTick);
+    public void tick(float secondsSinceLastGameTick){
+        applyMovementForces(secondsSinceLastGameTick);
+        applyRotationalForces(secondsSinceLastGameTick);
+
+        extraForces.clear();
+        rotationForces.clear();
+    }
 
     public Vector calculateMovementVector(float secondsSinceLastGameTick){
         return requestedMovementVector.equals(Vector.ZERO_VECTOR) ?
@@ -85,10 +105,15 @@ public abstract class MoveableEntity extends Entity {
     }
 
     public void addForce(Vector force){
+        extraForces.clear();
         this.extraForces.add(force);
     }
 
-    protected void move(float secondsSinceLastGameTick, Shape shape, float rotationalDamping){
+    public void addRotationForce(Vector force){
+        this.rotationForces.add(force);
+    }
+
+    void applyMovementForces(float secondsSinceLastGameTick){
         if (velocity.getLength() < 5f)
             velocity = Vector.ZERO_VECTOR;
 
@@ -103,7 +128,7 @@ public abstract class MoveableEntity extends Entity {
             float angle = (float) Math.acos(Math.min(dot, 1f));
 
             Log.d("MOVEMENT", getName() + ": dot: " + dot + " angle: " + angle + " prop: " + (angle/ (float) Math.PI));
-            Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " move: " + movementForce.relativeToString());
+            Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " applyMovementForces: " + movementForce.relativeToString());
 
             if (angle > 0.175f)
                 movementForce = movementForce.sMult(angle/ (float) Math.PI);
@@ -112,7 +137,6 @@ public abstract class MoveableEntity extends Entity {
                 Log.d("MOVEMENT", getName() + " extra force: " + force.relativeToString());
                 movementForce = movementForce.vAdd(force);
             }
-            extraForces.clear();
 
             Vector acc = movementForce;
 
@@ -132,41 +156,52 @@ public abstract class MoveableEntity extends Entity {
                     acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " +
                     getRequestedMovementVector().relativeToString() + " dot: " + dot);
 
-
         } else {
             velocity = velocity.sMult(0.25f);
         }
 
         Vector v = velocity.sMult(secondsSinceLastGameTick);
 
-        shape.translateShape(v);
+        shape.translate(v);
     }
 
-    public void rotate(float secondsSinceLastGameTick, Shape shape, float rotationalDamping){
-        Vector force;
+    protected void applyRotationalForces(float secondsSinceLastGameTick){
+        Vector force = Vector.ZERO_VECTOR;
         if (!getRotationVector().equals(Vector.ZERO_VECTOR)){
             force = getRotationVector();
 
         } else
             force = getRequestedMovementVector();
 
+        if (this instanceof AIEntity) {
+            /*for (Vector extraForce : rotationForces) {
+                Log.d("MOVEMENT", "rotation: " + getName() + " extra force: " + extraForce.relativeToString());
+                force = force.vAdd(extraForce);
+            }
+            Log.d("MOVEMENT", "rotation: " + getName() + " resultant force: " + force.relativeToString());
+
+            force = force.getUnitVector();*/
+
+            force = velocity.getUnitVector();
+        }
+
         if (!force.equals(Vector.ZERO_VECTOR)) {
-            float dot = Math.min(shape.getForwardUnitVector().det(force.getUnitVector()), 1f);
-            float det = shape.getForwardUnitVector().det(force.getUnitVector());
+            /*float dot = Math.min(shape.getForwardUnitVector().det(force.getUnitVector()), 1f);
+            float det = shape.getForwardUnitVector().det(force.getUnitVector());*/
 
             Vector momArm = new Vector(getCenter(), getCenter().add(shape.getForwardUnitVector().sMult(20f).getRelativeToTailPoint()));
 
-            momArm.rotate(dot, det);
+            //momArm = momArm.applyRotationalForces(dot, det);
 
             Vector parCom = momArm.sMult(force.dot(momArm) / momArm.getLength());
 
-            Vector angF = force.vSub(parCom).sMult(rotationalDamping);
+            Vector angF = force.vSub(parCom);
 
             float angularAcc = momArm.det(angF);
 
             float angularVelocity = angularAcc * secondsSinceLastGameTick;
 
-            shape.rotateBy(angularVelocity);
+            shape.rotate(angularVelocity);
         }
     }
 
@@ -174,4 +209,31 @@ public abstract class MoveableEntity extends Entity {
     public boolean canMove() {
         return true;
     }
+
+    @Override
+    public Point[] getCollisionVertices() {
+        return shape.getVertices();
+    }
+
+    @Override
+    public BoundingBox getBoundingBox() {
+        return shape.getBoundingBox();
+    }
+
+    @Override
+    public ShapeIdentifier getShapeIdentifier() {
+        return shape.getShapeIdentifier();
+    }
+
+    @Override
+    public Point getCenter() {
+        return shape.getCenter();
+    }
+
+    @Override
+    public void setCenter(Point newCenter) {
+        shape.translate(newCenter);
+    }
+
+
 }

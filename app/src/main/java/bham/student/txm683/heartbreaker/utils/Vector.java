@@ -201,8 +201,8 @@ public class Vector implements SaveableState {
 
     /**
      * Rotates this vector by an angle. Rotation is relative this vector's tail position.
-     * @param cosAngle Cos of angle to rotate by
-     * @param sinAngle Sin of angle to rotate by
+     * @param cosAngle Cos of angle to applyRotationalForces by
+     * @param sinAngle Sin of angle to applyRotationalForces by
      * @return The rotated vector.
      */
     public Vector rotate(float cosAngle, float sinAngle){

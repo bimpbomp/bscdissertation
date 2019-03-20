@@ -39,7 +39,7 @@ public class RectButton extends Button implements PopUpElement {
 
     @Override
     public void setCenter(Point point) {
-        this.shape.translateShape(new Vector(shape.getCenter(), point));
+        this.shape.translate(new Vector(shape.getCenter(), point));
         super.setCenter(point);
     }
 
