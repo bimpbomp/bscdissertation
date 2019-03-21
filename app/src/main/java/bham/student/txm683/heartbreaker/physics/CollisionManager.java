@@ -134,7 +134,7 @@ public class CollisionManager {
                 Log.d("hb::CollisionManager", collidable.getName() + " is not in a room");
 
                 if (collidable instanceof MoveableEntity){
-                    collidable.setCenter(((MoveableEntity) collidable).getSpawn());
+                    moveEntityCenter(collidable, ((MoveableEntity) collidable).getSpawn());
                     addToBin(collidable);
                 }
             }
@@ -629,6 +629,70 @@ public class CollisionManager {
         }
 
         return steeringAxis;
+    }
+
+    public Vector movingTargetAvoidanceForTanks(AIEntity controlled){
+
+        Entity priorityEntity = levelState.getPlayer();
+
+        float t = unalignedCollisionAvoidance(controlled, levelState.getPlayer());
+
+        float smallestT = Float.MAX_VALUE;
+
+        if (t > 0 && smallestT > t){
+            smallestT = t;
+        }
+
+        for (AIEntity entity : levelState.getAliveAIEntities()){
+            if (entity.getName().equals(controlled.getName()))
+                continue;
+
+            t = unalignedCollisionAvoidance(controlled, entity);
+
+            if (t < 0)
+                continue;
+
+            if (smallestT > t){
+                smallestT = t;
+                priorityEntity = entity;
+            }
+        }
+
+        Log.d("AAA", "t: " + smallestT + " priority: " + priorityEntity.getName());
+        return movingObjectAvoidanceSteering(controlled, priorityEntity, smallestT);
+    }
+
+    private static float unalignedCollisionAvoidance(AIEntity controlled, Entity entity){
+        Vector cVel = controlled.getVelocity();
+        Vector eVel = entity.getVelocity();
+
+        Vector relVel = eVel.vSub(cVel);
+        float relSpeed = relVel.getLength();
+
+        relVel = relVel.getUnitVector();
+
+        Vector relPos = new Vector(entity.getCenter(), controlled.getCenter());
+
+        float proj = relVel.dot(relPos);
+
+        if (relSpeed < 2)
+            return -1;
+
+        return proj / relSpeed;
+    }
+
+    private static Vector movingObjectAvoidanceSteering(Entity entity1, Entity entity2, float t){
+        Point cFuturePos = entity1.getCenter().add(entity1.getVelocity().sMult(t).getRelativeToTailPoint());
+        Point eFuturePos = entity2.getCenter().add(entity2.getVelocity().sMult(t).getRelativeToTailPoint());
+
+        Vector v = new Vector(eFuturePos, cFuturePos);
+
+        Log.d("AAA", v.relativeToString() + ", length: " + v.getLength());
+
+        if (Float.isNaN(v.getLength()) || v.getLength() > 150)
+            return Vector.ZERO_VECTOR;
+
+        return v;
     }
 
     private static Node<Point> mapToNearestNode(Point point, Graph<Point> graph){

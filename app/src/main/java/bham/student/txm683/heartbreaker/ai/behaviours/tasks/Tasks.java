@@ -172,7 +172,9 @@ public class Tasks {
 
                     CollisionManager collisionManager = ((LevelState) context.getValue(LEVEL_STATE)).getCollisionManager();
 
-                    Vector steeringAxis = collisionManager.getPathAroundObstacle(controlled, heading);
+                    //Vector steeringAxis = collisionManager.getPathAroundObstacle(controlled, heading);
+
+                    Vector steeringAxis = collisionManager.movingTargetAvoidanceForTanks(controlled);
 
                     if (!steeringAxis.equals(Vector.ZERO_VECTOR)){
                         //correction needs to take place
@@ -187,9 +189,6 @@ public class Tasks {
                             controlled.setVelocity(Vector.ZERO_VECTOR);
                         }
                     }
-
-                    /*setStatus(RUNNING);
-                    return RUNNING;*/
 
                     setStatus(SUCCESS);
                     return SUCCESS;
@@ -579,7 +578,14 @@ public class Tasks {
                     Log.d("SHOOTING", "t: " + t + ", playervel: " + playerVel + ", player pos: " + playerPos);
                     Point aimPoint = playerVel.sMult(t).add(playerPos);
 
-                    context.addPair(TARGET, aimPoint);
+                    Random r = new Random();
+
+                    float angle = 0.3f * r.nextFloat();
+
+                    Vector v = new Vector(controlled.getCenter(), aimPoint);
+                    v = v.rotate((float)Math.cos(angle),(float) Math.sin(angle));
+
+                    context.addPair(TARGET, v.getHead());
 
                     Log.d("TASKS", "t: " + t);
                     Log.d("TASKS", "aimpoint: " + aimPoint + ", playerpos: " + playerPos);
@@ -619,14 +625,6 @@ public class Tasks {
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
 
                     Point aimPoint = (Point) context.getValue(TARGET);
-
-                    Vector v = new Vector(controlled.getCenter(), aimPoint).getUnitVector();
-
-                    Random r = new Random();
-
-                    float angle = 0.3f * r.nextFloat();
-
-                    v = v.rotate((float)Math.cos(angle),(float) Math.sin(angle));
 
                     levelState.addBullet(controlled.getWeapon().shoot(((TankBody) controlled.getShape()).getShootingVector()));
 
