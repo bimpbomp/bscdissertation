@@ -9,6 +9,7 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.Player;
+import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.utils.AStar;
@@ -104,7 +105,11 @@ public class Tasks {
 
                     desiredVel = desiredVel.setLength(clampedSpeed);
 
-                    Vector steering = desiredVel.vSub(controlled.getVelocity()).setLength(100);
+                    Vector steering = desiredVel.vSub(controlled.getVelocity());
+
+                    if (steering.getLength() > 100){
+                        steering.setLength(100);
+                    }
 
                     controlled.addRotationForce(steering.getUnitVector());
                     controlled.addForce(steering);
@@ -134,9 +139,8 @@ public class Tasks {
 
                     Vector steeringForce = desiredVel.vSub(vel);
 
-                    int maxForce = 30;
-                    if (steeringForce.getLength() > 30)
-                        steeringForce.setLength(30);
+                    int maxForce = 50;
+                    steeringForce.setLength(maxForce);
 
                     controlled.addForce(steeringForce);
                     controlled.addRotationForce(steeringForce.getUnitVector());
@@ -171,13 +175,18 @@ public class Tasks {
                     if (!steeringAxis.equals(Vector.ZERO_VECTOR)){
                         //correction needs to take place
 
+                        Log.d("BEH", "courseCorrect: steeringForce: " + steeringAxis.setLength(100).relativeToString());
+
                         controlled.addForce(steeringAxis.sMult(100));
                     } else {
                         Log.d("AVOID", "no obstacles in way");
                     }
 
-                    setStatus(RUNNING);
-                    return RUNNING;
+                    /*setStatus(RUNNING);
+                    return RUNNING;*/
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
                 }
                 Log.d("AVOID", "FAILED");
 
@@ -225,15 +234,16 @@ public class Tasks {
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
                     List<Point> path = ((PathWrapper) context.getValue(PATH)).path();
 
-                    //project ai one second into the future
-                    Point futurePos = controlled.getCenter().add(controlled.getVelocity().getRelativeToTailPoint());
+                    //project ai 0.5 seconds into the future
+                    Point futurePos = controlled.getCenter().add(controlled.getVelocity().sMult(0.5f).getRelativeToTailPoint());
 
                     Point closestPathPoint;
                     Point secondClosestPathPoint;
 
+                    int closestPointIdx = -1;
+
                     if (path.size() > 1) {
 
-                        int closestPointIdx = -1;
                         int smallestDistance = Integer.MAX_VALUE;
                         for (int i = 0; i < path.size(); i++) {
                             Point p = path.get(i);
@@ -270,6 +280,7 @@ public class Tasks {
                     } else {
                         closestPathPoint = path.get(0);
                         secondClosestPathPoint = null;
+                        closestPointIdx = 0;
                     }
 
                     Point closestPoint;
@@ -279,10 +290,35 @@ public class Tasks {
                     else
                         closestPoint = closestPathPoint;
 
+                    int maxForce = 50;
 
-                    Vector steeringVector = new Vector(futurePos, closestPoint).setLength(20);
+                    context.addVariable("heading", closestPoint);
 
-                    controlled.addForce(steeringVector);
+                    context.addVariable("closest_point", closestPoint);
+
+                    //Log.d("TANKK", "distance to end: " + new Vector(controlled.getCenter(), path.get(path.size()-1)).getLength());
+                    if (new Vector(controlled.getCenter(), path.get(path.size()-1)).getLength() < 200){
+                        setStatus(Tasks.arrival().process(context));
+                        return getStatus();
+                    }
+
+                    Vector steeringVector = new Vector(futurePos, closestPoint);
+
+                    if (steeringVector.getLength() > maxForce)
+                        steeringVector = steeringVector.setLength(maxForce);
+
+                    Vector movementForce = controlled.getForwardUnitVector().setLength(maxForce);
+
+                    float t = steeringVector.getLength() / maxForce;
+
+                    movementForce = movementForce.sMult(1-t);
+
+                    Vector force = movementForce.vAdd(steeringVector);
+
+                    controlled.addForce(force);
+
+                    Log.d("BEH", "follow: movementForce: " + movementForce.relativeToString());
+                    Log.d("BEH", "follow: steeringForce: " + steeringVector.relativeToString());
 
                     setStatus(SUCCESS);
                     return SUCCESS;
@@ -409,20 +445,26 @@ public class Tasks {
             Log.d("TASKS", "rotateTo contains keys");
             AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
 
-            Vector rotVector = new Vector(controlled.getCenter(), target).getUnitVector();
 
-            float angle = Vector.calculateAngleBetweenVectors(controlled.getForwardUnitVector(), rotVector);
+            Player player = ((LevelState) context.getValue(LEVEL_STATE)).getPlayer();
+            float wiggleRoom = CollisionManager.getWiggleRoom(player, controlled);
+
+            Vector rotVector = new Vector(controlled.getCenter(), player.getCenter());
+
+            float angle = Vector.calculateAngleBetweenVectors(((TankBody)controlled.getShape()).getTurretFUnit(),
+                    rotVector);
 
             Log.d("TASKS", "rotation target: " + target);
             Log.d("TASKS", "rotVector: " + rotVector.relativeToString() + ", controlledForwardVector: " + controlled.getForwardUnitVector().relativeToString());
 
-            if (Math.abs(angle) < 0.08){
+            Log.d("TANKK", "wiggleRoom: " + wiggleRoom + ", angle: " + angle);
+            if (Math.abs(angle) < wiggleRoom){
                 Log.d("TASKS", "no need to applyRotationalForces... angle:  " + angle);
                 controlled.setRotationVector(Vector.ZERO_VECTOR);
                 return SUCCESS;
             } else {
                 Log.d("TASKS", "rotating... angle:  " + angle);
-                controlled.setRotationVector(rotVector);
+                controlled.setRotationVector(rotVector.getUnitVector());
                 return RUNNING;
             }
         }
@@ -580,7 +622,7 @@ public class Tasks {
 
                     v = v.rotate((float)Math.cos(angle),(float) Math.sin(angle));
 
-                    levelState.addBullet(controlled.getWeapon().shoot(v));
+                    levelState.addBullet(controlled.getWeapon().shoot(((TankBody) controlled.getShape()).getShootingVector()));
 
                     return SUCCESS;
                 }

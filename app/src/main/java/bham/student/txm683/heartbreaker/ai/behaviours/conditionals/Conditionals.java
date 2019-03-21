@@ -28,9 +28,9 @@ public class Conditionals {
                 ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.YELLOW);
             } else {
                 //((AIEntity) context.getValue(CONTROLLED_ENTITY)).applyRotationalForces((Vector) context.getValue(SIGHT_VECTOR));
-                ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.BLACK);
+                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.BLACK);
 
-                return true;
+                return ((AIEntity) context.getValue(CONTROLLED_ENTITY)).isOnScreen();
             }
         }
         return false;

@@ -369,9 +369,12 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             levelState.getPlayer().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
 
             //draw alive ai
-            for (Renderable entity : levelState.getAliveAIEntities()){
-                if (isOnScreen(entity))
+            for (AIEntity entity : levelState.getAliveAIEntities()){
+                if (isOnScreen(entity)) {
                     entity.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+                    entity.setOnScreen(true);
+                } else
+                    entity.setOnScreen(false);
             }
 
             if (levelState.getCore() != null && isOnScreen(levelState.getCore()))

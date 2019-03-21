@@ -421,6 +421,39 @@ public class CollisionManager {
         }
     }
 
+    public static float getWiggleRoom(Player player, AIEntity aiEntity){
+        Point[] playerVertices = player.getCollisionVertices();
+
+        Vector aToP = new Vector(aiEntity.getCenter(), player.getCenter());
+        Vector normal = aToP.rotateAntiClockwise90().getUnitVector();
+
+        float min = Float.MAX_VALUE;
+        float max = Float.MIN_VALUE;
+        Point minPoint = playerVertices[0];
+        Point maxPoint = playerVertices[0];
+
+        for (Point p : playerVertices){
+            float currentLength = projectOntoAxis(normal, p).first;
+
+            if (currentLength < min) {
+                minPoint = p;
+                min = currentLength;
+            }
+            if (currentLength > max){
+                maxPoint = p;
+                max = currentLength;
+            }
+        }
+
+        Vector aToMin = new Vector (aiEntity.getCenter(), minPoint);
+        Vector aToMax = new Vector (aiEntity.getCenter(), maxPoint);
+
+        float minAngle = Math.abs(Vector.calculateAngleBetweenVectors(aToP, aToMin));
+        float maxAngle = Math.abs(Vector.calculateAngleBetweenVectors(aToP, aToMax));
+
+        return Math.min(minAngle, maxAngle);
+    }
+
     private void restitutionCollision(Entity a, Entity b, float cor){
         Vector ua = a.getVelocity();
         Vector ub = b.getVelocity();
@@ -495,7 +528,7 @@ public class CollisionManager {
             boolean blocked;
             boolean friendlyBlocking;
 
-            if (ray.getLength() < 800){
+            if (ray.getLength() < 1500){
                 blocked = false;
                 friendlyBlocking = false;
 

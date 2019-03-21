@@ -109,7 +109,6 @@ public abstract class MoveableEntity extends Entity {
     }
 
     public void addForce(Vector force){
-        extraForces.clear();
         this.extraForces.add(force);
     }
 
@@ -124,23 +123,28 @@ public abstract class MoveableEntity extends Entity {
         if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR) || this instanceof AIEntity) {
             Vector movementForce = Vector.ZERO_VECTOR;
 
-            if (!(this instanceof AIEntity))
-                movementForce = getRequestedMovementVector().sMult(200);
+            if (!(this instanceof AIEntity)) {
+                movementForce = getRequestedMovementVector().sMult(100);
 
-            float dot = velocity.getUnitVector().dot(movementForce.getUnitVector());
 
-            float angle = (float) Math.acos(Math.min(dot, 1f));
+                float dot = velocity.getUnitVector().dot(movementForce.getUnitVector());
 
-            Log.d("MOVEMENT", getName() + ": dot: " + dot + " angle: " + angle + " prop: " + (angle/ (float) Math.PI));
-            Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " applyMovementForces: " + movementForce.relativeToString());
+                float angle = (float) Math.acos(Math.min(dot, 1f));
 
-            if (angle > 0.175f)
-                movementForce = movementForce.sMult(angle/ (float) Math.PI);
+                if (angle > 0.175f)
+                    movementForce = movementForce.sMult(angle/ (float) Math.PI);
+
+                Log.d("MOVEMENT", getName() + ": dot: " + dot + " angle: " + angle + " prop: " + (angle/ (float) Math.PI));
+            }
+
 
             for (Vector force : extraForces){
                 Log.d("MOVEMENT", getName() + " extra force: " + force.relativeToString());
                 movementForce = movementForce.vAdd(force);
             }
+
+
+            Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " applyMovementForces: " + movementForce.relativeToString());
 
             Vector acc = movementForce;
 
@@ -157,8 +161,7 @@ public abstract class MoveableEntity extends Entity {
                 velocity = velocity.setLength(max);
 
             Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " +
-                    acc.relativeToString() + " f: " + movementForce.relativeToString() + " mV: " +
-                    getRequestedMovementVector().relativeToString() + " dot: " + dot);
+                    acc.relativeToString() + " f: " + movementForce.relativeToString());
 
         } else {
             velocity = velocity.sMult(0.25f);

@@ -24,9 +24,21 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     protected PickupType drops;
 
+    private boolean isOnScreen;
+
     public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed, Shape shape) {
         super(name, spawn, maxDimension, maxSpeed, shape);
         context = new BContext();
+
+        isOnScreen = false;
+    }
+
+    public boolean isOnScreen() {
+        return isOnScreen;
+    }
+
+    public void setOnScreen(boolean onScreen) {
+        isOnScreen = onScreen;
     }
 
     public PickupType getDrops() {

@@ -79,7 +79,7 @@ public class AStar {
             Point p = controlled.getCenter();
             //Point p = new Point(100,100);
 
-            for (int i = 1; i < roughPath.length; i++){
+            for (int i = 1; i < roughPath.length-1; i++){
                 MeshPolygon meshPolygon = meshPolygonMap.get(roughPath[i]);
 
                 if (meshPolygon == null){

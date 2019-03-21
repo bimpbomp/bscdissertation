@@ -203,18 +203,20 @@ public class Vector implements SaveableState {
     }
 
     public static Point getClosestPoint(Point a, Point b, Point p){
-        float l2 =  (float) Math.pow(new Vector(a,b).getLength(),2);
+        Vector v = new Vector(a,b);
+        Vector u = new Vector(p,a);
 
-        if (Float.compare(l2, 0f) == 0){
-            return a;
+        float t = -1 * (u.dot(v))/(v.dot(v));
+
+        if (t > 0 && t < 1){
+            return a.sMult(1-t).add(b.sMult(t));
         }
 
-        Vector pa = new Vector(p, a);
-        Vector ab = new Vector(a, b);
+        return gt(a,b,p,0) < gt(a,b,p,1) ? a : b;
+    }
 
-        float t = Math.max(0, Math.min(1, pa.dot(ab)/l2));
-
-        return a.add(ab.sMult(t).getRelativeToTailPoint());
+    private static float gt(Point a, Point b, Point p, float t){
+        return (float) Math.pow(new Vector(p, a.sMult(1-t).add(b.sMult(t))).getLength(), 2);
     }
 
     /**

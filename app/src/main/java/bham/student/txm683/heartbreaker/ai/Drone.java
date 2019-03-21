@@ -1,6 +1,8 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
@@ -17,6 +19,10 @@ import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
+
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
 
 public class Drone extends AIEntity implements Shooter {
     private int health;
@@ -157,6 +163,38 @@ public class Drone extends AIEntity implements Shooter {
 
         if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
+
+        Paint paint = new Paint();
+        if (context.containsKeys(PATH)){
+            List<Point> path = ((PathWrapper) context.getValue(PATH)).path();
+
+
+            paint.setColor(getShape().getColor());
+
+            for (Point p : path){
+                p = p.add(renderOffset);
+                canvas.drawCircle(p.getX(), p.getY(), 10, paint);
+            }
+
+            for (int i = 0; i < path.size()-1; i++){
+                Point p = path.get(i).add(renderOffset);
+                Point q = path.get(i+1).add(renderOffset);
+
+                canvas.drawLine(p.getX(), p.getY(), q.getX(), q.getY(), paint);
+            }
+
+            if (context.containsVariables("closest_point")){
+                paint.setColor(Color.YELLOW);
+
+                Point p = ((Point) context.getVariable("closest_point")).add(renderOffset);
+                canvas.drawCircle(p.getX(),p.getY(), 25, paint);
+            }
+        }
+
+        Point p = getCenter().add(getVelocity().getRelativeToTailPoint()).add(renderOffset);
+
+        paint.setColor(Color.BLACK);
+        canvas.drawCircle(p.getX(), p.getY(), 20, paint);
     }
 
     @Override

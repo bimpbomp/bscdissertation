@@ -33,11 +33,15 @@ public class MeshPolygon {
 
     public Point getNearestPoint(Point p, int widthOfEntity){
         BoundingBox b = area.getBoundingBox();
-        return new Point(mapToRange(p.getX(), widthOfEntity, b.getLeft(), b.getRight()), mapToRange(p.getY(), widthOfEntity, b.getTop(), b.getBottom()));
+
+        float x = mapToRange(p.getX(), widthOfEntity, b.getLeft(), b.getRight());
+        float y = mapToRange(p.getY(), widthOfEntity, b.getTop(), b.getBottom());
+
+        return new Point(x,y);
     }
 
     private float mapToRange(float x, int width, float min, float max){
-        //width = width / 2;
+        width = width / 2;
 
         if (x-width <= min)
             return min+width;

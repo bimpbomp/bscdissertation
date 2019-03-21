@@ -95,7 +95,7 @@ public class Behaviour {
                 patrol,
                 Tasks.plotPath(),
                 Tasks.followPath(),
-                Tasks.seek(),
+                //Tasks.seek(),
                 Tasks.courseCorrect()
         );
     }
@@ -126,7 +126,6 @@ public class Behaviour {
     public static BNode stationaryShootBehaviour(){
         return Conditionals.canSeePlayer(
                 new ForgetfulSequence(
-                        Tasks.attackRotDamp(),
                         Tasks.aim(),
                         Tasks.rotateToTarget(),
                         Conditionals.notInCooldown(
@@ -218,7 +217,15 @@ public class Behaviour {
                             ),
                             stationaryShootBehaviour()
                     ));
-        return walkToRandomMeshBehaviour();
+
+        BNode shoot = stationaryShootBehaviour();
+        return new Selector(
+                new ForgetfulSequence(
+                        walkToRandomMeshBehaviour(),
+                        shoot
+                ),
+                shoot
+        );
 
         /*return new Selector(
                 Conditionals.canSeePlayer(
