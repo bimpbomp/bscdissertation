@@ -78,8 +78,8 @@ public abstract class MoveableEntity extends Entity {
     public void tick(float secondsSinceLastGameTick){
         applyMovementForces(secondsSinceLastGameTick);
 
-        if (this instanceof AIEntity)
-            applyRotationalForces(secondsSinceLastGameTick);
+        /*if (this instanceof AIEntity)
+            applyRotationalForces(secondsSinceLastGameTick);*/
 
         extraForces.clear();
         rotationForces.clear();
@@ -168,12 +168,13 @@ public abstract class MoveableEntity extends Entity {
 
         shape.translate(v);
 
-        if (this instanceof Player){
+        if (/*this instanceof Player*/true){
 
             //rotate body
             float angularVelocity = getAngularVelocity(v.getUnitVector(), secondsSinceLastGameTick, shape.getForwardUnitVector());
 
-            float maxAngularVel = 1f;
+            float maxAngularVel = 0.5f;
+            Log.d("TANK", "angVel: " + angularVelocity);
 
             if (angularVelocity > maxAngularVel)
                 angularVelocity = maxAngularVel;

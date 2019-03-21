@@ -45,7 +45,7 @@ public class Drone extends AIEntity implements Shooter {
     }
 
     public Drone(String name, Point center){
-        this(name, center, 100, ColorScheme.CHASER_COLOR, 600, 100);
+        this(name, center, 150, ColorScheme.CHASER_COLOR, 600, 100);
     }
 
     private static Shape constructShape(Point center, int size, int colorValue){

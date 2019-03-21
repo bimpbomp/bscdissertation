@@ -132,7 +132,11 @@ public class Tasks {
 
                     Vector desiredVel = new Vector(pos, heading).setLength(controlled.getMaxSpeed());
 
-                    Vector steeringForce = desiredVel.vSub(vel).setLength(100);
+                    Vector steeringForce = desiredVel.vSub(vel);
+
+                    int maxForce = 30;
+                    if (steeringForce.getLength() > 30)
+                        steeringForce.setLength(30);
 
                     controlled.addForce(steeringForce);
                     controlled.addRotationForce(steeringForce.getUnitVector());
