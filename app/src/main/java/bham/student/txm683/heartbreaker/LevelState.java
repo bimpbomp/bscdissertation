@@ -57,6 +57,8 @@ public class LevelState {
 
     private CollisionManager collisionManager;
 
+    private Set<Integer> blockedMeshPolygons;
+
     public LevelState(Map map){
         this.map = map;
 
@@ -87,6 +89,8 @@ public class LevelState {
         }
 
         levelEnder = new LevelEnder();
+
+        this.blockedMeshPolygons = new HashSet<>();
     }
 
     public void setCollisionManager(CollisionManager collisionManager) {
@@ -117,6 +121,18 @@ public class LevelState {
             }
         }
         return -1;
+    }
+
+    public void clearBlockedPolygons(){
+        blockedMeshPolygons.clear();
+    }
+
+    public void addBlockedPolygon(int id){
+        blockedMeshPolygons.add(id);
+    }
+
+    public Set<Integer> getBlockedPolygons() {
+        return blockedMeshPolygons;
     }
 
     public Graph<Integer> getMeshGraph(){

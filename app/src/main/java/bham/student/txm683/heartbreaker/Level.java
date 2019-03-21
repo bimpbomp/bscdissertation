@@ -2,15 +2,18 @@ package bham.student.txm683.heartbreaker;
 
 import android.graphics.Color;
 import android.util.Log;
+import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
+import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.RectButtonBuilder;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.MapLoader;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.messaging.MessageBus;
+import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.EntityController;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
@@ -18,7 +21,15 @@ import bham.student.txm683.heartbreaker.rendering.popups.Popup;
 import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
 import bham.student.txm683.heartbreaker.utils.BenchMarker;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
+import bham.student.txm683.heartbreaker.utils.graph.Edge;
+import bham.student.txm683.heartbreaker.utils.graph.Graph;
+import bham.student.txm683.heartbreaker.utils.graph.Node;
 import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Level implements Runnable {
 
@@ -50,6 +61,8 @@ public class Level implements Runnable {
     private Popup diedPopup;
     private Popup completePopup;
 
+    private Set<Edge<Integer>> removedConnections;
+
     public Level(LevelView levelView, String mapName){
         super();
 
@@ -62,6 +75,8 @@ public class Level implements Runnable {
 
         gameFPSMonitor = new FPSMonitor();
         renderFPSMonitor = new FPSMonitor();
+
+        removedConnections = new HashSet<>();
     }
 
     public LevelState getLevelState() {
@@ -177,11 +192,19 @@ public class Level implements Runnable {
                     levelState.getPlayer().setRotationVector(inputManager.getRotationThumbstick().getMovementVector());
 
 
+                    levelState.clearBlockedPolygons();
+                    addBlockedBackToGraph();
+
+                    mapToMesh(levelState.getPlayer());
+
                     benchMarker.begin();
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
                         mapToMesh(aiEntity);
                     }
                     benchMarker.output("meshCalc");
+
+                    //remove blocked edges from meshgraph
+                    removeBlockedFromGraph();
 
                     entityController.update(gameTickTimeStepInMillis / 1000f);
 
@@ -229,15 +252,72 @@ public class Level implements Runnable {
         Log.d("LOADING", "GAME LOOP ENDING");
     }
 
-    private void mapToMesh(AIEntity aiEntity){
-        //Log.d("hb::AI", "Checking meshploygon for " + aiEntity.getName());
-        for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
-            if (meshPolygon.getBoundingBox().intersecting(aiEntity.getBoundingBox())){
-                aiEntity.getContext().addPair(BKeyType.CURRENT_MESH, meshPolygon);
-                //Log.d("hb::AI", "Meshfound for " + aiEntity.getName() + ": " + meshPolygon.getId());
+    private void removeBlockedFromGraph(){
+        Graph<Integer> graph = levelState.getMeshGraph();
+
+        for (int id : levelState.getBlockedPolygons()){
+            Node<Integer> currentNode = graph.getNode(id);
+
+            List<Node<Integer>> neighbours = graph.getNode(id).getNeighbours();
+
+            for (Node<Integer> neighbour : neighbours){
+                if (neighbour.hasConnectionToNode(currentNode)){
+                    removedConnections.add(neighbour.getConnectionTo(currentNode));
+                    neighbour.removeConnectionTo(currentNode);
+                }
+            }
+        }
+    }
+
+    private void addBlockedBackToGraph(){
+        Graph<Integer> graph = levelState.getMeshGraph();
+
+        for (Edge<Integer> edge : removedConnections){
+            Pair<Node<Integer>, Node<Integer>> nodes = edge.getConnectedNodes();
+
+            graph.addConnection(nodes.first, nodes.second, edge.getWeight());
+        }
+
+        removedConnections.clear();
+    }
+
+    private void mapToMesh(Entity entity){
+
+
+        List<Integer> ids = mapCollidableToMesh(entity);
+
+
+        if (ids.size() == 0)
+            return;
+
+        for (int id : ids) {
+            MeshPolygon meshPolygon = levelState.getRootMeshPolygons().get(id);
+
+            Log.d("RATIOO", entity.getName());
+            float ratio = meshPolygon.compareDimensions(entity.getBoundingBox());
+
+            if (ratio > 0.7f) {
+                levelState.addBlockedPolygon(id);
+            }
+
+            if (entity instanceof AIEntity) {
+                ((AIEntity) entity).getContext().addPair(BKeyType.CURRENT_MESH, meshPolygon);
                 break;
             }
         }
+    }
+
+    private List<Integer> mapCollidableToMesh(Collidable collidable){
+        List<Integer> ids = new ArrayList<>();
+
+        for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
+
+            if (meshPolygon.getBoundingBox().intersecting(collidable.getBoundingBox())){
+                ids.add(meshPolygon.getId());
+            }
+        }
+
+        return ids;
     }
 
     public void shutDown(){

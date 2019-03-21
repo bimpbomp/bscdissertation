@@ -172,9 +172,9 @@ public class Tasks {
 
                     CollisionManager collisionManager = ((LevelState) context.getValue(LEVEL_STATE)).getCollisionManager();
 
-                    //Vector steeringAxis = collisionManager.getPathAroundObstacle(controlled, heading);
+                    Vector steeringAxis = collisionManager.getPathAroundObstacle(controlled, heading);
 
-                    Vector steeringAxis = collisionManager.movingTargetAvoidanceForTanks(controlled);
+                    //Vector steeringAxis = collisionManager.movingTargetAvoidanceForTanks(controlled);
 
                     if (!steeringAxis.equals(Vector.ZERO_VECTOR)){
                         //correction needs to take place
@@ -219,8 +219,11 @@ public class Tasks {
                     boolean plotted = a.plotPath();
 
                     if (plotted) {
+                        context.addVariable("plottingFailed", false);
                         setStatus(SUCCESS);
                         return SUCCESS;
+                    } else {
+                        context.addVariable("plottingFailed", true);
                     }
                 }
                 setStatus(FAILURE);

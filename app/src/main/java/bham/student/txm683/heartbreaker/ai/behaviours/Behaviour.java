@@ -63,6 +63,32 @@ public class Behaviour {
                     }
 
                     int patrolIdx = (int) context.getVariable("patrol");
+
+                    if (context.containsVariables("plottingFailed") && ((boolean) context.getVariable("plottingFailed"))){
+                        patrolIdx++;
+                        if (patrolIdx >= patrolPath.size())
+                            patrolIdx = 0;
+                    }
+
+                    /*float smallestDistance = Float.MAX_VALUE;
+                    int patrolIdx = 0;
+                    for (int i = 0; i < patrolPath.size(); i++){
+                        int id = patrolPath.get(i);
+
+                        Point center = levelState.getRootMeshPolygons().get(id).getCenter();
+
+                        float distance = new Vector(controlled.getCenter(), center).getLength();
+
+                        if (smallestDistance > distance){
+                            smallestDistance = distance;
+                            patrolIdx = i;
+                        }
+                    }
+
+                    patrolIdx++;
+                    if (patrolIdx >= patrolPath.size())
+                        patrolIdx = 0;*/
+
                     Point point = levelState.getRootMeshPolygons().get(patrolPath.get(patrolIdx)).getCenter();
 
                     float distance = new Vector(controlled.getCenter(), point).getLength();

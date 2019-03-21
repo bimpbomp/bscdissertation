@@ -44,6 +44,14 @@ public class BoundingBox {
         }
     }
 
+    public int width(){
+        return right - left;
+    }
+
+    public int height(){
+        return bottom - top;
+    }
+
     public boolean intersecting(BoundingBox bb){
         return this.left < bb.right && this.right > bb.left && this.top < bb.bottom && this.bottom > bb.top;
     }

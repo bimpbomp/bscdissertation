@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.map;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
@@ -38,6 +39,17 @@ public class MeshPolygon {
         float y = mapToRange(p.getY(), widthOfEntity, b.getTop(), b.getBottom());
 
         return new Point(x,y);
+    }
+
+    public float compareDimensions(BoundingBox b){
+        BoundingBox areaB = getBoundingBox();
+
+        float widthRatio = Math.max(b.width() / (float) areaB.width(), b.width() / (float) areaB.height());
+        float heightRatio = Math.max(b.height() / (float) areaB.width(), b.height() / (float) areaB.height());
+
+        Log.d("RATIO", "width: " + widthRatio + ", height: " + heightRatio);
+
+        return Math.max(widthRatio, heightRatio);
     }
 
     private float mapToRange(float x, int width, float min, float max){
