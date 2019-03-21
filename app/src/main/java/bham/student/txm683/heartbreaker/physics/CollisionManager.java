@@ -591,7 +591,7 @@ public class CollisionManager {
         float height = 200f;
         Point center = fUnit.sMult(height).getHead();
 
-        Rectangle rect = new Rectangle(center, entity.getWidth(), height, Color.GRAY);
+        Rectangle rect = new Rectangle(center, entity.getWidth()*1.5f, height, Color.GRAY);
         Point[] rectVertices = rect.getVertices();
 
         Vector pV;
@@ -627,7 +627,6 @@ public class CollisionManager {
         if (det < 0) {
             steeringAxis = steeringAxis.sMult(-1f);
         }
-
 
         return steeringAxis;
     }

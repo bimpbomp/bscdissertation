@@ -39,7 +39,7 @@ public class Drone extends AIEntity implements Shooter {
 
         this.health = initialHealth;
 
-        this.weapon = new BasicWeapon(getName(), 7);
+        this.weapon = new BasicWeapon(getName());
 
         this.behaviourTreeRoot = Behaviour.droneTree();
 

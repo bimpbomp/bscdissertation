@@ -168,6 +168,8 @@ public class Tasks {
 
                     Point heading = (Point) context.getVariable("heading");
 
+                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+
                     CollisionManager collisionManager = ((LevelState) context.getValue(LEVEL_STATE)).getCollisionManager();
 
                     Vector steeringAxis = collisionManager.getPathAroundObstacle(controlled, heading);
@@ -180,6 +182,10 @@ public class Tasks {
                         controlled.addForce(steeringAxis.sMult(100));
                     } else {
                         Log.d("AVOID", "no obstacles in way");
+
+                        if (levelState.mapToMesh(controlled.getCenter().add(controlled.getVelocity().sMult(0.1f).getRelativeToTailPoint())) == -1){
+                            controlled.setVelocity(Vector.ZERO_VECTOR);
+                        }
                     }
 
                     /*setStatus(RUNNING);
