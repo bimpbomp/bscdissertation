@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.ai;
 
+import android.graphics.Color;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
@@ -9,6 +10,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
+import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -18,7 +20,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     private Tile[] path;
 
-    private LevelState levelState;
+    LevelState levelState;
 
     protected BContext context;
 
@@ -56,6 +58,10 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     }
 
     public abstract int getWidth();
+
+    public void onDeath(){
+        levelState.addExplosion(new Explosion(getName(), getName(), getCenter(), 200f, 50, Color.RED));
+    }
 
     @Override
     public CollidableType getCollidableType() {

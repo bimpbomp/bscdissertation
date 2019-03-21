@@ -16,6 +16,7 @@ import bham.student.txm683.heartbreaker.LevelEndStatus;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.MenuActivity;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
@@ -357,12 +358,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                     door.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
             }
 
-            //draw pickups
-            for (Renderable pickup : levelState.getPickups()){
-                if (isOnScreen(pickup))
-                    pickup.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
-            }
-
             //draw portal
             if (levelState.getPortal() != null){
                 if (isOnScreen(levelState.getPortal())){
@@ -377,6 +372,11 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
 
+            //draw pickups
+            for (Renderable pickup : levelState.getPickups()){
+                if (isOnScreen(pickup))
+                    pickup.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+            }
 
             //draw bullets
             for (Renderable bullet : levelState.getBullets()){
@@ -435,8 +435,30 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                         + " GameTickFPS: " + gameTickFPS,
                         new Point(viewWidth/2f, 50), Color.WHITE, 10);
 
-                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "HEALTH: " + levelState.getPlayer().getHealth(),
-                        new Point(viewWidth/2f, viewHeight-40), Color.WHITE, 10);
+                /*RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "HEALTH: " + levelState.getPlayer().getHealth(),
+                        new Point(viewWidth/2f, viewHeight-40), Color.WHITE, 10);*/
+
+                int width = 200;
+                int height = 75;
+                Rectangle outer = new Rectangle(new Point(viewWidth/2f, viewHeight-80), width, height, Color.LTGRAY);
+                BoundingBox b = outer.getBoundingBox();
+
+                outer.draw(canvas, new Point(), 0, false);
+
+                int oldColor = textPaint.getColor();
+                textPaint.setColor(Color.RED);
+
+                int currentHealth = levelState.getPlayer().getHealth();
+                int initialHealth = levelState.getPlayer().getInitialHealth();
+
+                Log.d("HEALTH", "current: " + currentHealth + ", init: " + initialHealth + ", ratio: " + ((float)currentHealth/initialHealth));
+
+                int padding = 10;
+                float right = b.getLeft() + padding + ((float) currentHealth/initialHealth) * (width-2*padding);
+
+                canvas.drawRect(b.getLeft() + padding, b.getTop() + padding, right, b.getBottom() - padding, textPaint);
+
+                textPaint.setColor(oldColor);
             }
             if (levelState.isPaused()) {
                 canvas.drawARGB(200, 0,0,0);
@@ -503,6 +525,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
     private boolean isOnScreen(BoundingBox b){
         return visibleBounds.intersecting(b);
+    }
+
+    public BoundingBox getVisibleBounds(){
+        return visibleBounds;
     }
 
     public LevelState getLevelState() {

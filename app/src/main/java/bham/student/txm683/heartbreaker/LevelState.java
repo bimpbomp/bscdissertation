@@ -15,6 +15,7 @@ import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
+import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
@@ -57,6 +58,8 @@ public class LevelState {
 
     private CollisionManager collisionManager;
 
+    private LevelView levelView;
+
     private Set<Integer> blockedMeshPolygons;
 
     public LevelState(Map map){
@@ -91,6 +94,14 @@ public class LevelState {
         levelEnder = new LevelEnder();
 
         this.blockedMeshPolygons = new HashSet<>();
+    }
+
+    public LevelView getLevelView() {
+        return levelView;
+    }
+
+    public void setLevelView(LevelView levelView) {
+        this.levelView = levelView;
     }
 
     public void setCollisionManager(CollisionManager collisionManager) {
@@ -158,6 +169,8 @@ public class LevelState {
         aliveAIEntities.remove(aiEntity);
         deadAIEntities.add(aiEntity);
         aiManager.removeAI(aiEntity);
+
+        aiEntity.onDeath();
     }
 
     public List<Collidable> getAvoidables(){

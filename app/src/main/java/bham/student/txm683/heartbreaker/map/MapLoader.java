@@ -2,10 +2,7 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.util.Log;
 import bham.student.txm683.heartbreaker.MainActivity;
-import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.Core;
-import bham.student.txm683.heartbreaker.ai.Drone;
-import bham.student.txm683.heartbreaker.ai.Turret;
+import bham.student.txm683.heartbreaker.ai.*;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
@@ -65,7 +62,7 @@ public class MapLoader {
         if (jsonObject.has("drones"))
             enemies.addAll(parseEnemies(jsonObject.getJSONArray("drones"), "drones"));
 
-        Log.d("LOADING", "LOADED PAST dribes");
+        Log.d("LOADING", "LOADED PAST drones");
 
         if (jsonObject.has("turrets"))
             enemies.addAll(parseEnemies(jsonObject.getJSONArray("turrets"), "turrets"));
@@ -90,6 +87,15 @@ public class MapLoader {
         mapConstructor.loadMap(doorBuilders);
 
         Log.d("LOADING", "LOADED PAST map constructor");
+
+        JSONArray jsonArray = jsonObject.getJSONArray("overlords");
+
+        List<Overlord> overlords = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++){
+            overlords.add(new Overlord(jsonArray.getJSONObject(i), map.getTileSize()));
+        }
+
+        map.setOverlords(overlords);
 
         return map;
     }
@@ -147,66 +153,4 @@ public class MapLoader {
         }
         return enemies;
     }
-
-    /*private List<Wall> parseWalls(JSONArray jsonArray) throws JSONException{
-        List<Wall> walls = new ArrayList<>();
-
-        for (int i = 0; i < jsonArray.length(); i++){
-            walls.add(Wall.build(jsonArray.getJSONObject(i)));
-        }
-
-        return walls;
-    }
-
-    private Graph<Integer> parseMeshGraph(JSONArray graphArray) throws JSONException{
-        Graph<Integer> graph = new Graph<>();
-
-        //create nodes
-        for (int nodeIdx = 0; nodeIdx < graphArray.length(); nodeIdx++){
-            JSONObject jsonObject = graphArray.getJSONObject(nodeIdx);
-
-            graph.addNode(jsonObject.getInt("id"));
-        }
-
-        //create edges
-        for (int nodeIdx = 0; nodeIdx < graphArray.length(); nodeIdx++){
-            JSONObject jsonObject = graphArray.getJSONObject(nodeIdx);
-
-            JSONArray edges = jsonObject.getJSONArray("edges");
-            for (int edgeIdx = 0; edgeIdx < edges.length(); edgeIdx++){
-                graph.addConnection(jsonObject.getInt("id"), edges.getInt(edgeIdx));
-            }
-        }
-
-        return graph;
-    }
-
-    private List<MeshPolygon> parseMeshPolygons(JSONArray meshArray) throws JSONException{
-        List<MeshPolygon> polygons = new ArrayList<>();
-
-        for (int polyIdx = 0; polyIdx < meshArray.length(); polyIdx++){
-            JSONObject polygon = meshArray.getJSONObject(polyIdx);
-
-            List<Point> vertices = new ArrayList<>();
-
-            JSONArray jsonVertices = polygon.getJSONArray("vertices");
-
-            for (int vIdx = 0; vIdx < jsonVertices.length(); vIdx++){
-                vertices.add(new Point(jsonVertices.getJSONObject(vIdx)));
-            }
-
-            if (vertices.size() != 2)
-                throw new JSONException("Incorrect number of vertices in polygon array " + polyIdx + ": have " + vertices.size() + ", expected 2");
-            else {
-                polygons.add(new MeshPolygon(polygon.getInt("id"),
-                        new Rectangle(new Point(polygon.getJSONObject("center")),
-                                vertices.get(0),
-                                vertices.get(1),
-                                ColorScheme.randomColor())
-                ));
-            }
-        }
-
-        return polygons;
-    }*/
 }

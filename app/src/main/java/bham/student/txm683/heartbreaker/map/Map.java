@@ -2,6 +2,7 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.annotation.SuppressLint;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.Overlord;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Portal;
@@ -33,6 +34,7 @@ public class Map {
     private Graph<Integer> meshGraph;
     private HashMap<Integer, MeshPolygon> rootMeshPolygons;
 
+    private List<Overlord> overlords;
 
     @SuppressLint("UseSparseArrays")
     public Map(String name, String stage, int tileSize){
@@ -44,6 +46,14 @@ public class Map {
 
         this.rootMeshPolygons = new HashMap<>();
 
+    }
+
+    public List<Overlord> getOverlords() {
+        return overlords;
+    }
+
+    public void setOverlords(List<Overlord> overlords) {
+        this.overlords = overlords;
     }
 
     public String getStage() {

@@ -2,7 +2,6 @@ package bham.student.txm683.heartbreaker.ai;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
@@ -14,15 +13,15 @@ import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
+import bham.student.txm683.heartbreaker.physics.fields.Explosion;
+import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.List;
-
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
+import java.util.Random;
 
 public class Drone extends AIEntity implements Shooter {
     private int health;
@@ -51,7 +50,7 @@ public class Drone extends AIEntity implements Shooter {
     }
 
     public Drone(String name, Point center){
-        this(name, center, 150, ColorScheme.CHASER_COLOR, 600, 100);
+        this(name, center, 100, ColorScheme.CHASER_COLOR, 400, 100);
     }
 
     private static Shape constructShape(Point center, int size, int colorValue){
@@ -86,6 +85,18 @@ public class Drone extends AIEntity implements Shooter {
         }
 
         return drone;
+    }
+
+    @Override
+    public void onDeath() {
+        Random r = new Random();
+        int i = r.nextInt(100);
+
+        if (i < 65){
+            levelState.getPickups().add(new Pickup("HEALTH" + i, PickupType.HEALTH, getCenter()));
+        } else {
+            levelState.addExplosion(new Explosion("EXPLOSION" + i, getName(), getCenter(), 150, 50, Color.RED));
+        }
     }
 
     @Override
@@ -161,7 +172,7 @@ public class Drone extends AIEntity implements Shooter {
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
-        if (renderEntityName)
+        /*if (renderEntityName)
             drawName(canvas, getCenter().add(renderOffset));
 
         Paint paint = new Paint();
@@ -194,7 +205,7 @@ public class Drone extends AIEntity implements Shooter {
         Point p = getCenter().add(getVelocity().getRelativeToTailPoint()).add(renderOffset);
 
         paint.setColor(Color.BLACK);
-        canvas.drawCircle(p.getX(), p.getY(), 20, paint);
+        canvas.drawCircle(p.getX(), p.getY(), 20, paint);*/
     }
 
     @Override

@@ -191,8 +191,8 @@ public class InputManager {
 
                     if (thumbstick.hasID(eventID))
                         thumbstick.setActivePosition(coordinatesPressed);
-                    else if (secondaryWeaponButton.hasID(eventID))
-                        levelState.addBullet(levelState.getPlayer().shootSecondary());
+                    /*else if (secondaryWeaponButton.hasID(eventID))
+                        levelState.addBullet(levelState.getPlayer().shootSecondary());*/
                     else if (rotationThumbstick.hasID(eventID)){
                         rotationThumbstick.setActivePosition(coordinatesPressed);
                         levelState.addBullet(levelState.getPlayer().shoot());
@@ -226,9 +226,9 @@ public class InputManager {
             thumbstick.setActivePosition(coordinatesPressed);
             thumbstick.setPointerID(eventID);
 
-        } else if (secondaryWeaponButton.getID() < 0 && secondaryWeaponButton.containsPoint(coordinatesPressed)){
+        /*} else if (secondaryWeaponButton.getID() < 0 && secondaryWeaponButton.containsPoint(coordinatesPressed)){
             levelState.addBullet(levelState.getPlayer().shootSecondary());
-            secondaryWeaponButton.setPointerID(eventID);
+            secondaryWeaponButton.setPointerID(eventID);*/
         } else if (pauseButton.getID() < 0 && pauseButton.containsPoint(coordinatesPressed)){
             pauseButton.setPointerID(eventID);/*
         } else if (primaryWeaponButton.getID() < 0 && primaryWeaponButton.containsPoint(coordinatesPressed)){
@@ -297,8 +297,8 @@ public class InputManager {
         if (!levelState.isPaused()) {
             thumbstick.draw(canvas, textPaint);
 
-            secondaryWeaponButton.setLabel(levelState.getPlayer().getSecondaryAmmo() + "");
-            secondaryWeaponButton.draw(canvas, textPaint);
+            /*secondaryWeaponButton.setLabel(levelState.getPlayer().getSecondaryAmmo() + "");
+            secondaryWeaponButton.draw(canvas, textPaint);*/
 
             rotationThumbstick.draw(canvas, textPaint);
 

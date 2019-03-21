@@ -22,25 +22,32 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     private int health;
 
+    private int initialHealth;
+
     private Weapon primaryWeapon;
     private Weapon secondaryWeapon;
 
     private List<Key> keys;
+
+    private int mesh;
 
     private Player(String name, Point center, int size, float maxSpeed, int color, int initialHealth) {
         //super(name, center, size, maxSpeed, Kite.constructKite(center, size, upperTriColor));
         super(name, center, size, maxSpeed, new TankBody(center, size, color));
 
         this.health = initialHealth;
+        this.initialHealth = health;
 
         this.primaryWeapon = new BasicWeapon(name);
         this.secondaryWeapon = new BombThrower(name);
 
         this.keys = new ArrayList<>();
+
+        mesh = -1;
     }
 
     private Player(Point center){
-        this("player", center, 150, 600, ColorScheme.PLAYER_COLOR, 100000);
+        this("player", center, 100, 600, ColorScheme.PLAYER_COLOR, 300);
     }
 
     public static Player build(JSONObject jsonObject, int tileSize) throws JSONException {
@@ -55,6 +62,14 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         }
 
         return player;
+    }
+
+    public int getMesh() {
+        return mesh;
+    }
+
+    public void setMesh(int mesh) {
+        this.mesh = mesh;
     }
 
     public void addKey(Key key){
@@ -123,9 +138,16 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         return health <= 0;
     }
 
+    public int getInitialHealth() {
+        return initialHealth;
+    }
+
     @Override
     public void restoreHealth(int healthToRestore) {
         this.health += healthToRestore;
+
+        if (health > initialHealth)
+            health = initialHealth;
     }
 
     @Override

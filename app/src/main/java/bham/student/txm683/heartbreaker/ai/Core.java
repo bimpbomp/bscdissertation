@@ -24,11 +24,11 @@ public class Core extends AIEntity implements Damageable {
 
     public Core(String name, Point center, int size) {
         super(name, center, size, 0, new Hexagon(center, size, Color.BLACK));
-        health = 500;
+        health = 10;
 
         this.width = size;
 
-        this.innerShape = new Octagon(center, size/2, Color.WHITE);
+        this.innerShape = new Octagon(center, size/2, Color.RED);
     }
 
     public Core(String name, Point center){

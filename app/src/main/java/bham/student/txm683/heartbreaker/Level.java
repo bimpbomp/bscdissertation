@@ -6,7 +6,6 @@ import android.util.Pair;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
-import bham.student.txm683.heartbreaker.entities.Entity;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.RectButtonBuilder;
 import bham.student.txm683.heartbreaker.map.Map;
@@ -20,13 +19,13 @@ import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.rendering.popups.Popup;
 import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
 import bham.student.txm683.heartbreaker.utils.BenchMarker;
+import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.FPSMonitor;
 import bham.student.txm683.heartbreaker.utils.graph.Edge;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 import org.json.JSONException;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +62,8 @@ public class Level implements Runnable {
 
     private Set<Edge<Integer>> removedConnections;
 
+    private int countdownToEnd;
+
     public Level(LevelView levelView, String mapName){
         super();
 
@@ -77,6 +78,8 @@ public class Level implements Runnable {
         renderFPSMonitor = new FPSMonitor();
 
         removedConnections = new HashSet<>();
+
+        countdownToEnd = 25 * 5;
     }
 
     public LevelState getLevelState() {
@@ -151,7 +154,8 @@ public class Level implements Runnable {
             collisionManager = new CollisionManager(levelState);
 
             levelState.setCollisionManager(collisionManager);
-            levelState.setAiManager(new AIManager(levelState, levelState.getAliveAIEntities()));
+            levelState.setLevelView(levelView);
+            levelState.setAiManager(new AIManager(levelState, map.getOverlords()));
         }
 
         this.setRunning(true);
@@ -195,9 +199,17 @@ public class Level implements Runnable {
                     levelState.clearBlockedPolygons();
                     addBlockedBackToGraph();
 
-                    mapToMesh(levelState.getPlayer());
+
+                    int id = mapCollidableToMesh(levelState.getPlayer());
+
+                    if (id > 0)
+                        levelState.getPlayer().setMesh(id);
+
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
-                        mapToMesh(aiEntity);
+                        id = mapCollidableToMesh(aiEntity);
+
+                        if (id > 0)
+                            aiEntity.getContext().addPair(BKeyType.CURRENT_MESH, levelState.getRootMeshPolygons().get(id));
                     }
 
                     //remove blocked edges from meshgraph
@@ -208,6 +220,9 @@ public class Level implements Runnable {
 
                     benchMarker.begin();
                     levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
+
+                    if (levelState.getCore() != null)
+                        levelState.getCore().tick(gameTickTimeStepInMillis/1000f);
                     benchMarker.output("AI");
 
                     benchMarker.begin();
@@ -227,8 +242,13 @@ public class Level implements Runnable {
                         inputManager.setActivePopup(diedPopup);
 
                     } else if (levelState.getCore() != null && levelState.getCore().getHealth() < 1) {
-                        levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
-                        inputManager.setActivePopup(completePopup);
+
+                        if (countdownToEnd > 0){
+                            countdownToEnd--;
+                        } else {
+                            levelState.getLevelEnder().setStatus(LevelEndStatus.CORE_DESTROYED);
+                            inputManager.setActivePopup(completePopup);
+                        }
                     }
                 }
             } else {
@@ -279,43 +299,32 @@ public class Level implements Runnable {
         removedConnections.clear();
     }
 
-    private void mapToMesh(Entity entity){
+    private int mapCollidableToMesh(Collidable collidable){
+        BoundingBox colBox = collidable.getBoundingBox();
 
-
-        List<Integer> ids = mapCollidableToMesh(entity);
-
-
-        if (ids.size() == 0)
-            return;
-
-        for (int id : ids) {
-            MeshPolygon meshPolygon = levelState.getRootMeshPolygons().get(id);
-
-            Log.d("RATIOO", entity.getName());
-            float ratio = meshPolygon.compareDimensions(entity.getBoundingBox());
-
-            if (ratio > 0.7f) {
-                levelState.addBlockedPolygon(id);
-            }
-
-            if (entity instanceof AIEntity) {
-                ((AIEntity) entity).getContext().addPair(BKeyType.CURRENT_MESH, meshPolygon);
-                break;
-            }
-        }
-    }
-
-    private List<Integer> mapCollidableToMesh(Collidable collidable){
-        List<Integer> ids = new ArrayList<>();
-
+        int biggestOverlapId = -1;
+        float biggestOverlap = Float.MIN_VALUE;
         for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
 
-            if (meshPolygon.getBoundingBox().intersecting(collidable.getBoundingBox())){
-                ids.add(meshPolygon.getId());
+            BoundingBox meshBox =  meshPolygon.getBoundingBox();
+
+            if (meshBox.intersecting(colBox)){
+
+                //if collidable takes up over half of the meshpolygon,
+                //add it as a blocked polygon
+                if (meshBox.overlap(colBox) > 0.5f){
+                    levelState.addBlockedPolygon(meshPolygon.getId());
+                }
+
+                float overlap = colBox.overlap(meshBox);
+                if (overlap > biggestOverlap){
+                    biggestOverlap = overlap;
+                    biggestOverlapId = meshPolygon.getId();
+                }
             }
         }
 
-        return ids;
+        return biggestOverlapId;
     }
 
     public void shutDown(){

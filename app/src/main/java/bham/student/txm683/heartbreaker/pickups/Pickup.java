@@ -64,6 +64,10 @@ public class Pickup extends InteractionField implements Renderable {
 
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
+        float angVel = 0.8f;
+
+        shape.rotate(angVel * secondsSinceLastRender);
+
         shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
     }
 

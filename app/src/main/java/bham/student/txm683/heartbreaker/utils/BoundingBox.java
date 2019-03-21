@@ -3,6 +3,9 @@ package bham.student.txm683.heartbreaker.utils;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 public class BoundingBox {
     private int top;
     private int bottom;
@@ -58,6 +61,20 @@ public class BoundingBox {
 
     public boolean intersecting(Point p){
         return this.left < p.getX() && this.right > p.getX() && this.top < p.getY() && this.bottom > p.getY();
+    }
+
+    public float area(){
+        return (right - left) * (bottom - top);
+    }
+
+    public float overlap(BoundingBox b){
+        float overlap = (max(right, b.right) - min(left, b.left)) * (max(bottom, b.bottom) - min(top, b.top));
+
+        float area = area();
+        if (Float.compare(area, 0) == 0)
+            return 0f;
+
+        return overlap / area;
     }
 
     public Point[] getCollisionVertices(){

@@ -1,6 +1,5 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.conditionals;
 
-import android.graphics.Color;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 
@@ -23,9 +22,9 @@ public class Conditionals {
     private static Condition canSeePlayerCondition = (context -> {
         if (context.containsKeys(SIGHT_BLOCKED, SIGHT_VECTOR, CONTROLLED_ENTITY, FRIENDLY_BLOCKING_SIGHT)){
             if ((Boolean) context.getValue(SIGHT_BLOCKED)){
-                ((AIEntity) context.getValue(CONTROLLED_ENTITY)).revertToDefaultColor();
+                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).revertToDefaultColor();
             } else if ((Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
-                ((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.YELLOW);
+                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.YELLOW);
             } else {
                 //((AIEntity) context.getValue(CONTROLLED_ENTITY)).applyRotationalForces((Vector) context.getValue(SIGHT_VECTOR));
                 //((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.BLACK);

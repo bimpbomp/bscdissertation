@@ -117,7 +117,7 @@ public abstract class MoveableEntity extends Entity {
     }
 
     void applyMovementForces(float secondsSinceLastGameTick){
-        if (velocity.getLength() < 5f)
+        if (velocity.getLength() < 3f)
             velocity = Vector.ZERO_VECTOR;
 
         if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR) || this instanceof AIEntity) {
@@ -131,10 +131,10 @@ public abstract class MoveableEntity extends Entity {
 
                 float angle = (float) Math.acos(Math.min(dot, 1f));
 
-                if (angle > 0.175f)
+                if (angle > 0.785f)
                     movementForce = movementForce.sMult(angle/ (float) Math.PI);
 
-                Log.d("MOVEMENT", getName() + ": dot: " + dot + " angle: " + angle + " prop: " + (angle/ (float) Math.PI));
+                //Log.d("MOVEMENT", getName() + ": dot: " + dot + " angle: " + angle + " prop: " + (angle/ (float) Math.PI));
             }
 
 
