@@ -73,7 +73,7 @@ public class Overlord {
         for (Point spawn : spawnPoints){
             if (!visibleBounds.intersecting(spawn)){
                 //spawn point not on screen
-                Drone drone = new Drone("D" + uniqueID.id(), spawn);
+                Turret drone = new Turret("D" + uniqueID.id(), spawn);
 
                 addAI(drone);
 

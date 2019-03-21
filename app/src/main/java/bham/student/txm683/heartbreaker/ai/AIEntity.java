@@ -31,6 +31,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed, Shape shape) {
         super(name, spawn, maxDimension, maxSpeed, shape);
         context = new BContext();
+        context.addVariable("arrived", false);
 
         isOnScreen = false;
     }

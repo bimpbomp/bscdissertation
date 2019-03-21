@@ -3,13 +3,12 @@ package bham.student.txm683.heartbreaker.ai.behaviours;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.ForgetfulSequence;
-import bham.student.txm683.heartbreaker.ai.behaviours.composites.MemSelector;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Sequence;
 import bham.student.txm683.heartbreaker.ai.behaviours.conditionals.Conditionals;
-import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RepeatUntilFail;
+import bham.student.txm683.heartbreaker.ai.behaviours.decorators.NotAtDestination;
+import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RunningSuccessor;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Tasks;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -26,7 +25,7 @@ public class Behaviour {
 
     }
 
-    public static BNode idleBehaviour(){
+    /*public static BNode idleBehaviour(){
         return new Sequence(
             walkToRandomPointBehaviour(),
             Tasks.doNothing()
@@ -38,7 +37,7 @@ public class Behaviour {
                 Tasks.randomPointInMesh(),
                 walkToPointBehaviour()
         );
-    }
+    }*/
 
     public static BNode walkToRandomMeshBehaviour(){
         BNode patrol = new BNode() {
@@ -120,32 +119,19 @@ public class Behaviour {
         return new ForgetfulSequence(
                 patrol,
                 Tasks.plotPath(),
-                Tasks.followPath(),
+                new RunningSuccessor(Tasks.followPath()),
                 //Tasks.seek(),
                 Tasks.courseCorrect()
         );
     }
 
-    public static BNode turretIdleBehaviour(){
-        return new Sequence(
-                Tasks.randomPointInMesh(),
-                Tasks.idleRotDamp(),
-                Tasks.rotateToMoveTo(),
-                Tasks.doNothing()
-        );
-    }
-
-    public static BNode walkToPointBehaviour(){
-        return new Sequence(
-                Tasks.rotateToMoveTo(),
-                Tasks.moveTowardsPoint()
-        );
-    }
-
     public static BNode followPathBehaviour(){
-        return new Sequence(
-                Tasks.plotPath(),
-                Tasks.followPath()
+
+        return new NotAtDestination(
+                new Sequence(
+                        Tasks.followPath(),
+                        Tasks.courseCorrect()
+                )
         );
     }
 
@@ -161,7 +147,22 @@ public class Behaviour {
         );
     }
 
-    public static BNode fleeToCore(){
+    public static BNode turretTree(){
+        return new Sequence(
+                Tasks.plotToRandomMesh(),
+                Tasks.plotPath(),
+                followPathBehaviour(),
+                Conditionals.canSeePlayer(
+                        new Sequence(
+                                Tasks.aim(),
+                                Tasks.rotateToTarget(),
+                                Tasks.shoot()
+                        )
+                )
+        );
+    }
+
+    /*public static BNode fleeToCore(){
         return new Sequence(
                 Tasks.setMoveToAsCore(),
                 followPathBehaviour(),
@@ -191,27 +192,7 @@ public class Behaviour {
                 },
                 walkToRandomPointBehaviour()
         );
-    }
-
-    public static BNode turretTree(){
-        BNode turretAttack = new Selector(
-                Conditionals.inCooldown(
-                        new Sequence(
-                                Tasks.attackRotDamp(),
-                                Tasks.aim(),
-                                Tasks.rotateToTarget()
-                        )
-                ),
-                Behaviour.stationaryShootBehaviour()
-        );
-
-        return new Selector(
-                Conditionals.canSeePlayer(
-                        turretAttack
-                ),
-                Behaviour.turretIdleBehaviour()
-        );
-    }
+    }*/
 
     public static BNode fleeToAlly(){
         return new Sequence(
@@ -221,7 +202,17 @@ public class Behaviour {
     }
 
     public static BNode droneTree(){
-        BNode flee = new Sequence(
+
+        BNode shoot = stationaryShootBehaviour();
+        return new Selector(
+                new ForgetfulSequence(
+                        walkToRandomMeshBehaviour(),
+                        shoot
+                ),
+                shoot
+        );
+
+        /*BNode flee = new Sequence(
                 new MemSelector(
                         fleeToAlly(),
                         fleeToCore()
@@ -242,16 +233,9 @@ public class Behaviour {
                                     )
                             ),
                             stationaryShootBehaviour()
-                    ));
+                    ));*/
 
-        BNode shoot = stationaryShootBehaviour();
-        return new Selector(
-                new ForgetfulSequence(
-                        walkToRandomMeshBehaviour(),
-                        shoot
-                ),
-                shoot
-        );
+
 
         /*return new Selector(
                 Conditionals.canSeePlayer(

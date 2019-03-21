@@ -48,10 +48,21 @@ public class Conditionals {
         return false;
     };
 
+    private static Condition notAtDestinationCondition = context -> {
+        if (context.containsVariables("arrived")){
+            return !((boolean) context.getVariable("arrived"));
+        }
+        return false;
+    };
+
     private static Condition notInCooldownCondition = context ->  !inCooldownCondition.eval(context);
 
     private Conditionals() {
 
+    }
+
+    public static ConditionalBNode notAtDestination (BNode child) {
+        return new ConditionalBNode(child, notAtDestinationCondition);
     }
 
     public static ConditionalBNode inCooldown(BNode child){

@@ -16,6 +16,7 @@ import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -207,7 +208,7 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsKeys(CONTROLLED_ENTITY, CURRENT_MESH, LEVEL_STATE)){
                     Log.d("TASK plotPath", "plotting...");
-                    Log.d("TASK plotPath", "levelstate is null: " + (context.getValue(LEVEL_STATE) == null));
+                    //Log.d("TASK plotPath", "levelstate is null: " + (context.getValue(LEVEL_STATE) == null));
 
                     LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
                     //context.addPair(MOVE_TO, levelState.getPlayer().getCenter());
@@ -218,6 +219,8 @@ public class Tasks {
 
                     boolean plotted = a.plotPath();
 
+                    Log.d("TASK", "plotted: " + plotted);
+
                     if (plotted) {
                         context.addVariable("plottingFailed", false);
                         setStatus(SUCCESS);
@@ -226,6 +229,36 @@ public class Tasks {
                         context.addVariable("plottingFailed", true);
                     }
                 }
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode plotToRandomMesh(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+
+                if (context.containsKeys(LEVEL_STATE)){
+                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+
+                    Random r = new Random();
+
+                    List<Integer> meshIdList = new ArrayList<>(levelState.getRootMeshPolygons().keySet());
+
+                    int id = meshIdList.get(r.nextInt(meshIdList.size()));
+
+                    MeshPolygon meshPolygon = levelState.getRootMeshPolygons().get(id);
+
+                    if (meshPolygon != null){
+                        context.addPair(MOVE_TO, meshPolygon.getRandomPointInMesh());
+
+                        setStatus(SUCCESS);
+                        return SUCCESS;
+                    }
+                }
+
                 setStatus(FAILURE);
                 return FAILURE;
             }
@@ -307,7 +340,10 @@ public class Tasks {
                     //Log.d("TANKK", "distance to end: " + new Vector(controlled.getCenter(), path.get(path.size()-1)).getLength());
                     if (new Vector(controlled.getCenter(), path.get(path.size()-1)).getLength() < 200){
                         setStatus(Tasks.arrival().process(context));
-                        return getStatus();
+                        context.addVariable("arrived", true);
+
+                        setStatus(SUCCESS);
+                        return SUCCESS;
                     }
 
                     Vector steeringVector = new Vector(futurePos, closestPoint);
@@ -328,8 +364,10 @@ public class Tasks {
                     Log.d("BEH", "follow: movementForce: " + movementForce.relativeToString());
                     Log.d("BEH", "follow: steeringForce: " + steeringVector.relativeToString());
 
-                    setStatus(SUCCESS);
-                    return SUCCESS;
+                    context.addVariable("arrived", false);
+
+                    setStatus(RUNNING);
+                    return RUNNING;
 
                     /*
 
