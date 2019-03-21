@@ -202,6 +202,21 @@ public class Vector implements SaveableState {
         return (float) Math.atan2(det, dot);
     }
 
+    public static Point getClosestPoint(Point a, Point b, Point p){
+        float l2 =  (float) Math.pow(new Vector(a,b).getLength(),2);
+
+        if (Float.compare(l2, 0f) == 0){
+            return a;
+        }
+
+        Vector pa = new Vector(p, a);
+        Vector ab = new Vector(a, b);
+
+        float t = Math.max(0, Math.min(1, pa.dot(ab)/l2));
+
+        return a.add(ab.sMult(t).getRelativeToTailPoint());
+    }
+
     /**
      * Rotates this vector by an angle. Rotation is relative this vector's tail position.
      * @param cosAngle Cos of angle to applyRotationalForces by

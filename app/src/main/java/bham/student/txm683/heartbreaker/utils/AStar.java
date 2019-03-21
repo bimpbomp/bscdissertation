@@ -114,58 +114,6 @@ public class AStar {
         return false;
     }
 
-    /*private Status applyAStar(){
-
-        //initialise sets by adding the start tile with 0 costs
-        openSet.add(new Pair<>(startNode, 0));
-        costSoFar.put(startNode, 0);
-
-        //has a value of null so the tracePath algorithm knows when to stop backtracking
-        cameFrom.put(startNode, null);
-
-        if (startNode.equals(targetNode)){
-            Log.d(controlled.getName(), "Already at destination");
-            return SUCCESS;
-        }
-
-        while (!openSet.isEmpty()){
-
-            Pair<Node<Integer>, Integer> currentPair = openSet.poll();
-            Node<Integer> currentNode = currentPair.first;
-            int currentCost = currentPair.second;
-
-            for (Edge<Integer> connection : currentNode.getConnections()){
-
-                Node<Integer> neighbour = connection.traverse();
-
-                Log.d(controlled.getName(), "current: " + currentNode.getNodeID().toString() + " neighbour: " + neighbour.getNodeID().toString());
-
-                //if the next tile is the target, add it to the cameFrom map and return the path generated
-                //by tracePath
-                if (targetNode.equals(neighbour)){
-                    Log.d(controlled.getName(), "Target Reached!");
-
-                    cameFrom.put(neighbour, currentNode);
-                    return SUCCESS;
-                }
-
-                int gCostToNext = currentCost + connection.getWeight();
-
-                //If the tile hasn't been visited before, or the cost to get to this tile is cheaper than the already stored cost
-                //add it to all tracking sets
-                if (!costSoFar.containsKey(neighbour) || costSoFar.get(neighbour) > gCostToNext) {
-
-                    int fCost = gCostToNext + calculateEuclideanHeuristic(currentNode.getNodeID(), neighbour.getNodeID());
-
-                    costSoFar.put(neighbour, gCostToNext);
-                    openSet.add(new Pair<>(neighbour, fCost));
-                    cameFrom.put(neighbour, currentNode);
-                }
-            }
-        }
-        return FAILURE;
-    }*/
-
     private int calculateEuclideanHeuristic(int currentId, int neighbourId){
         MeshPolygon currentMesh = meshPolygonMap.get(currentId);
         MeshPolygon neighbourMesh = meshPolygonMap.get(neighbourId);

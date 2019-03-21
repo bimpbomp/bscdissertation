@@ -164,9 +164,6 @@ public class TankBody implements Renderable, Shape {
     @Override
     public void rotate(Vector v) {
         body.rotate(v);
-
-
-        Log.d("TANK", "a head: " + v.getHead());
     }
 
     @Override

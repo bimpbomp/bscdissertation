@@ -222,6 +222,73 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsKeys(CONTROLLED_ENTITY, PATH)){
 
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    List<Point> path = ((PathWrapper) context.getValue(PATH)).path();
+
+                    //project ai one second into the future
+                    Point futurePos = controlled.getCenter().add(controlled.getVelocity().getRelativeToTailPoint());
+
+                    Point closestPathPoint;
+                    Point secondClosestPathPoint;
+
+                    if (path.size() > 1) {
+
+                        int closestPointIdx = -1;
+                        int smallestDistance = Integer.MAX_VALUE;
+                        for (int i = 0; i < path.size(); i++) {
+                            Point p = path.get(i);
+
+                            int distance = (int) new Vector(futurePos, p).getLength();
+                            if (distance < smallestDistance) {
+                                closestPointIdx = i;
+                                smallestDistance = distance;
+                            }
+                        }
+
+                        if (closestPointIdx == -1) {
+                            setStatus(FAILURE);
+                            return FAILURE;
+                        }
+
+                        closestPathPoint = path.get(closestPointIdx);
+
+                        if (closestPointIdx == 0) {
+                            secondClosestPathPoint = path.get(1);
+                        } else if (closestPointIdx == path.size()-1){
+                            secondClosestPathPoint = path.get(closestPointIdx-1);
+                        } else {
+
+                            float distance = new Vector(futurePos, path.get(closestPointIdx - 1)).getLength();
+                            float distance2 = new Vector(futurePos, path.get(closestPointIdx + 1)).getLength();
+
+                            if (distance < distance2) {
+                                secondClosestPathPoint = path.get(closestPointIdx - 1);
+                            } else {
+                                secondClosestPathPoint = path.get(closestPointIdx + 1);
+                            }
+                        }
+                    } else {
+                        closestPathPoint = path.get(0);
+                        secondClosestPathPoint = null;
+                    }
+
+                    Point closestPoint;
+
+                    if (secondClosestPathPoint != null)
+                        closestPoint = Vector.getClosestPoint(closestPathPoint, secondClosestPathPoint, futurePos);
+                    else
+                        closestPoint = closestPathPoint;
+
+
+                    Vector steeringVector = new Vector(futurePos, closestPoint).setLength(20);
+
+                    controlled.addForce(steeringVector);
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
+
+                    /*
+
                     int pointInPath = 0;
 
                     if (getStatus() == RUNNING){
@@ -233,9 +300,6 @@ public class Tasks {
                             return FAILURE;
                         }
                     }
-
-                    AIEntity aiEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                    List<Point> path = ((PathWrapper) context.getValue(PATH)).path();
 
                     StringBuilder stringBuilder = new StringBuilder();
 
@@ -270,6 +334,8 @@ public class Tasks {
                         currentPoint = path.get(pointInPath);
                     }
 
+
+
                     Vector closenessV = new Vector(aiEntity.getCenter(), currentPoint).getUnitVector();
 
                     Log.d("TASK followPath", "heading to: " + currentPoint + ", vector to point: " + closenessV.relativeToString());
@@ -278,11 +344,7 @@ public class Tasks {
 
                     context.addVariable("heading", currentPoint);
 
-                    /*aiEntity.addForce(closenessV.sMult(100));
-                    aiEntity.setRotationVector(closenessV);*/
-
-                    setStatus(SUCCESS);
-                    return SUCCESS;
+                    */
 
                 }
                 Log.d("TASK followPath", "task failed...");

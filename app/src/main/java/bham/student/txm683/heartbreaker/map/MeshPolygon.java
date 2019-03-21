@@ -6,13 +6,10 @@ import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
-import bham.student.txm683.heartbreaker.utils.Line;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class MeshPolygon {
@@ -21,14 +18,10 @@ public class MeshPolygon {
     private Rectangle area;
     private Random random;
 
-    private Map<Integer, Line> edgesToNeighbours;
-
     public MeshPolygon(MeshSet meshSet, int tileSize){
         this.id = meshSet.getId();
 
         this.random = new Random();
-
-        this.edgesToNeighbours = new HashMap<>();
 
         generateArea(meshSet.getContainedTiles(), tileSize);
     }
