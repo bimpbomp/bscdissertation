@@ -141,6 +141,10 @@ public class CollisionManager {
         }
     }
 
+    public List<SpatialBin> getSpatialBins() {
+        return spatialBins;
+    }
+
     private boolean addToBin(Collidable collidable){
         boolean added = false;
         for (SpatialBin bin : spatialBins){

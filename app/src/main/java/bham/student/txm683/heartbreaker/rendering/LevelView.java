@@ -330,6 +330,25 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 meshPolygon.draw(canvas, renderOffset);
             }
 
+            /*List<SpatialBin> spatialBins = level.getCollisionManager().getSpatialBins();
+
+            for (SpatialBin spatialBin : spatialBins){
+
+                if (isOnScreen(spatialBin.getBoundingBox())){
+                    for (Collidable c : spatialBin.getCollidables()){
+                        if (c instanceof Renderable)
+                            ((Renderable) c).draw(canvas, renderOffset, secondsSinceLastGameTick, false);
+                    }
+                }
+            }
+
+            for (AIEntity entity : levelState.getAliveAIEntities()){
+                if (isOnScreen(entity)) {
+                    entity.setOnScreen(true);
+                } else
+                    entity.setOnScreen(false);
+            }*/
+
             //level.getCollisionManager().drawBins(canvas, renderOffset);
 
             //draw doors
@@ -480,6 +499,10 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
      */
     private boolean isOnScreen(Renderable entity){
         return visibleBounds.intersecting(entity.getBoundingBox());
+    }
+
+    private boolean isOnScreen(BoundingBox b){
+        return visibleBounds.intersecting(b);
     }
 
     public LevelState getLevelState() {

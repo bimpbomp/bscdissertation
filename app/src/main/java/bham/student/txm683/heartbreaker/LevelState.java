@@ -154,7 +154,7 @@ public class LevelState {
     public void aiDied(AIEntity aiEntity){
         Log.d(TAG, aiEntity.getName() + " died");
 
-        aiEntity.setColor(Color.argb(150, 0, 0, 0));
+        aiEntity.setColor(Color.rgb(20, 20, 20));
         aliveAIEntities.remove(aiEntity);
         deadAIEntities.add(aiEntity);
         aiManager.removeAI(aiEntity);

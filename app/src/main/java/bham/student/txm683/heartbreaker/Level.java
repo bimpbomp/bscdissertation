@@ -191,20 +191,18 @@ public class Level implements Runnable {
                     levelState.getPlayer().setRequestedMovementVector(inputManager.getThumbstick().getMovementVector());
                     levelState.getPlayer().setRotationVector(inputManager.getRotationThumbstick().getMovementVector());
 
-
+                    benchMarker.begin();
                     levelState.clearBlockedPolygons();
                     addBlockedBackToGraph();
 
                     mapToMesh(levelState.getPlayer());
-
-                    benchMarker.begin();
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
                         mapToMesh(aiEntity);
                     }
-                    benchMarker.output("meshCalc");
 
                     //remove blocked edges from meshgraph
                     removeBlockedFromGraph();
+                    benchMarker.output("meshCalc");
 
                     entityController.update(gameTickTimeStepInMillis / 1000f);
 
