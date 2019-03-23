@@ -81,13 +81,14 @@ public class Behaviour {
 
     public static BNode turretTree(){
         return new Sequence(
-                Tasks.plotToRandomMesh(),
+                Tasks.pickRandomMesh(),
                 Tasks.plotPath(),
-                followPathBehaviour(),
+                travelTo(),
                 Conditionals.canSeePlayer(
                         new Sequence(
                                 Tasks.aim(),
                                 Tasks.rotateToTarget(),
+                                Tasks.doNothing(30),
                                 Tasks.shoot()
                         )
                 )

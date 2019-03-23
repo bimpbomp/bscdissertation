@@ -33,7 +33,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     private Player(String name, Point center, int size, float maxSpeed, int color, int initialHealth) {
         //super(name, center, size, maxSpeed, Kite.constructKite(center, size, upperTriColor));
-        super(name, center, size, maxSpeed, new TankBody(center, size, color));
+        super(name, center, size, maxSpeed, 1, new TankBody(center, size, color));
 
         this.health = initialHealth;
         this.initialHealth = health;

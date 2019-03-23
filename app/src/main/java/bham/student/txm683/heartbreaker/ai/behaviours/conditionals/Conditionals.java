@@ -1,6 +1,8 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.conditionals;
 
+import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
@@ -22,6 +24,8 @@ public class Conditionals {
     private static Condition canSeePlayerCondition = (context -> {
         if (context.containsKeys(SIGHT_BLOCKED, SIGHT_VECTOR, CONTROLLED_ENTITY, FRIENDLY_BLOCKING_SIGHT)){
             if ((Boolean) context.getValue(SIGHT_BLOCKED)){
+                if ((context.getValue(CONTROLLED_ENTITY)) instanceof Turret)
+                    Log.d("TURRET", "BLOCKED");
                 //((AIEntity) context.getValue(CONTROLLED_ENTITY)).revertToDefaultColor();
             } else if ((Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
                 //((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.YELLOW);
@@ -29,9 +33,14 @@ public class Conditionals {
                 //((AIEntity) context.getValue(CONTROLLED_ENTITY)).applyRotationalForces((Vector) context.getValue(SIGHT_VECTOR));
                 //((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.BLACK);
 
-                return ((AIEntity) context.getValue(CONTROLLED_ENTITY)).isOnScreen();
+                //return ((AIEntity) context.getValue(CONTROLLED_ENTITY)).isOnScreen();
+                if ((context.getValue(CONTROLLED_ENTITY)) instanceof Turret)
+                    Log.d("TURRET", "can see player");
+                return true;
             }
         }
+        if ((context.getValue(CONTROLLED_ENTITY)) instanceof Turret)
+            Log.d("TURRET", "Returning false");
         return false;
     });
 

@@ -33,7 +33,7 @@ public class Drone extends AIEntity implements Shooter {
     private int width;
 
     public Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
-        super(name, center, size, maxSpeed, constructShape(center, size, colorValue));
+        super(name, center, size, maxSpeed, 1, constructShape(center, size, colorValue));
 
         this.width = size;
 

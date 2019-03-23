@@ -25,7 +25,7 @@ public class Turret extends AIEntity {
     private BNode behaviourTreeRoot;
 
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
-        super(name, center, size, 200, new TankBody(center, size, colorValue));
+        super(name, center, size, 200, 5, new TankBody(center, size, colorValue, 0.8f, 1.5f, 1.4f));
 
         health = initialHealth;
 

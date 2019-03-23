@@ -23,7 +23,7 @@ public class Core extends AIEntity implements Damageable {
     private int width;
 
     public Core(String name, Point center, int size) {
-        super(name, center, size, 0, new Hexagon(center, size, Color.BLACK));
+        super(name, center, size, 0, 1, new Hexagon(center, size, Color.BLACK));
         health = 10;
 
         this.width = size;

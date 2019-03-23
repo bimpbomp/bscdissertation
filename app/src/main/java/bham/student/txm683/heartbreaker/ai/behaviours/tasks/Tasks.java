@@ -28,8 +28,17 @@ public class Tasks {
 
     }
 
-    public static BNode doNothing(){
+    public static BNode doNothing(int idlePeriod){
         return new BNode() {
+            int cooldown;
+
+            @Override
+            public void construct() {
+                super.construct();
+
+                this.cooldown = idlePeriod;
+            }
+
             @Override
             public void reset(BContext context) {
                 super.reset(context);
@@ -59,13 +68,9 @@ public class Tasks {
 
                     } else {
                         Log.d("TASKS doNothing", "was not already running");
-                        if (context.containsVariables("idle_time")) {
-                            Log.d("TASKS doNothing", "setting movement to zero");
-                            int timePerIdle = (int) context.getVariable("idle_time");
-                            context.addVariable("idle_time", timePerIdle);
+                        context.addVariable("idle_time", cooldown);
 
-                            setMovementToZero(context);
-                        }
+                        setMovementToZero(context);
                         setStatus(RUNNING);
                     }
 
@@ -351,7 +356,7 @@ public class Tasks {
 
                     float distance = new Vector(controlled.getCenter(), point).getLength();
 
-                    if (distance < 70){
+                    if (controlled.getBoundingBox().intersecting(point)){
                         Log.d("AVOID", "arrived at: " + patrolPath.get(patrolIdx));
                         patrolIdx++;
 
@@ -376,7 +381,7 @@ public class Tasks {
         };
     }
 
-    public static BNode plotToRandomMesh(){
+    public static BNode pickRandomMesh(){
         return new BNode() {
             @Override
             public Status process(BContext context) {
@@ -393,7 +398,7 @@ public class Tasks {
                     MeshPolygon meshPolygon = levelState.getRootMeshPolygons().get(id);
 
                     if (meshPolygon != null){
-                        context.addPair(MOVE_TO, meshPolygon.getRandomPointInMesh());
+                        context.addPair(MOVE_TO, meshPolygon.getCenter());
 
                         setStatus(SUCCESS);
                         return SUCCESS;
@@ -486,7 +491,7 @@ public class Tasks {
                         steeringVector.setLength(5);
 
                     float distanceToEndNode = new Vector(controlled.getCenter(), path.get(path.size()-1)).getLength();
-                    if (distanceToEndNode < 75){
+                    if (controlled.getBoundingBox().intersecting(path.get(path.size()-1))){
                         context.addVariable("arrived", true);
                         context.addVariable("arriving", false);
 
@@ -702,6 +707,8 @@ public class Tasks {
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
 
                     Point aimPoint = (Point) context.getValue(TARGET);
+
+                    Log.d("SHOOT", "SHooting");
 
                     levelState.addBullet(controlled.getWeapon().shoot(((TankBody) controlled.getShape()).getShootingVector()));
 

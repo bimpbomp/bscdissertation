@@ -34,8 +34,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     private boolean isOnScreen;
 
-    public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed, Shape shape) {
-        super(name, spawn, maxDimension, maxSpeed, shape);
+    public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed, int mass, Shape shape) {
+        super(name, spawn, maxDimension, maxSpeed, mass, shape);
         context = new BContext();
         context.addVariable("arrived", false);
 
@@ -78,7 +78,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
             List<Point> path = ((PathWrapper) context.getValue(PATH)).basePath();
 
-            if (path.size() >= 3){
+            if (path.size() > 1){
 
                 List<Point> iPath = ((PathWrapper) context.getValue(PATH)).getIPath();
 

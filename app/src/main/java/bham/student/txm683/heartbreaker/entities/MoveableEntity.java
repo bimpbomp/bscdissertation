@@ -25,13 +25,16 @@ public abstract class MoveableEntity extends Entity {
 
     private int maxDimension;
 
+    private int mass;
+
     private List<Vector> extraForces;
     private List<Vector> rotationForces;
 
-    public MoveableEntity(String name, Point spawn, int maxDimension, float maxSpeed, Shape shape){
+    public MoveableEntity(String name, Point spawn, int maxDimension, float maxSpeed, int mass, Shape shape){
         super(name);
 
         this.shape = shape;
+        this.mass = mass;
 
         this.maxSpeed = maxSpeed;
         this.requestedMovementVector = Vector.ZERO_VECTOR;
@@ -149,7 +152,7 @@ public abstract class MoveableEntity extends Entity {
 
                 Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " applyMovementForces: " + movementForce.relativeToString());
 
-                Vector acc = movementForce;
+                Vector acc = movementForce.sMult(1f/mass);
 
                 int maxAcc = 300;
                 if (acc.getLength() > maxAcc) {
