@@ -143,25 +143,29 @@ public abstract class MoveableEntity extends Entity {
                 movementForce = movementForce.vAdd(force);
             }
 
+            if (movementForce.equals(Vector.ZERO_VECTOR)) {
+                velocity = velocity.sMult(0.75f);
+            } else {
 
-            Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " applyMovementForces: " + movementForce.relativeToString());
+                Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " applyMovementForces: " + movementForce.relativeToString());
 
-            Vector acc = movementForce;
+                Vector acc = movementForce;
 
-            int maxAcc = 300;
-            if (acc.getLength() > maxAcc){
-                acc = acc.setLength(maxAcc);
+                int maxAcc = 300;
+                if (acc.getLength() > maxAcc) {
+                    acc = acc.setLength(maxAcc);
+                }
+
+                velocity = velocity.vAdd(acc);
+
+                float max = getMaxSpeed();
+
+                if (velocity.getLength() > max)
+                    velocity = velocity.setLength(max);
+
+                Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " +
+                        acc.relativeToString() + " f: " + movementForce.relativeToString());
             }
-
-            velocity = velocity.vAdd(acc);
-
-            float max = getMaxSpeed();
-
-            if (velocity.getLength() > max)
-                velocity = velocity.setLength(max);
-
-            Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " +
-                    acc.relativeToString() + " f: " + movementForce.relativeToString());
 
         } else {
             velocity = velocity.sMult(0.25f);
@@ -177,7 +181,7 @@ public abstract class MoveableEntity extends Entity {
             float angularVelocity = getAngularVelocity(v.getUnitVector(), secondsSinceLastGameTick, shape.getForwardUnitVector());
 
             float maxAngularVel = 0.5f;
-            Log.d("TANK", "angVel: " + angularVelocity);
+            //Log.d("TANK", "angVel: " + angularVelocity);
 
             if (angularVelocity > maxAngularVel)
                 angularVelocity = maxAngularVel;

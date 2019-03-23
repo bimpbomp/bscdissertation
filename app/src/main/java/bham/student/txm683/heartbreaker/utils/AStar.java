@@ -83,11 +83,12 @@ public class AStar {
                 MeshPolygon meshPolygon = meshPolygonMap.get(roughPath[i]);
 
                 if (meshPolygon == null){
-                    Log.d("ASTAR", "null pointer in path for " + controlled.getName());
+                    Log.d("ASTAR", "null pointer in basePath for " + controlled.getName());
                     break;
                 }
 
-                p = meshPolygon.getNearestPoint(p, controlled.getWidth());
+                //p = meshPolygon.getNearestPoint(p, controlled.getWidth());
+                p = meshPolygon.getCenter();
 
                 waypointPath.add(p);
             }
@@ -107,11 +108,31 @@ public class AStar {
         if (waypointPath.size() > 0 ){
             waypointPath.add(targetPoint);
             Log.d("ASTAR", sb2.toString());
-            controlled.getContext().addPair(PATH, new PathWrapper(waypointPath));
+
+            List<Integer> pathMeshIds = new ArrayList<>();
+
+            for (Point point : waypointPath){
+
+                for (MeshPolygon meshPolygon : meshPolygonMap.values() ){
+                    if (meshPolygon.getBoundingBox().intersecting(point)){
+                        pathMeshIds.add(meshPolygon.getId());
+                        break;
+                    }
+                }
+            }
+
+            controlled.getContext().addPair(PATH, new PathWrapper(waypointPath, pathMeshIds));
             return true;
         }
 
         return false;
+    }
+
+    public static int calculateEuclideanHeuristic(Point a, Point b){
+        return (int) Math.sqrt(
+                Math.pow(b.getX() - a.getX(), 2) +
+                        Math.pow(b.getY() - a.getY(), 2)
+        );
     }
 
     private int calculateEuclideanHeuristic(int currentId, int neighbourId){
@@ -122,10 +143,7 @@ public class AStar {
             Point currentCenter = currentMesh.getCenter();
             Point neighbourCenter = neighbourMesh.getCenter();
 
-            return (int) Math.sqrt(
-                    Math.pow(neighbourCenter.getX() - currentCenter.getX(), 2) +
-                            Math.pow(neighbourCenter.getY() - currentCenter.getY(), 2)
-            );
+            return calculateEuclideanHeuristic(currentCenter, neighbourCenter);
         }
         return Integer.MAX_VALUE;
     }

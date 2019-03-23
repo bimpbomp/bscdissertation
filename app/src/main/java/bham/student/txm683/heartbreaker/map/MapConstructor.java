@@ -41,9 +41,9 @@ public class MapConstructor {
         try {
             mapReader.loadMap(map.getName(), map.getStage(), tileSize, doorBuilders);
 
-            meshConstructor.constructMesh(mapReader.getMeshGenList(), doorBuilders);
+            meshConstructor.constructMesh(mapReader.getMeshGenList(), doorBuilders, tileSize);
 
-            List<MeshPolygon> meshPolygons = meshConstructor.getMeshPolygons(tileSize);
+            List<MeshPolygon> meshPolygons = meshConstructor.getMeshPolygons();
 
             printTileList(mapReader.getMeshGenList());
 

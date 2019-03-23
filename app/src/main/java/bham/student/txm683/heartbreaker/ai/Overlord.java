@@ -57,11 +57,15 @@ public class Overlord {
         maxAliveAtOnce = jsonObject.getInt("max_in_level");
         maxSpawns = jsonObject.getInt("spawns_in_wave");
 
+        //TODO temp
+        maxAliveAtOnce = 1;
+        //maxSpawns = 100;
+
         inLockDown = false;
 
         uniqueID = new UniqueID();
 
-        spawnerTimer = new GameTickTimer(1000 * 10);
+        spawnerTimer = new GameTickTimer(1000 * 2);
         spawnerTimer.start();
 
         totalSpawns = 0;
@@ -73,7 +77,7 @@ public class Overlord {
         for (Point spawn : spawnPoints){
             if (!visibleBounds.intersecting(spawn)){
                 //spawn point not on screen
-                Turret drone = new Turret("D" + uniqueID.id(), spawn);
+                Drone drone = new Drone("D" + uniqueID.id(), spawn);
 
                 addAI(drone);
 

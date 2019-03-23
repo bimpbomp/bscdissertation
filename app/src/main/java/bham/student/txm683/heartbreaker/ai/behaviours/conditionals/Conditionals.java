@@ -61,6 +61,15 @@ public class Conditionals {
 
     }
 
+    public static ConditionalBNode arriving (BNode child){
+        return new ConditionalBNode(child, context -> {
+            if (context.containsVariables("arriving")){
+                return (boolean) context.getVariable("arriving");
+            }
+            return false;
+        });
+    }
+
     public static ConditionalBNode notAtDestination (BNode child) {
         return new ConditionalBNode(child, notAtDestinationCondition);
     }

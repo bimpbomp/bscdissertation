@@ -87,9 +87,9 @@ public abstract class Polygon implements Shape{
     }
 
     /**
-     * Creates a path between the given points
+     * Creates a basePath between the given points
      * @param points Points to join
-     * @return Created path
+     * @return Created basePath
      */
     static Path getPathWithPoints(Point[] points){
         Path path = new Path();

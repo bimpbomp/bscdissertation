@@ -114,4 +114,9 @@ public class MeshPolygon {
     public int getId(){
         return this.id;
     }
+
+    public float getArea(){
+        return getBoundingBox().area();
+
+    }
 }

@@ -89,7 +89,7 @@ public class Graph <T> {
         Map<Node<T>, Integer> costSoFar;
 
         //each key is the tile coordinate of a tile, it's value is the 'parent' of this tile.
-        //i.e. the tile that comes before the key tile in the path
+        //i.e. the tile that comes before the key tile in the basePath
         Map<Node<T>, Node<T>> cameFrom;
 
         openSet = new PriorityQueue<>(10, (a, b) -> {
@@ -125,7 +125,7 @@ public class Graph <T> {
 
                 //Log.d(controlled.getName(), "current: " + currentNode.getNodeID().toString() + " neighbour: " + neighbour.getNodeID().toString());
 
-                //if the next tile is the target, add it to the cameFrom map and return the path generated
+                //if the next tile is the target, add it to the cameFrom map and return the basePath generated
                 //by tracePath
                 if (targetNode.equals(neighbour)){
                     //Log.d(controlled.getName(), "Target Reached!");

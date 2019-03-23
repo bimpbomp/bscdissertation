@@ -1,6 +1,8 @@
 package bham.student.txm683.heartbreaker.ai;
 
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
@@ -15,6 +17,10 @@ import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
+
+import java.util.List;
+
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
 
 public abstract class AIEntity extends MoveableEntity implements Renderable, Damageable {
 
@@ -62,6 +68,62 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     public void onDeath(){
         levelState.addExplosion(new Explosion(getName(), getName(), getCenter(), 200f, 50, Color.RED));
+    }
+
+    public void drawPath(Canvas canvas, Point renderOffset){
+        Paint paint = new Paint();
+        if (context.containsKeys(PATH)){
+
+            paint.setColor(getShape().getColor());
+
+            List<Point> path = ((PathWrapper) context.getValue(PATH)).basePath();
+
+            if (path.size() >= 3){
+
+                List<Point> iPath = ((PathWrapper) context.getValue(PATH)).getIPath();
+
+                for (int i = 0; i < iPath.size(); i++){
+                    Point p = iPath.get(i).add(renderOffset);
+
+                    canvas.drawCircle(p.getX(), p.getY(), 15, paint);
+
+                    if (i < iPath.size()-1) {
+                        Point q = iPath.get(i + 1).add(renderOffset);
+
+                        canvas.drawLine(p.getX(), p.getY(), q.getX(), q.getY(), paint);
+                    }
+                }
+
+                //draw base path
+                paint.setColor(Color.BLACK);
+
+                for (Point p : path){
+                    p = p.add(renderOffset);
+                    canvas.drawCircle(p.getX(), p.getY(), 10, paint);
+                }
+
+                for (int i = 0; i < path.size()-1; i++){
+                    Point p = path.get(i).add(renderOffset);
+                    Point q = path.get(i+1).add(renderOffset);
+
+                    canvas.drawLine(p.getX(), p.getY(), q.getX(), q.getY(), paint);
+                }
+
+                return;
+            }
+
+            if (context.containsVariables("closest_point")){
+                paint.setColor(Color.YELLOW);
+
+                Point p = ((Point) context.getVariable("closest_point")).add(renderOffset);
+                canvas.drawCircle(p.getX(),p.getY(), 25, paint);
+            }
+        }
+
+        Point p = getCenter().add(getVelocity().getRelativeToTailPoint()).add(renderOffset);
+
+        paint.setColor(Color.BLACK);
+        canvas.drawCircle(p.getX(), p.getY(), 20, paint);
     }
 
     @Override

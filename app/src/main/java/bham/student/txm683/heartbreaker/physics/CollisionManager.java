@@ -592,7 +592,7 @@ public class CollisionManager {
         Vector fUnit = entity.getForwardUnitVector();
         Vector steeringAxis = fUnit.rotateAntiClockwise90();
 
-        float height = 200f;
+        float height = 300f;
         Point center = fUnit.sMult(height).getHead();
 
         Rectangle rect = new Rectangle(center, entity.getWidth()*1.5f, height, Color.GRAY);
@@ -633,6 +633,107 @@ public class CollisionManager {
         }
 
         return steeringAxis;
+    }
+
+    public static Point nearestPointOnCurve(Point position, List<Point> path, float step){
+        int controlPointIdx = getClosestPointOnPathIdx(position, path);
+
+        if (path.size() < 3){
+            throw new IllegalArgumentException("given basePath is not a curve. Only has length: " + path.size());
+        }
+
+        Point p0;
+        Point p1;
+        Point p2;
+
+        if (controlPointIdx == 0){
+
+            p0 = path.get(controlPointIdx);
+            p1 = path.get(controlPointIdx+1);
+            p2 = path.get(controlPointIdx+2);
+        } else if (controlPointIdx == path.size()-1){
+
+            p0 = path.get(controlPointIdx-2);
+            p1 = path.get(controlPointIdx-1);
+            p2 = path.get(controlPointIdx);
+        } else {
+
+            p0 = path.get(controlPointIdx-1);
+            p1 = path.get(controlPointIdx);
+            p2 = path.get(controlPointIdx+1);
+        }
+
+        //treat controlPointIdx as the middle point on a quadratic b curve.
+        QCurve curve = new QCurve(p0, p1, p2);
+
+        if (step > 1f){
+            step = 0.25f;
+        }
+
+        float t = 0f;
+        Point closestPoint = null;
+        int closestDistance = Integer.MAX_VALUE;
+
+        int distance;
+        Point currentPoint;
+        while (Float.compare(t, 1f) < 1){
+
+            currentPoint = curve.evalQCurve(t);
+            distance = (int) new Vector(position, currentPoint).getLength();
+
+            Log.d("CURVEE", "position: " + position +  ", currentPoint: " + currentPoint + ", distance: " + distance);
+
+            if (distance < closestDistance){
+                closestDistance = distance;
+                closestPoint = currentPoint;
+            }
+
+            t += step;
+        }
+        return closestPoint;
+    }
+
+    public static int getClosestPointOnPathIdx(Point position, List<Point> path){
+
+        if (path.size() > 1) {
+
+            int smallestDistance = Integer.MAX_VALUE;
+            int closestPointIdx = -1;
+
+            for (int i = 0; i < path.size(); i++) {
+                Point p = path.get(i);
+
+                int distance = (int) new Vector(position, p).getLength();
+                if (distance < smallestDistance) {
+                    closestPointIdx = i;
+                    smallestDistance = distance;
+                }
+            }
+
+            return closestPointIdx;
+
+        } else if (path.size() == 1) {
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public static Point getClosestPointOnLine(Point a, Point b, Point p){
+        Vector v = new Vector(a,b);
+        Vector u = new Vector(p,a);
+
+        float t = -1 * (u.dot(v))/(v.dot(v));
+
+        if (t > 0 && t < 1){
+            return a.sMult(1-t).add(b.sMult(t));
+        }
+
+        return gt(a,b,p,0) < gt(a,b,p,1) ? a : b;
+    }
+
+    private static float gt(Point a, Point b, Point p, float t){
+        return (float) Math.pow(new Vector(p, a.sMult(1-t).add(b.sMult(t))).getLength(), 2);
     }
 
     public Vector movingTargetAvoidanceForTanks(AIEntity controlled){

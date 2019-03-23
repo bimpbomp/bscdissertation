@@ -29,6 +29,16 @@ public class BContext {
         return true;
     }
 
+    public void removeVariables(String... keys){
+
+        if (keys == null || keys.length == 0)
+            return;
+
+        for (String key : keys){
+            variables.remove(key);
+        }
+    }
+
     public Object getVariable(String key){
         return variables.getOrDefault(key, null);
     }

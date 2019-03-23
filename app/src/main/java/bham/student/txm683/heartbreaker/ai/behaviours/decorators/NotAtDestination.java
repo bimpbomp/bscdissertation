@@ -23,13 +23,22 @@ public class NotAtDestination extends BNode {
 
         Status childStatus = child.process(context);
 
-        if (childStatus == Status.RUNNING){
-            child.reset(context);
-            setStatus(Status.RUNNING);
-            return Status.RUNNING;
+        if (childStatus != Status.FAILURE){
+            if (!context.containsVariables("arrived"))
+                context.addVariable("arrived", false);
+
+            boolean arrived = (boolean) context.getVariable("arrived");
+
+            if (arrived){
+                setStatus(Status.SUCCESS);
+                return Status.SUCCESS;
+            } else {
+                setStatus(Status.RUNNING);
+                return Status.RUNNING;
+            }
         }
 
-        setStatus(childStatus);
-        return childStatus;
+        setStatus(Status.FAILURE);
+        return Status.FAILURE;
     }
 }

@@ -4,10 +4,13 @@ import android.annotation.SuppressLint;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
+import bham.student.txm683.heartbreaker.utils.Vector;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class MeshConstructorV2 {
 
@@ -29,6 +32,10 @@ class MeshConstructorV2 {
 
     private Scan currentScan;
 
+    private Map<Integer, MeshPolygon> meshPolygons;
+
+    private int tileSize;
+
     @SuppressLint("UseSparseArrays")
     MeshConstructorV2(){
 
@@ -41,16 +48,21 @@ class MeshConstructorV2 {
 
         meshSetId = new UniqueID(1);
         intersectionId = new UniqueID(1);
+
+        meshPolygons = new HashMap<>();
     }
 
-    List<MeshPolygon> getMeshPolygons(int tileSize){
-        List<MeshPolygon> meshPolygons = new ArrayList<>();
+    private void constructMeshPolygons(){
 
         for (MeshSet meshSet : meshIntersectionSets){
-            meshPolygons.add(new MeshPolygon(meshSet, tileSize));
-        }
+            MeshPolygon meshPolygon = new MeshPolygon(meshSet, tileSize);
 
-        return meshPolygons;
+            meshPolygons.put(meshPolygon.getId(), meshPolygon);
+        }
+    }
+
+    List<MeshPolygon> getMeshPolygons(){
+        return new ArrayList<>(meshPolygons.values());
     }
 
     Graph<Integer> getMeshGraph() {
@@ -62,8 +74,9 @@ class MeshConstructorV2 {
      * Assumes that the tileList is properly padded so all columns are aligned
      * @param tileList Grid of integers stating their availability. 0 = free, -1 = wall, MININT = column padding
      */
-    void constructMesh(List<List<Integer>> tileList, List<DoorBuilder> doorBuilders){
+    void constructMesh(List<List<Integer>> tileList, List<DoorBuilder> doorBuilders, int tileSize){
         this.tileList = tileList;
+        this.tileSize = tileSize;
 
         currentScan = Scan.HORIZONTAL;
         hScan();
@@ -119,6 +132,8 @@ class MeshConstructorV2 {
             }
         }*/
 
+        constructMeshPolygons();
+
         constructGraph();
 
         Log.d("hb::MESHGRAPH", meshGraph.toString());
@@ -169,10 +184,17 @@ class MeshConstructorV2 {
         int tileInt = getTileInt(tile);
         int neighbourInt = getTileInt(neighbour);
 
-        if (neighbourInt > 0 && tileInt != neighbourInt){
+        if (neighbourInt > 0 && tileInt != neighbourInt && tileInt > 0){
+            Log.d("GRAPH", "map size: "+ meshPolygons.values().size());
+            Log.d("GRAPH", "map size: "+ meshPolygons.values().size() + ", " + (meshPolygons.get(tileInt).getCenter() == null));
+            Log.d("GRAPH", ""+(meshPolygons.get(neighbourInt).getCenter() == null));
+            int weight = (int) new Vector(meshPolygons.get(tileInt).getCenter(), meshPolygons.get(neighbourInt).getCenter()).getLength();
+
+            weight = weight / tileSize;
+
             //if neighbour has been visited, add a connection both ways
-            meshGraph.addConnection(tileInt, neighbourInt,1);
-            meshGraph.addConnection(neighbourInt, tileInt, 1);
+            meshGraph.addConnection(tileInt, neighbourInt,weight);
+            meshGraph.addConnection(neighbourInt, tileInt, weight);
         }
     }
 

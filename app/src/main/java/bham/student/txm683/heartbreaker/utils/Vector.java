@@ -202,23 +202,6 @@ public class Vector implements SaveableState {
         return (float) Math.atan2(det, dot);
     }
 
-    public static Point getClosestPoint(Point a, Point b, Point p){
-        Vector v = new Vector(a,b);
-        Vector u = new Vector(p,a);
-
-        float t = -1 * (u.dot(v))/(v.dot(v));
-
-        if (t > 0 && t < 1){
-            return a.sMult(1-t).add(b.sMult(t));
-        }
-
-        return gt(a,b,p,0) < gt(a,b,p,1) ? a : b;
-    }
-
-    private static float gt(Point a, Point b, Point p, float t){
-        return (float) Math.pow(new Vector(p, a.sMult(1-t).add(b.sMult(t))).getLength(), 2);
-    }
-
     /**
      * Rotates this vector by an angle. Rotation is relative this vector's tail position.
      * @param cosAngle Cos of angle to applyRotationalForces by
@@ -234,6 +217,14 @@ public class Vector implements SaveableState {
     @SuppressWarnings("SuspiciousNameCombination")
     public Vector rotateAntiClockwise90(){
         return new Vector(yRelativeToTail, -1f * xRelativeToTail);
+    }
+
+    public static Vector proj(Vector u, Vector v){
+        float dot = u.dot(v);
+
+        float v2 = (float) Math.pow(v.getLength(), 2);
+
+        return v.sMult(dot/v2);
     }
 
     public boolean isFromOrigin(){
