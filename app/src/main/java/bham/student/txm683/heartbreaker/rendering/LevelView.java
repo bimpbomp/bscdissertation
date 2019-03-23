@@ -16,7 +16,6 @@ import bham.student.txm683.heartbreaker.LevelEndStatus;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.MenuActivity;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.input.Button;
 import bham.student.txm683.heartbreaker.input.Click;
 import bham.student.txm683.heartbreaker.input.InputManager;
@@ -438,7 +437,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 /*RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "HEALTH: " + levelState.getPlayer().getHealth(),
                         new Point(viewWidth/2f, viewHeight-40), Color.WHITE, 10);*/
 
-                int width = 200;
+                /*int width = 200;
                 int height = 75;
                 Rectangle outer = new Rectangle(new Point(viewWidth/2f, viewHeight-80), width, height, Color.LTGRAY);
                 BoundingBox b = outer.getBoundingBox();
@@ -458,7 +457,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
                 canvas.drawRect(b.getLeft() + padding, b.getTop() + padding, right, b.getBottom() - padding, textPaint);
 
-                textPaint.setColor(oldColor);
+                textPaint.setColor(oldColor);*/
             }
             if (levelState.isPaused()) {
                 canvas.drawARGB(200, 0,0,0);

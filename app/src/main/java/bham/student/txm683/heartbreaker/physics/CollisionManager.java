@@ -39,6 +39,7 @@ public class CollisionManager {
 
     private HashSet<String> checkedPairNames;
     private HashSet<String> doorsToOpen;
+    private HashSet<Explosion> seenExplosions;
 
     private static String TAG = "hb::CollisionManager";
 
@@ -48,6 +49,7 @@ public class CollisionManager {
         this.levelState = levelState;
 
         this.spatialBins = new ArrayList<>();
+        seenExplosions = new HashSet<>();
 
         initSpatPatV4();
 
@@ -130,6 +132,9 @@ public class CollisionManager {
 
         for (Collidable collidable : levelState.getNonStaticCollidables()){
 
+            if (collidable instanceof  Explosion)
+                seenExplosions.add((Explosion) collidable);
+
             if (!addToBin(collidable)){
                 Log.d("hb::CollisionManager", collidable.getName() + " is not in a room");
 
@@ -206,6 +211,8 @@ public class CollisionManager {
                             if (nonSolidEntity instanceof Explosion){
                                 pushVector = collisionCheckCircleAndPolygon(((Explosion) nonSolidEntity).getCircle(), solidEntity);
 
+                                Log.d(TAG, "checking explosion with: " + solidEntity.getName());
+
                                 if (!pushVector.equals(Vector.ZERO_VECTOR)){
                                     //collision occurred
                                     resolveExplosion((Explosion) nonSolidEntity, solidEntity);
@@ -255,6 +262,11 @@ public class CollisionManager {
                     }
                 }
             }
+        }
+
+        List<Explosion> explosions = levelState.getExplosions();
+        for (Explosion explosion : seenExplosions){
+            explosions.remove(explosion);
         }
 
         for (Door door : levelState.getMap().getDoors().values()){

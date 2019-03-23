@@ -16,6 +16,7 @@ import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
+import bham.student.txm683.heartbreaker.rendering.HealthBar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -25,6 +26,8 @@ import java.util.Random;
 
 public class Drone extends AIEntity implements Shooter {
     private int health;
+    private int initialHealth;
+    private HealthBar healthBar;
 
     private Weapon weapon;
     private BNode behaviourTreeRoot;
@@ -38,6 +41,8 @@ public class Drone extends AIEntity implements Shooter {
         this.width = size;
 
         this.health = initialHealth;
+        this.initialHealth = initialHealth;
+        healthBar = new HealthBar(this);
 
         this.weapon = new BasicWeapon(getName());
 
@@ -87,6 +92,11 @@ public class Drone extends AIEntity implements Shooter {
         }
 
         return drone;
+    }
+
+    @Override
+    public int getInitialHealth() {
+        return initialHealth;
     }
 
     @Override
@@ -158,6 +168,9 @@ public class Drone extends AIEntity implements Shooter {
     @Override
     public void setHealth(int health) {
         this.health = health;
+
+        if (this.health > initialHealth)
+            this.health = initialHealth;
     }
 
     @Override
@@ -169,11 +182,16 @@ public class Drone extends AIEntity implements Shooter {
     @Override
     public void restoreHealth(int healthToRestore) {
         health += healthToRestore;
+
+        if (health > initialHealth)
+            health = initialHealth;
     }
 
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+
+        healthBar.draw(canvas, getCenter().add(0,50));
 
         drawPath(canvas, renderOffset);
     }

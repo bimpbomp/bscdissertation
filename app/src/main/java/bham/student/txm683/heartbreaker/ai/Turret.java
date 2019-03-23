@@ -9,6 +9,7 @@ import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
+import bham.student.txm683.heartbreaker.rendering.HealthBar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -17,6 +18,8 @@ import org.json.JSONObject;
 public class Turret extends AIEntity {
 
     private int health;
+    private int initialHealth;
+    private HealthBar healthBar;
 
     private int width;
 
@@ -28,6 +31,9 @@ public class Turret extends AIEntity {
         super(name, center, size, 200, 5, new TankBody(center, size, colorValue, 0.8f, 1.5f, 1.4f));
 
         health = initialHealth;
+        this.initialHealth = initialHealth;
+
+        this.healthBar = new HealthBar(this);
 
         this.weapon = new BasicWeapon(name, 50, 30, 1.5f);
 
@@ -112,7 +118,14 @@ public class Turret extends AIEntity {
     @Override
     public boolean inflictDamage(int damageToInflict) {
         health -= damageToInflict;
+        healthBar.damaged();
+
         return health < 1;
+    }
+
+    @Override
+    public int getInitialHealth() {
+        return initialHealth;
     }
 
     @Override
@@ -123,6 +136,8 @@ public class Turret extends AIEntity {
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+
+        healthBar.draw(canvas, getCenter().add(renderOffset).add(0,50));
 
         drawPath(canvas, renderOffset);
     }

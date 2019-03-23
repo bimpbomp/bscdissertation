@@ -67,7 +67,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     public abstract int getWidth();
 
     public void onDeath(){
-        levelState.addExplosion(new Explosion(getName(), getName(), getCenter(), 200f, 50, Color.RED));
+        levelState.addExplosion(new Explosion(getName()+"deathexp", getName(), getCenter(), 200f, 50, Color.RED));
     }
 
     public void drawPath(Canvas canvas, Point renderOffset){

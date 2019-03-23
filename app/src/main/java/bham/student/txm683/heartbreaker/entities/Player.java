@@ -9,6 +9,7 @@ import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.pickups.Key;
+import bham.student.txm683.heartbreaker.rendering.HealthBar;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -24,6 +25,8 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     private int initialHealth;
 
+    private HealthBar healthBar;
+
     private Weapon primaryWeapon;
     private Weapon secondaryWeapon;
 
@@ -37,6 +40,8 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
         this.health = initialHealth;
         this.initialHealth = health;
+
+        this.healthBar = new HealthBar(this);
 
         this.primaryWeapon = new BasicWeapon(name);
         this.secondaryWeapon = new BombThrower(name);
@@ -135,6 +140,8 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     public boolean inflictDamage(int damageToInflict) {
         health -= damageToInflict;
 
+        healthBar.damaged();
+
         return health <= 0;
     }
 
@@ -155,8 +162,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
         getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
-        if (renderEntityName)
-            drawName(canvas, getCenter().add(renderOffset));
+        healthBar.draw(canvas, getCenter().add(renderOffset).add(0, 75));
     }
 
     @Override

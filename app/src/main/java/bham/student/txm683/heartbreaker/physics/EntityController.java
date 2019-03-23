@@ -38,8 +38,6 @@ public class EntityController {
 
         levelState.getPlayer().tick(delta);
 
-        levelState.removeExplosions();
-
         for (Projectile projectile : levelState.getBullets()){
             projectile.tick(delta);
 

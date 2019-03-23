@@ -27,4 +27,6 @@ public interface Damageable {
      * @param healthToRestore Amount of health to restore
      */
     void restoreHealth(int healthToRestore);
+
+    int getInitialHealth();
 }

@@ -20,11 +20,13 @@ public class Core extends AIEntity implements Damageable {
     private Octagon innerShape;
 
     private int health;
+    private int initialHealth;
     private int width;
 
     public Core(String name, Point center, int size) {
         super(name, center, size, 0, 1, new Hexagon(center, size, Color.BLACK));
         health = 10;
+        this.initialHealth = 10;
 
         this.width = size;
 
@@ -85,6 +87,11 @@ public class Core extends AIEntity implements Damageable {
     public boolean inflictDamage(int damageToInflict) {
         health -= damageToInflict;
         return health <= 0;
+    }
+
+    @Override
+    public int getInitialHealth() {
+        return initialHealth;
     }
 
     @Override
