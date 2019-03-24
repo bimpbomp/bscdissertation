@@ -93,7 +93,7 @@ public class Drone extends AIEntity{
     public void tick(float secondsSinceLastGameTick) {
 
         behaviourTreeRoot.process(context);
-        shootTreeRoot.process(context);
+        //shootTreeRoot.process(context);
 
         super.tick(secondsSinceLastGameTick);
     }

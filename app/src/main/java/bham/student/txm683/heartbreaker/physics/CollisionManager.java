@@ -217,7 +217,7 @@ public class CollisionManager {
                                     resolveExplosion((Explosion) nonSolidEntity, solidEntity);
                                 }
                             } else if (nonSolidEntity instanceof Projectile){
-                                pushVector = collisionCheckCircleAndPolygon(((Projectile) nonSolidEntity).getCircle(), solidEntity);
+                                pushVector = collisionCheckTwoPolygonalCollidables(nonSolidEntity, solidEntity);
 
                                 if (!pushVector.equals(Vector.ZERO_VECTOR)){
                                     //collision occurred
@@ -325,31 +325,30 @@ public class CollisionManager {
     private void resolveProjectileHit(Projectile projectile, Collidable collidable, Vector pV){
         //if the projectile damages on contact and the collidable can take damage, damage it
 
-        if (!(projectile instanceof Bomb)) {
-
-            if (collidable instanceof Damageable) {
-                //only damage the collidable if the projectile doesn't belong to them
-                if (!projectile.getOwner().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())) {
-                    Log.d(TAG, collidable.getName() + " has died");
-
-                    if (collidable instanceof AIEntity) {
-                        levelState.aiDied((AIEntity) collidable);
-                    }
-                } else {
-                    Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
-                }
-            }
-
-            if (!projectile.getOwner().equals(collidable.getName())) {
-                levelState.getBullets().remove(projectile);
-
-                /*moveEntityCenter(projectile, pV.getRelativeToTailPoint());
-                projectile.setRequestedMovementVector(reflectVectorAcrossPushVector(projectile.getRequestedMovementVector(), pV));*/
-            }
-
-
+        if (projectile instanceof Bomb && !projectile.getOwner().equals(collidable.getName())){
+            changeVelocityForBounce(projectile, pV);
+            return;
         }
 
+        if (collidable instanceof Damageable) {
+            //only damage the collidable if the projectile doesn't belong to them
+            if (!projectile.getOwner().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())) {
+                Log.d(TAG, collidable.getName() + " has died");
+
+                if (collidable instanceof AIEntity) {
+                    levelState.aiDied((AIEntity) collidable);
+                }
+            } else {
+                Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
+            }
+        }
+
+        if (!projectile.getOwner().equals(collidable.getName())) {
+            levelState.getBullets().remove(projectile);
+
+            /*moveEntityCenter(projectile, pV.getRelativeToTailPoint());
+            projectile.setRequestedMovementVector(reflectVectorAcrossPushVector(projectile.getRequestedMovementVector(), pV));*/
+        }
     }
 
     private void resolveDoorFieldActivation(DoorField doorField, Collidable collidable){
@@ -511,7 +510,10 @@ public class CollisionManager {
 
             //((MoveableEntity) collidable).setVelocity(newV);
 
-            ((MoveableEntity) collidable).setVelocity(v);
+            if (collidable instanceof Projectile){
+                ((Projectile) collidable).setRequestedMovementVector(v);
+            } else
+                ((MoveableEntity) collidable).setVelocity(v);
             //((MoveableEntity) collidable).addForce(v);
         }
     }

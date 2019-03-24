@@ -16,11 +16,11 @@ public class BombThrower extends Weapon {
     private int ammo;
 
     public BombThrower(String owner) {
-        super(owner, 10, AmmoType.BOMB, 0f);
+        super(owner, 30, AmmoType.BOMB, 0f);
 
         bulletRadius = 30f;
-        speed = 0f;
-        damage = 200;
+        speed = 400f;
+        damage = 60;
         symbolisingColor = Color.BLACK;
         fuseLengthInTicks = 50;
 

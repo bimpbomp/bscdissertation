@@ -1,8 +1,10 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ICircle;
+import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
@@ -15,6 +17,8 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
 
     private int damage;
     private int lifeInTicks;
+
+    private Rectangle r;
 
     private String owner;
 
@@ -29,6 +33,8 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
         this.damage = damage;
 
         this.lifeInTicks = lifeInTicks;
+
+        r = null;
     }
 
     public String getOwner() {
@@ -93,17 +99,32 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
         getShape().translate(offsetCenter);
 
         getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+
+        /*if (r != null)
+            r.draw(canvas,renderOffset, secondsSinceLastRender, renderEntityName);*/
     }
 
     @Override
     public BoundingBox getBoundingBox() {
-        float radius = ((Circle) getShape()).getRadius();
+        float radius = getCircle().getRadius();
         return new BoundingBox(currentCenter.add(-1 * radius, -1 * radius), currentCenter.add(radius, radius));
     }
 
     @Override
     public Point[] getCollisionVertices() {
-        return getBoundingBox().getCollisionVertices();
+        float width = getCircle().getRadius();
+        Vector v = new Vector (currentCenter, nextTickCenter);
+        float length = v.getLength();
+
+        Point center = v.sMult(0.5f).getHead();
+
+        r = new Rectangle(center, width, length, Color.BLACK);
+
+        r.rotate(v.getUnitVector());
+
+        return r.getVertices();
+
+        //return getBoundingBox().getCollisionVertices();
     }
 
     @Override

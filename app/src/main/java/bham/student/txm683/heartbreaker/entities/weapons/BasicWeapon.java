@@ -7,7 +7,7 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 public class BasicWeapon extends Weapon {
 
     private float bulletRadius;
-    private static float speed = 1000;
+    private static float speed = 1500;
     private int damage;
     private int symbolisingColor;
 
