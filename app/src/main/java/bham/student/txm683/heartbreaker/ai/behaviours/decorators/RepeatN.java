@@ -11,6 +11,9 @@ public class RepeatN extends BNode {
 
     public RepeatN(int count, BNode child) {
         this.child = child;
+
+        this.count = count;
+        this.remaining = 0;
     }
 
     @Override
@@ -22,7 +25,21 @@ public class RepeatN extends BNode {
 
     @Override
     public Status process(BContext context) {
-        //TODO implement
-        return null;
+
+        if (getStatus() != Status.RUNNING){
+            remaining = count;
+        }
+
+        if (remaining > 0){
+            remaining--;
+            child.process(context);
+
+            setStatus(Status.RUNNING);
+            return Status.RUNNING;
+        }
+
+        setStatus(Status.SUCCESS);
+        return Status.SUCCESS;
+
     }
 }

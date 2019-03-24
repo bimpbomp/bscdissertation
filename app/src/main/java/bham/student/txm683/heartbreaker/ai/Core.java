@@ -4,7 +4,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Hexagon;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Octagon;
-import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -19,14 +18,10 @@ import java.util.List;
 public class Core extends AIEntity implements Damageable {
     private Octagon innerShape;
 
-    private int health;
-    private int initialHealth;
     private int width;
 
     public Core(String name, Point center, int size) {
-        super(name, center, size, 0, 1, new Hexagon(center, size, Color.BLACK));
-        health = 10;
-        this.initialHealth = 10;
+        super(name, center, size, 0, 1, new Hexagon(center, size, Color.BLACK), 10);
 
         this.width = size;
 
@@ -74,32 +69,6 @@ public class Core extends AIEntity implements Damageable {
     }
 
     @Override
-    public int getHealth() {
-        return health;
-    }
-
-    @Override
-    public void setHealth(int health) {
-        this.health = health;
-    }
-
-    @Override
-    public boolean inflictDamage(int damageToInflict) {
-        health -= damageToInflict;
-        return health <= 0;
-    }
-
-    @Override
-    public int getInitialHealth() {
-        return initialHealth;
-    }
-
-    @Override
-    public void restoreHealth(int healthToRestore) {
-        health += healthToRestore;
-    }
-
-    @Override
     public void tick(float secondsSinceLastGameTick) {
         float angle = 0.061799f;
 
@@ -108,18 +77,8 @@ public class Core extends AIEntity implements Damageable {
     }
 
     @Override
-    public boolean isSolid() {
-        return true;
-    }
-
-    @Override
     public boolean canMove() {
         return false;
-    }
-
-    @Override
-    public ShapeIdentifier getShapeIdentifier() {
-        return innerShape.getShapeIdentifier();
     }
 
     @Override
@@ -132,15 +91,5 @@ public class Core extends AIEntity implements Damageable {
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
         innerShape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
-    }
-
-    @Override
-    public void setColor(int color) {
-        innerShape.setColor(color);
-    }
-
-    @Override
-    public void revertToDefaultColor() {
-        innerShape.revertToDefaultColor();
     }
 }

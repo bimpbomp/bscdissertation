@@ -2,7 +2,6 @@ package bham.student.txm683.heartbreaker.ai.behaviours.conditionals;
 
 import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
@@ -10,9 +9,9 @@ import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 public class Conditionals {
 
     private static Condition healthAboveThresholdCondition = context -> {
-            if (context.containsKeys(CONTROLLED_ENTITY, HEALTH_BOUND)){
+            if (context.containsKeys(CONTROLLED_ENTITY)){
                 int health = ((AIEntity) context.getValue(CONTROLLED_ENTITY)).getHealth();
-                int bound = (int) context.getValue(HEALTH_BOUND);
+                int bound = (int) context.variableOrDefault("flee_health", health/4);
 
                 return health > bound;
             }
@@ -23,24 +22,16 @@ public class Conditionals {
 
     private static Condition canSeePlayerCondition = (context -> {
         if (context.containsKeys(SIGHT_BLOCKED, SIGHT_VECTOR, CONTROLLED_ENTITY, FRIENDLY_BLOCKING_SIGHT)){
-            if ((Boolean) context.getValue(SIGHT_BLOCKED)){
-                if ((context.getValue(CONTROLLED_ENTITY)) instanceof Turret)
-                    Log.d("TURRET", "BLOCKED");
-                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).revertToDefaultColor();
-            } else if ((Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
-                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.YELLOW);
-            } else {
-                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).applyRotationalForces((Vector) context.getValue(SIGHT_VECTOR));
-                //((AIEntity) context.getValue(CONTROLLED_ENTITY)).setColor(Color.BLACK);
+            //if the entity isn't blocked by a friendly or by a wall/door
+            if (!(Boolean) context.getValue(SIGHT_BLOCKED) && !(Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
+                boolean isOnScreen = ((AIEntity) context.getValue(CONTROLLED_ENTITY)).isOnScreen();
 
-                //return ((AIEntity) context.getValue(CONTROLLED_ENTITY)).isOnScreen();
-                if ((context.getValue(CONTROLLED_ENTITY)) instanceof Turret)
-                    Log.d("TURRET", "can see player");
-                return true;
+                Log.d("CANSEEPLAYER", isOnScreen+"");
+
+                return isOnScreen;
             }
         }
-        if ((context.getValue(CONTROLLED_ENTITY)) instanceof Turret)
-            Log.d("TURRET", "Returning false");
+        Log.d("CANSEEPLAYER", ""+false);
         return false;
     });
 

@@ -213,6 +213,7 @@ public class Level implements Runnable {
                     }
 
                     //remove blocked edges from meshgraph
+                    //TODO change to calculate total area of each polygon covered by moveable entities
                     removeBlockedFromGraph();
                     benchMarker.output("meshCalc");
 

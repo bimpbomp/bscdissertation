@@ -51,4 +51,8 @@ public class SpatialBin {
     public boolean contains(Collidable collidable){
         return (temporaryEntities.contains(collidable)) || (permanentEntities.contains(collidable));
     }
+
+    public List<Collidable> getTemps(){
+        return new ArrayList<>(temporaryEntities);
+    }
 }

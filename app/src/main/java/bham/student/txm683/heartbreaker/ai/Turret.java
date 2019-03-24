@@ -1,15 +1,13 @@
 package bham.student.txm683.heartbreaker.ai;
 
-import android.graphics.Canvas;
-import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.entities.TankBody;
+import bham.student.txm683.heartbreaker.entities.TankModifiers;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
-import bham.student.txm683.heartbreaker.rendering.HealthBar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -17,39 +15,29 @@ import org.json.JSONObject;
 
 public class Turret extends AIEntity {
 
-    private int health;
-    private int initialHealth;
-    private HealthBar healthBar;
-
-    private int width;
-
     private Weapon weapon;
 
     private BNode behaviourTreeRoot;
 
+    private static TankModifiers modifiers;
+
+    static {
+        modifiers = new TankModifiers();
+        modifiers.setBarrelLengthModifier(0.8f);
+        modifiers.setBarrelWidthModifier(1.5f);
+        modifiers.setTurretSizeModifier(1.4f);
+    }
+
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
-        super(name, center, size, 200, 5, new TankBody(center, size, colorValue, 0.8f, 1.5f, 1.4f));
-
-        health = initialHealth;
-        this.initialHealth = initialHealth;
-
-        this.healthBar = new HealthBar(this);
+        super(name, center, size, 200, 5, new TankBody(center, size, colorValue, modifiers),initialHealth);
 
         this.weapon = new BasicWeapon(name, 50, 30, 1.5f);
 
-        this.width = size;
-
         this.behaviourTreeRoot = Behaviour.turretTree();
-
-        context.addPair(BKeyType.VIEW_RANGE, 600);
-        context.addPair(BKeyType.CONTROLLED_ENTITY, this);
-        context.addPair(BKeyType.TIME_PER_IDLE, 25);
-        context.addPair(BKeyType.HEALTH_BOUND, 50);
-        context.addPair(BKeyType.ROT_DAMP, 0.5f);
     }
 
     public Turret(String name, Point center){
-        this(name ,center, 150, ColorScheme.CHASER_COLOR, 300);
+        this(name ,center, 150, ColorScheme.TURRET_COLOR, 300);
     }
 
     public static Turret build(JSONObject jsonObject, int tileSize) throws JSONException {
@@ -83,72 +71,10 @@ public class Turret extends AIEntity {
     }
 
     @Override
-    public boolean canMove() {
-        return false;
-    }
-
-    @Override
     public void tick(float secondsSinceLastGameTick) {
 
         behaviourTreeRoot.process(context);
 
         super.tick(secondsSinceLastGameTick);
-    }
-
-    @Override
-    public int getWidth() {
-        return width;
-    }
-
-    @Override
-    public boolean isSolid() {
-        return true;
-    }
-
-    @Override
-    public int getHealth() {
-        return health;
-    }
-
-    @Override
-    public void setHealth(int health) {
-        this.health = health;
-    }
-
-    @Override
-    public boolean inflictDamage(int damageToInflict) {
-        health -= damageToInflict;
-        healthBar.damaged();
-
-        return health < 1;
-    }
-
-    @Override
-    public int getInitialHealth() {
-        return initialHealth;
-    }
-
-    @Override
-    public void restoreHealth(int healthToRestore) {
-        health += healthToRestore;
-    }
-
-    @Override
-    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
-        getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
-
-        healthBar.draw(canvas, getCenter().add(renderOffset).add(0,50));
-
-        drawPath(canvas, renderOffset);
-    }
-
-    @Override
-    public void setColor(int color) {
-        getShape().setColor(color);
-    }
-
-    @Override
-    public void revertToDefaultColor() {
-        getShape().revertToDefaultColor();
     }
 }

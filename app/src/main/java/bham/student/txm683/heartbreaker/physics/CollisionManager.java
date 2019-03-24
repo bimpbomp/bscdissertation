@@ -12,7 +12,6 @@ import bham.student.txm683.heartbreaker.entities.*;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.entities.weapons.AmmoType;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
@@ -299,12 +298,6 @@ public class CollisionManager {
                     Log.d(TAG, collidable.getName() + " picked up a key");
                     break;
                 case BOMB:
-                    //add one bomb to any bomb weapons the player is carrying
-                    if (((Player) collidable).getAmmoType() == AmmoType.BOMB)
-                        ((Player) collidable).addAmmo(1);
-                    if (((Player) collidable).getSecondaryAmmoType() == AmmoType.BOMB)
-                        ((Player) collidable).addSecondaryAmmo(1);
-                    Log.d(TAG, collidable.getName() + " gained a bomb");
                     break;
                 case HEALTH:
                     ((Player) collidable).restoreHealth(50);
@@ -602,10 +595,13 @@ public class CollisionManager {
         int smallestDistance = Integer.MAX_VALUE;
 
         Vector fUnit = entity.getForwardUnitVector();
-        Vector steeringAxis = fUnit.rotateAntiClockwise90();
+        //Vector steeringAxis = fUnit.rotateAntiClockwise90();
 
-        float height = 300f;
-        Point center = fUnit.sMult(height).getHead();
+        float height = 200f;
+
+        Vector v = new Vector(entity.getCenter(), end);
+        Point center = v.setLength(height/2).getHead();
+        Vector steeringAxis = v.rotateAntiClockwise90();
 
         Rectangle rect = new Rectangle(center, entity.getWidth()*1.5f, height, Color.GRAY);
         Point[] rectVertices = rect.getVertices();
@@ -635,6 +631,11 @@ public class CollisionManager {
             return Vector.ZERO_VECTOR;
 
         Log.d("AVOID", closestCollidable.getName() + " is in the way");
+
+        if (closestCollidable instanceof AIEntity){
+            return fUnit.rotateClockwise90();
+        }
+
 
         Vector ray = new Vector(entity.getCenter(), closestCollidable.getCenter()).getUnitVector();
 

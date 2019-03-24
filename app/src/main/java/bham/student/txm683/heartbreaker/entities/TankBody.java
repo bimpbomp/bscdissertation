@@ -24,7 +24,7 @@ public class TankBody implements Renderable, Shape {
 
     private float lengthToBarrelTip;
 
-    public TankBody(Point center, int size, int color, float barrelLengthModifier, float barrelWidthModifier, float turretSizeModifier){
+    public TankBody(Point center, int size, int color, TankModifiers tankModifiers){
 
         int tw = (int) (size * 0.9f);
         int bw = (int) (size * 0.75f);
@@ -33,12 +33,12 @@ public class TankBody implements Renderable, Shape {
 
         this.body = TankShape.build(center, tw, bw, mh, ph, color);
 
-        float turretSize = turretSizeModifier * size * 0.35f;
+        float turretSize = tankModifiers.getTurretSizeModifier() * size * 0.35f;
         int turretColor = ColorScheme.manipulateColor(color, 0.7f);
         this.turret = new Rectangle(center, turretSize, turretSize, turretColor);
 
-        float barrelLength = barrelLengthModifier * size/2.5f;
-        float barrelWidth = barrelWidthModifier * size/6f;
+        float barrelLength = tankModifiers.getBarrelLengthModifier() * size/2.5f;
+        float barrelWidth = tankModifiers.getBarrelWidthModifier() * size/6f;
 
         Point barrelCenter = center.add(0, -1 * (barrelLength/2f + turretSize/2f));
         this.barrelPosition = new Vector(center, barrelCenter);
@@ -52,7 +52,7 @@ public class TankBody implements Renderable, Shape {
     }
 
     public TankBody(Point center, int size, int color){
-        this(center, size, color, 1, 1, 1);
+        this(center, size, color, new TankModifiers());
     }
 
     @Override

@@ -24,7 +24,6 @@ import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.DebugInfo;
 import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
 
 @SuppressLint("ViewConstructor")
 public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
@@ -330,27 +329,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
                 meshPolygon.draw(canvas, renderOffset);
             }
 
-            /*List<SpatialBin> spatialBins = level.getCollisionManager().getSpatialBins();
-
-            for (SpatialBin spatialBin : spatialBins){
-
-                if (isOnScreen(spatialBin.getBoundingBox())){
-                    for (Collidable c : spatialBin.getCollidables()){
-                        if (c instanceof Renderable)
-                            ((Renderable) c).draw(canvas, renderOffset, secondsSinceLastGameTick, false);
-                    }
-                }
-            }
-
-            for (AIEntity entity : levelState.getAliveAIEntities()){
-                if (isOnScreen(entity)) {
-                    entity.setOnScreen(true);
-                } else
-                    entity.setOnScreen(false);
-            }*/
-
-            //level.getCollisionManager().drawBins(canvas, renderOffset);
-
             //draw doors
             for (Renderable door : levelState.getMap().getDoors().values()){
                 if (isOnScreen(door))
@@ -423,49 +401,14 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             if (debugInfo.renderMapTileGrid())
                 drawGrid(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset, tilePaint);
 
-            //draw grid labels (if turned on)
-            if (debugInfo.renderMapTileGrid()){
-                drawGridLabels(canvas, new Point(), new Point(levelState.getMap().getWidth(), levelState.getMap().getHeight()), tileSize, renderOffset);
-            }
-
             //draw ui
             if (!levelState.isPaused()) {
                 RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "RenderFPS: " + renderFPS
                         + " GameTickFPS: " + gameTickFPS,
                         new Point(viewWidth/2f, 50), Color.WHITE, 10);
-
-                /*RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "HEALTH: " + levelState.getPlayer().getHealth(),
-                        new Point(viewWidth/2f, viewHeight-40), Color.WHITE, 10);*/
-
-                /*int width = 200;
-                int height = 75;
-                Rectangle outer = new Rectangle(new Point(viewWidth/2f, viewHeight-80), width, height, Color.LTGRAY);
-                BoundingBox b = outer.getBoundingBox();
-
-                outer.draw(canvas, new Point(), 0, false);
-
-                int oldColor = textPaint.getColor();
-                textPaint.setColor(Color.RED);
-
-                int currentHealth = levelState.getPlayer().getHealth();
-                int initialHealth = levelState.getPlayer().getInitialHealth();
-
-                Log.d("HEALTH", "current: " + currentHealth + ", init: " + initialHealth + ", ratio: " + ((float)currentHealth/initialHealth));
-
-                int padding = 10;
-                float right = b.getLeft() + padding + ((float) currentHealth/initialHealth) * (width-2*padding);
-
-                canvas.drawRect(b.getLeft() + padding, b.getTop() + padding, right, b.getBottom() - padding, textPaint);
-
-                textPaint.setColor(oldColor);*/
             }
             if (levelState.isPaused()) {
                 canvas.drawARGB(200, 0,0,0);
-
-                /*int oldColor = textPaint.getColor();
-                textPaint.setColor(Color.WHITE);
-                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "Game is Paused", new Point(viewWidth/2f, viewHeight/3f), Color.RED, 50);
-                textPaint.setColor(oldColor);*/
             }
 
             //draw in game ui
@@ -475,29 +418,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             getHolder().unlockCanvasAndPost(canvas);
         } catch (IllegalArgumentException e){
             //canvas is destroyed already
-        }
-    }
-
-    private void drawGridLabels(Canvas canvas, Point minimum, Point maximum, int cellSize, Point renderOffset){
-        Point center;
-        for (int i = (int)minimum.getX(); i < maximum.getX()/cellSize; i++){
-            for (int j = (int)minimum.getY(); j < maximum.getY()/cellSize; j++){
-                center = new Point(i * cellSize + cellSize/2f, j * cellSize + cellSize/2f).add(renderOffset);
-
-                int tileColor = Color.WHITE;
-
-                for (AIEntity entity : levelState.getAliveAIEntities()){
-                    if (entity.getPath() != null) {
-                        for (Tile tile : entity.getPath()) {
-                            if (tile.equals(new Tile(i, j))) {
-                                tileColor = Color.RED;
-                                break;
-                            }
-                        }
-                    }
-                }
-                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, (i*tileSize) + ",\n" + (j*tileSize), center, tileColor, 10);
-            }
         }
     }
 

@@ -43,6 +43,10 @@ public class BContext {
         return variables.getOrDefault(key, null);
     }
 
+    public Object variableOrDefault(String key, Object defaultValue){
+        return variables.getOrDefault(key, defaultValue);
+    }
+
     public boolean containsKeys(BKeyType... keys){
         if (keys == null || keys.length == 0)
             return false;

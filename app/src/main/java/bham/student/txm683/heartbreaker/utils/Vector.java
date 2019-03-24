@@ -219,6 +219,10 @@ public class Vector implements SaveableState {
         return new Vector(yRelativeToTail, -1f * xRelativeToTail);
     }
 
+    public Vector rotateClockwise90(){
+        return new Vector(-1 * yRelativeToTail, xRelativeToTail);
+    }
+
     public static Vector proj(Vector u, Vector v){
         float dot = u.dot(v);
 

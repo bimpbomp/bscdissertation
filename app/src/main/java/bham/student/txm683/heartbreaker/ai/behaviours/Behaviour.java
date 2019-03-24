@@ -4,7 +4,9 @@ import bham.student.txm683.heartbreaker.ai.behaviours.composites.ForgetfulSequen
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Sequence;
 import bham.student.txm683.heartbreaker.ai.behaviours.conditionals.Conditionals;
-import bham.student.txm683.heartbreaker.ai.behaviours.decorators.NotAtDestination;
+import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RepeatN;
+import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RepeatUntilFail;
+import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RunTillArrived;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.Succeeder;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Tasks;
 
@@ -14,19 +16,10 @@ public class Behaviour {
 
     }
 
-    /*public static BNode idleBehaviour(){
-        return new Sequence(
-            walkToRandomPointBehaviour(),
-            Tasks.doNothing()
-        );
+    public static BNode flee(){
+        //TODO implement
+        return null;
     }
-
-    public static BNode walkToRandomPointBehaviour(){
-        return new Sequence(
-                Tasks.randomPointInMesh(),
-                walkToPointBehaviour()
-        );
-    }*/
 
     public static BNode walkToRandomMeshBehaviour(){
 
@@ -34,22 +27,11 @@ public class Behaviour {
                 Tasks.patrol(),
                 Tasks.plotPath(),
                 Tasks.followPath(),
-                //Tasks.seek(),
                 Tasks.courseCorrect()
         );
     }
 
-    public static BNode followPathBehaviour(){
-
-        return new NotAtDestination(
-                new Sequence(
-                        Tasks.followPath(),
-                        Tasks.courseCorrect()
-                )
-        );
-    }
-
-    public static BNode stationaryShootBehaviour(){
+    public static BNode shootBehaviour(){
         return Conditionals.canSeePlayer(
                 new ForgetfulSequence(
                         Tasks.aim(),
@@ -64,7 +46,7 @@ public class Behaviour {
     public static BNode travelTo(){
         return new Sequence(
                 Tasks.plotPath(),
-                new NotAtDestination(
+                new RunTillArrived(
                         new ForgetfulSequence(
                                 Tasks.followPath(),
                                 Tasks.courseCorrect(),
@@ -86,51 +68,103 @@ public class Behaviour {
                 travelTo(),
                 Conditionals.canSeePlayer(
                         new Sequence(
-                                Tasks.aim(),
-                                Tasks.rotateToTarget(),
-                                Tasks.doNothing(30),
-                                Tasks.shoot()
+                                new RepeatN(50,
+                                        new Sequence(
+                                                Tasks.aim(),
+                                                Tasks.rotateToTarget()
+                                        )
+                                ),
+                                Tasks.shoot(),
+                                Tasks.doNothing(25)
                         )
                 )
         );
     }
 
-    /*public static BNode fleeToCore(){
-        return new Sequence(
-                Tasks.setMoveToAsCore(),
-                followPathBehaviour(),
-                new BNode() {
-                    @Override
-                    public Status process(BContext context) {
-                        if (context.containsKeys(PATH, CONTROLLED_ENTITY)){
-                            AIEntity entity  = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                            List<Point> basePath = ((PathWrapper) context.getValue(PATH)).basePath();
-
-                            if (basePath.size() == 0)
-                                return Status.SUCCESS;
-
-                            Point goal = basePath.get(basePath.size()-1);
-
-                            Vector v = new Vector (entity.getCenter(), goal);
-
-                            if (v.getLength() < 200)
-                                return Status.SUCCESS;
-
-                            entity.setRequestedMovementVector(v.getUnitVector());
-                            entity.setRotationVector(v.getUnitVector());
-                            return Status.RUNNING;
-                        }
-                        return Status.FAILURE;
-                    }
-                },
-                walkToRandomPointBehaviour()
+    public static BNode healerTree(){
+        return new Selector(
+                new Sequence(
+                       Tasks.findAIToHeal(),
+                       travelTo(),
+                       Tasks.healField()
+                ),
+                Tasks.patrol(),
+                travelTo()
         );
-    }*/
+    }
 
-    public static BNode fleeToAlly(){
+    public static BNode driveAtPlayer(){
         return new Sequence(
-                Tasks.plotPathToAnAI(),
-                Tasks.followPath()
+                Tasks.setHeadingAsPlayer(),
+                Tasks.seek(),
+                Tasks.courseCorrect()
+        );
+    }
+
+    public static BNode engageTree(){
+        return Conditionals.canSeePlayer(
+                new Sequence(
+                        driveAtPlayer(),
+                        shootBehaviour()
+                )
+        );
+    }
+
+    public static BNode selfDestructTree(){
+        return new RepeatUntilFail(
+                new Selector(
+                        Conditionals.canSeePlayer(
+                                new Sequence(
+                                        driveAtPlayer(),
+                                        explodeTree()
+                                )
+                        ),
+                        Tasks.plotPathToMeshAdjacentToPlayer(),
+                        travelTo()
+                )
+        );
+    }
+
+    public static BNode explodeTree(){
+        return new Sequence(
+                Tasks.flashRed(75),
+                Tasks.detonate()
+        );
+    }
+
+    public static BNode chaseTree(){
+
+        return new Selector(
+                Conditionals.healthBelowThreshold(
+                        new Succeeder(
+                                flee()
+                        )
+                ),
+                new Sequence(
+                        Tasks.plotPathToMeshAdjacentToPlayer(),
+                        new RunTillArrived(
+                                new ForgetfulSequence(
+                                        new Succeeder(
+                                                Conditionals.canSeePlayer(
+                                                        shootBehaviour()
+                                                )
+                                        ),
+                                        travelTo()
+                                )
+                        ),
+                        new Selector(
+                                Conditionals.canSeePlayer(
+                                        new RepeatN(2,
+                                                new Sequence(
+                                                        new Succeeder(
+                                                                shootBehaviour()
+                                                        ),
+                                                        Tasks.doNothing(25)
+                                                )
+                                        )
+                                )
+                        )
+                )
         );
     }
 
@@ -138,50 +172,8 @@ public class Behaviour {
         return new Selector(
                 new Sequence(
                         Tasks.patrol(),
-                        travelTo()/*,
-                        Tasks.doNothing()*/
+                        travelTo()
                 )
         );
-
-        /*BNode flee = new Sequence(
-                new MemSelector(
-                        fleeToAlly(),
-                        fleeToCore()
-                ),
-                new RepeatUntilFail(
-                        Conditionals.canNotSeePlayer(
-                                Behaviour.idleBehaviour()
-                        )
-                )
-        );
-
-        BNode droneAttack = new Sequence(
-                    new Selector(
-                            Conditionals.inCooldown(
-                                    new Sequence(
-                                            Tasks.randomPointInMesh(),
-                                            Tasks.moveTowardsPoint()
-                                    )
-                            ),
-                            stationaryShootBehaviour()
-                    ));*/
-
-
-
-        /*return new Selector(
-                Conditionals.canSeePlayer(
-                    new Selector(
-                            Conditionals.healthAboveThreshold(
-                                    droneAttack
-                            ),
-                            flee
-                    )
-                ),
-                Conditionals.healthBelowThreshold(
-                        flee
-                ),
-
-                Behaviour.idleBehaviour()
-        );*/
     }
 }

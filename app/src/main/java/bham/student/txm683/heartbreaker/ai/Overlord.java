@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Overlord {
     private List<AIEntity> aliveEntities;
@@ -58,7 +59,7 @@ public class Overlord {
         maxSpawns = jsonObject.getInt("spawns_in_wave");
 
         //TODO temp
-        maxAliveAtOnce = 1;
+        maxAliveAtOnce = 3;
         //maxSpawns = 100;
 
         inLockDown = false;
@@ -77,9 +78,27 @@ public class Overlord {
         for (Point spawn : spawnPoints){
             if (!visibleBounds.intersecting(spawn)){
                 //spawn point not on screen
-                Turret drone = new Turret("D" + uniqueID.id(), spawn);
+                AIEntity entity;
 
-                addAI(drone);
+                Random r = new Random();
+
+                int i = r.nextInt(100);
+
+                boolean hasTurret = false;
+
+                for (AIEntity alive : aliveEntities){
+                    if (alive instanceof Turret){
+                        hasTurret = true;
+                        break;
+                    }
+                }
+
+                if (!hasTurret)
+                    entity = new Turret("T" + uniqueID.id(), spawn);
+                else
+                    entity = new Drone("D" + uniqueID.id(), spawn);
+
+                addAI(entity);
 
                 totalSpawns++;
 
@@ -155,10 +174,15 @@ public class Overlord {
             this.aliveEntities.add(ai);
             levelState.getAliveAIEntities().add(ai);
             ai.setLevelState(levelState);
+            ai.setOverlord(this);
         }
     }
 
     public void removeAI(AIEntity ai){
         aliveEntities.remove(ai);
+    }
+
+    public List<AIEntity> getAliveEntities() {
+        return aliveEntities;
     }
 }

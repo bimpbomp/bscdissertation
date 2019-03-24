@@ -3,7 +3,6 @@ package bham.student.txm683.heartbreaker.ai;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
@@ -12,65 +11,78 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
-import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
+import bham.student.txm683.heartbreaker.rendering.HealthBar;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
 
 import java.util.List;
 
+import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.OVERLORD;
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
 
 public abstract class AIEntity extends MoveableEntity implements Renderable, Damageable {
 
-    private Tile[] path;
-
-    LevelState levelState;
-
     protected BContext context;
 
-    protected PickupType drops;
+    private PickupType drops;
 
     private boolean isOnScreen;
 
-    public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed, int mass, Shape shape) {
+    private HealthBar healthBar;
+
+    public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed, int mass, Shape shape, int initialHealth) {
         super(name, spawn, maxDimension, maxSpeed, mass, shape);
         context = new BContext();
-        context.addVariable("arrived", false);
+        initContext();
+
+        this.healthBar = new HealthBar(initialHealth);
 
         isOnScreen = false;
     }
 
-    public boolean isOnScreen() {
-        return isOnScreen;
+    protected void initContext(){
+        context.addPair(BKeyType.CONTROLLED_ENTITY, this);
+
+        context.addVariable("arrived", false);
+        context.addVariable("arriving", false);
+
+        context.addVariable("evasion_magnitude", 50);
+
+        context.addVariable("seek_magnitude", 50);
+
+        context.addVariable("arrival_distance", 200);
+        context.addVariable("arrival_magnitude", 100);
+
+        context.addVariable("path_velocity_time_step", 0.04f);
+        context.addVariable("path_magnitude", 50);
+        context.addVariable("path_distance_for_arrived", 75);
+        context.addVariable("path_distance_for_arrival", 200);
+
+        context.addVariable("aim_max_inaccuracy_angle", 0.03f);
     }
 
-    public void setOnScreen(boolean onScreen) {
-        isOnScreen = onScreen;
+    public void setLevelState(LevelState levelState){
+        this.context.addPair(BKeyType.LEVEL_STATE, levelState);
     }
 
-    public PickupType getDrops() {
-        return drops;
+    void setOverlord(Overlord overlord){
+        context.addPair(OVERLORD, overlord);
     }
-
-    public void setDrops(PickupType drops) {
-        this.drops = drops;
-    }
-
-    public abstract Weapon getWeapon();
-
-    public BContext getContext() {
-        return context;
-    }
-
-    public abstract int getWidth();
 
     public void onDeath(){
-        levelState.addExplosion(new Explosion(getName()+"deathexp", getName(), getCenter(), 200f, 50, Color.RED));
+
     }
 
-    public void drawPath(Canvas canvas, Point renderOffset){
+    @Override
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
+        super.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+        healthBar.draw(canvas, getCenter().add(renderOffset).add(0,75));
+
+        drawPath(canvas, renderOffset);
+    }
+
+    private void drawPath(Canvas canvas, Point renderOffset){
         Paint paint = new Paint();
         if (context.containsKeys(PATH)){
 
@@ -108,8 +120,6 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
                     canvas.drawLine(p.getX(), p.getY(), q.getX(), q.getY(), paint);
                 }
-
-                return;
             }
 
             if (context.containsVariables("closest_point")){
@@ -126,23 +136,64 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         canvas.drawCircle(p.getX(), p.getY(), 20, paint);
     }
 
+    public float getRadioHealthLeft(){
+        return getHealth()/ (float) getInitialHealth();
+    }
+
+    public boolean isOnScreen() {
+        return isOnScreen;
+    }
+
+    public void setOnScreen(boolean onScreen) {
+        isOnScreen = onScreen;
+    }
+
+    public void setDrops(PickupType drops) {
+        this.drops = drops;
+    }
+
+    public abstract Weapon getWeapon();
+
+    public BContext getContext() {
+        return context;
+    }
+
+    public int getWidth(){
+        return getMaxDimension();
+    }
+
+    @Override
+    public boolean isSolid() {
+        return true;
+    }
+
+    @Override
+    public int getHealth() {
+        return healthBar.getHealth();
+    }
+
+    @Override
+    public void setHealth(int health) {
+        healthBar.setHealth(health);
+    }
+
+    @Override
+    public int getInitialHealth() {
+        return healthBar.getInitialHealth();
+    }
+
+    @Override
+    public boolean inflictDamage(int damageToInflict) {
+        return healthBar.inflictDamage(damageToInflict);
+    }
+
+    @Override
+    public void restoreHealth(int healthToRestore) {
+        healthBar.restoreHealth(healthToRestore);
+    }
+
     @Override
     public CollidableType getCollidableType() {
         return CollidableType.AI_ENTITY;
-    }
-
-    public void setLevelState(LevelState levelState){
-        Log.d("AIENTITY", getName() + " has levelState added");
-
-        this.levelState = levelState;
-        this.context.addPair(BKeyType.LEVEL_STATE, levelState);
-    }
-
-    public Tile[] getPath() {
-        return path;
-    }
-
-    public void setPath(Tile[] path) {
-        this.path = path;
     }
 }

@@ -4,11 +4,11 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 
-public class NotAtDestination extends BNode {
+public class RunTillArrived extends BNode {
 
     private BNode child;
 
-    public NotAtDestination(BNode child) {
+    public RunTillArrived(BNode child) {
         this.child = child;
     }
 

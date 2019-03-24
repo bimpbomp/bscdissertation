@@ -5,43 +5,74 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
-import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
-import bham.student.txm683.heartbreaker.utils.GameTickTimer;
 import bham.student.txm683.heartbreaker.utils.Point;
 
 public class HealthBar {
     private Paint paint;
 
-    private boolean damagedLastTick;
-
     private boolean display;
     private int count;
     private int countMax;
 
-    private Damageable entity;
+    private int health;
+    private int initialHealth;
 
-    private GameTickTimer timer;
-
-    public HealthBar(Damageable entity) {
+    public HealthBar(int initialHealth) {
         this.paint = new Paint();
         paint.setColor(Color.RED);
 
-        this.entity = entity;
-
-        this.damagedLastTick = false;
+        this.health = initialHealth;
+        this.initialHealth = initialHealth;
 
         this.display = false;
         this.count = 0;
         this.countMax = 60;
-
-        this.timer = new GameTickTimer(1000);
     }
 
-    public void damaged() {
-        display = true;
+    public int getHealth() {
+        return health;
+    }
 
+    public void setHealth(int health) {
+        this.health = health;
+
+        display();
+
+        if (this.health > initialHealth)
+            this.health = initialHealth;
+    }
+
+    private void display(){
+        display = true;
         count = 0;
+    }
+
+    public boolean inflictDamage(int damageToInflict) {
+        health -= damageToInflict;
+
+        display();
+
+        boolean dead = health <= 0;
+
+        if (dead){
+            health = 0;
+        }
+
+        return dead;
+    }
+
+    public void restoreHealth(int healthToRestore) {
+        health += healthToRestore;
+
+        display();
+
+        if (health > initialHealth)
+            health = initialHealth;
+    }
+
+    public int getInitialHealth() {
+        return initialHealth;
     }
 
     public void draw(Canvas canvas, Point offsetPosition){
@@ -62,13 +93,10 @@ public class HealthBar {
 
             paint.setColor(Color.RED);
 
-            int currentHealth = entity.getHealth();
-            int initialHealth = entity.getInitialHealth();
-
-            Log.d("HEALTH", "current: " + currentHealth + ", init: " + initialHealth + ", ratio: " + ((float) currentHealth / initialHealth));
+            Log.d("HEALTH", "current: " + health + ", init: " + initialHealth + ", ratio: " + ((float) health / initialHealth));
 
             int padding = 10;
-            float right = b.getLeft() + padding + ((float) currentHealth / initialHealth) * (width - 2 * padding);
+            float right = b.getLeft() + padding + ((float) health / initialHealth) * (width - 2 * padding);
 
             canvas.drawRect(b.getLeft() + padding, b.getTop() + padding, right, b.getBottom() - padding, paint);
         }

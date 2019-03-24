@@ -1,18 +1,21 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.tasks;
 
+import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.Overlord;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
-import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
+import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
+import bham.student.txm683.heartbreaker.physics.SpatialBin;
 import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -55,8 +58,6 @@ public class Tasks {
                             int timeLeftInIdle = (int) context.getVariable("idle_time") - 1;
                             context.addVariable("idle_time", timeLeftInIdle);
 
-                            setMovementToZero(context);
-
                             if (timeLeftInIdle < 1){
                                 Log.d("TASKS doNothing", "has succeeded");
                                 setStatus(SUCCESS);
@@ -69,8 +70,6 @@ public class Tasks {
                     } else {
                         Log.d("TASKS doNothing", "was not already running");
                         context.addVariable("idle_time", cooldown);
-
-                        setMovementToZero(context);
                         setStatus(RUNNING);
                     }
 
@@ -79,11 +78,6 @@ public class Tasks {
                 Log.d("TASKS", "doNothing has failed");
                 setStatus(FAILURE);
                 return FAILURE;
-            }
-
-            private void setMovementToZero(BContext context){
-                AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                controlled.setRequestedMovementVector(Vector.ZERO_VECTOR);
             }
         };
     }
@@ -105,44 +99,52 @@ public class Tasks {
                             return 0;
                         return 1; });
 
+                    boolean evading = false;
                     if (context.containsVariables("evasion_steering")){
                         forces.add(new Pair<>(1, (Vector) context.getVariable("evasion_steering")));
                         force = force.vAdd((Vector) context.getVariable("evasion_steering"));
+                        evading = true;
                     }
 
-                    if (context.containsVariables("path_steering")){
+                    if (context.containsVariables("path_steering")) {
                         forces.add(new Pair<>(2, (Vector) context.getVariable("path_steering")));
 
-                        if (force.equals(Vector.ZERO_VECTOR)){
-                            force = force.vAdd((Vector) context.getVariable("path_steering"));
+                        if (force.equals(Vector.ZERO_VECTOR)) {
+
+                            Vector v = (Vector) context.getVariable("path_steering");
+
+                            if (evading)
+                                v = v.sMult(0.5f);
+
+                            force = force.vAdd(v);
                         }
                     }
 
-                    if (context.containsVariables("arrival_steering")){
+                    if (context.containsVariables("arrival_steering")) {
                         forces.add(new Pair<>(3, (Vector) context.getVariable("arrival_steering")));
-                    } else if (context.containsVariables("seek_steering")){
+                    } else if (context.containsVariables("seek_steering")) {
                         forces.add(new Pair<>(3, (Vector) context.getVariable("seek_steering")));
                     }
+
 
 
                     int numForces = forces.size();
 
                     if (numForces > 1) {
-                        /*while (!forces.isEmpty()) {
+                        while (!forces.isEmpty()) {
 
                             Pair<Integer, Vector> pair = forces.poll();
-                            int priority = pair.first;
                             Vector currentForce = pair.second;
 
-                            if (priority == 1){
-                                force = force.vAdd(currentForce.sMult(0.75f));
-                            }
-                        }*/
+                            force = force.vAdd(currentForce.sMult(0.75f));
+                        }
                     } else if (numForces == 1){
                         force = force.vAdd(forces.poll().second);
                     }
 
                     controlled.addForce(force);
+
+                    Log.d("HEALER", "applying force to " + controlled.getName());
 
                     context.removeVariables("evasion_steering", "path_steering", "arrival_steering", "seek_steering");
 
@@ -167,7 +169,7 @@ public class Tasks {
                     Vector desiredVel = new Vector(controlled.getCenter(), heading);
                     float distance = desiredVel.getLength();
 
-                    final float SLOWING_DISTANCE = 200;
+                    float SLOWING_DISTANCE = (int) context.variableOrDefault("arrival_distance", 200);
 
                     float rampedSpeed = controlled.getMaxSpeed() * distance/SLOWING_DISTANCE;
                     float clampedSpeed = Math.min(rampedSpeed, controlled.getMaxSpeed());
@@ -176,8 +178,10 @@ public class Tasks {
 
                     Vector steering = desiredVel.vSub(controlled.getVelocity());
 
-                    if (steering.getLength() > 100){
-                        steering.setLength(100);
+                    int maxForce = (int) context.variableOrDefault("arrival_magnitude", 100);
+
+                    if (steering.getLength() > maxForce){
+                        steering.setLength(maxForce);
                     }
 
                     context.addVariable("arrival_steering", steering);
@@ -207,7 +211,7 @@ public class Tasks {
 
                     Vector steeringForce = desiredVel.vSub(vel);
 
-                    int maxForce = 50;
+                    int maxForce = (int) context.variableOrDefault("seek_magnitude", 50);
 
                     if (steeringForce.getLength() > maxForce)
                         steeringForce.setLength(maxForce);
@@ -248,13 +252,16 @@ public class Tasks {
                     if (!steeringAxis.equals(Vector.ZERO_VECTOR)){
                         //correction needs to take place
 
-                        Log.d("BEH", "courseCorrect: steeringForce: " + steeringAxis.setLength(100).relativeToString());
+                        int maxForce = (int) context.variableOrDefault("evasion_magnitude", 50);
 
-                        context.addVariable("evasion_steering", steeringAxis.sMult(50));
+                        Log.d("BEH", "courseCorrect: steeringForce: " + steeringAxis.setLength(maxForce).relativeToString());
+
+                        context.addVariable("evasion_steering", steeringAxis.setLength(maxForce));
                     } else {
                         Log.d("AVOID", "no obstacles in way");
 
-                        if (levelState.mapToMesh(controlled.getCenter().add(controlled.getVelocity().sMult(0.1f).getRelativeToTailPoint())) == -1){
+                        if (levelState.mapToMesh(controlled.getCenter().add(controlled.getVelocity()
+                                .sMult(0.1f).getRelativeToTailPoint())) == -1){
                             controlled.setVelocity(Vector.ZERO_VECTOR);
                         }
                     }
@@ -287,8 +294,6 @@ public class Tasks {
 
                     boolean plotted = a.plotPath();
 
-                    Log.d("TASK", "plotted: " + plotted);
-
                     if (plotted) {
                         context.addVariable("plottingFailed", false);
                         setStatus(SUCCESS);
@@ -297,6 +302,19 @@ public class Tasks {
                         context.addVariable("plottingFailed", true);
                     }
                 }
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode plotPathToMeshAdjacentToPlayer(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+
+                //TODO implement
+
                 setStatus(FAILURE);
                 return FAILURE;
             }
@@ -332,25 +350,6 @@ public class Tasks {
                         if (patrolIdx >= patrolPath.size())
                             patrolIdx = 0;
                     }
-
-                    /*float smallestDistance = Float.MAX_VALUE;
-                    int patrolIdx = 0;
-                    for (int i = 0; i < patrolPath.size(); i++){
-                        int id = patrolPath.get(i);
-
-                        Point center = levelState.getRootMeshPolygons().get(id).getCenter();
-
-                        float distance = new Vector(controlled.getCenter(), center).getLength();
-
-                        if (smallestDistance > distance){
-                            smallestDistance = distance;
-                            patrolIdx = i;
-                        }
-                    }
-
-                    patrolIdx++;
-                    if (patrolIdx >= patrolPath.size())
-                        patrolIdx = 0;*/
 
                     Point point = levelState.getRootMeshPolygons().get(patrolPath.get(patrolIdx)).getCenter();
 
@@ -414,6 +413,13 @@ public class Tasks {
     public static BNode followPath(){
         return new BNode() {
 
+            private void arrived(BContext context){
+                context.addVariable("arrived", true);
+                context.addVariable("arriving", false);
+
+                Log.d("Follow", "arrived");
+            }
+
             @Override
             public Status process(BContext context) {
                 if (context.containsKeys(CONTROLLED_ENTITY, PATH)){
@@ -421,23 +427,39 @@ public class Tasks {
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
                     List<Point> path = ((PathWrapper) context.getValue(PATH)).getIPath();
 
-                    //project ai 0.5 seconds into the future
+                    //project ai into the future
 
-                    Vector vel = controlled.getVelocity().sMult(0.1f);
+                    float velocityTimeStep = (float) context.variableOrDefault("path_velocity_time_step", 0.04f);
 
-                    if (vel.getLength() < 50){
-                        vel = controlled.getForwardUnitVector().setLength(50);
+                    Vector vel = controlled.getVelocity().sMult(velocityTimeStep);
+
+                    if (vel.getLength() < 10){
+                        vel = controlled.getForwardUnitVector().setLength(10);
                     }
 
                     Point futurePos = controlled.getCenter().add(vel.getRelativeToTailPoint());
 
                     Point closestPoint;
 
+                    int distanceForArrived = (int) context.variableOrDefault("path_distance_for_arrived", 75);
+
                     if (path.size() == 0){
                         Log.d("Follow", "basePath size is zero");
+                        arrived(context);
                         setStatus(SUCCESS);
                         return SUCCESS;
-                    }  else {
+                    } else if (path.size() == 2) {
+
+                        float distance1 = new Vector(futurePos, path.get(1)).getLength();
+
+                        if (distance1 < distanceForArrived){
+                            arrived(context);
+                            setStatus(SUCCESS);
+                            return SUCCESS;
+                        } else {
+                            closestPoint = path.get(1);
+                        }
+                    } else {
                         Log.d("Follow", "basePath size is: " + path.size());
 
                         int closesIdx = CollisionManager.getClosestPointOnPathIdx(futurePos, path);
@@ -452,7 +474,7 @@ public class Tasks {
                                 closestPoint = path.get(closesIdx);
                             }
 
-                            if (AStar.calculateEuclideanHeuristic(futurePos, closestPoint) < 75 && closesIdx == path.size()-1){
+                            if (AStar.calculateEuclideanHeuristic(futurePos, closestPoint) < distanceForArrived && closesIdx == path.size()-1){
                                 //arrived at destination
                                 closestPoint = path.get(path.size()-1);
                             }
@@ -466,23 +488,13 @@ public class Tasks {
 
                     Log.d("CURVE", "futurepos: " + futurePos + ", closestPos: " + closestPoint);
 
-                    int maxForce = 50;
+                    int maxForce = 30;
 
                     context.addVariable("heading", closestPoint);
 
                     context.addVariable("closest_point", closestPoint);
 
-                    //Log.d("TANKK", "distance to end: " + new Vector(controlled.getCenter(), basePath.get(basePath.size()-1)).getLength());
-
                     Vector steeringVector = new Vector(futurePos, closestPoint);
-
-                    //steeringVector = Vector.proj(steeringVector, controlled.getForwardUnitVector());
-
-                    //Vector movementForce = controlled.getForwardUnitVector().setLength(maxForce);
-
-                    //float t = steeringVector.getLength() / maxForce;
-
-                    //movementForce = movementForce.sMult(1-t);
 
 
                     if (steeringVector.getLength() > maxForce){
@@ -491,13 +503,13 @@ public class Tasks {
                         steeringVector.setLength(5);
 
                     float distanceToEndNode = new Vector(controlled.getCenter(), path.get(path.size()-1)).getLength();
+
+                    int distanceForArrival = (int) context.variableOrDefault("path_distance_for_arrival", 200);
+
                     if (controlled.getBoundingBox().intersecting(path.get(path.size()-1))){
-                        context.addVariable("arrived", true);
-                        context.addVariable("arriving", false);
+                        arrived(context);
 
-                        Log.d("Follow", "arrived");
-
-                    } else if (distanceToEndNode < 200){
+                    } else if (distanceToEndNode < distanceForArrival){
                         context.addVariable("arriving", true);
                         context.addVariable("arrived", false);
                         Log.d("Follow", "arriving");
@@ -523,85 +535,39 @@ public class Tasks {
         };
     }
 
-    public static BNode randomPointInMesh(){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
-
-                if (context.containsKeys(CURRENT_MESH, CONTROLLED_ENTITY)){
-                    MeshPolygon currentMesh = (MeshPolygon) context.getValue(CURRENT_MESH);
-                    AIEntity aiEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-
-                    Point target = currentMesh.getRandomPointInMesh();
-
-                    Vector v = new Vector(aiEntity.getCenter(), target);
-
-                    if (v.getLength() > 400)
-                        v = v.setLength(400);
-
-                    Log.d("TASKS", "target: " + v.getHead());
-                    context.addPair(MOVE_TO, v.getHead());
-
-                    return SUCCESS;
-                }
-                Log.d("TASKS", "randomPointInMesh doesnt contains keys");
-                return FAILURE;
-            }
-        };
-    }
-
     public static BNode rotateToTarget(){
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                return rotate(context, TARGET);
+                if (context.containsKeys(MOVE_TO, CONTROLLED_ENTITY)){
+
+                    Log.d("TASKS", "rotateTo contains keys");
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+
+
+                    Player player = ((LevelState) context.getValue(LEVEL_STATE)).getPlayer();
+                    float wiggleRoom = CollisionManager.getWiggleRoom(player, controlled);
+
+                    Vector rotVector = new Vector(controlled.getCenter(), player.getCenter());
+
+                    float angle = Vector.calculateAngleBetweenVectors(((TankBody)controlled.getShape()).getTurretFUnit(),
+                            rotVector);
+
+                    Log.d("TANKK", "wiggleRoom: " + wiggleRoom + ", angle: " + angle);
+                    if (Math.abs(angle) < wiggleRoom){
+                        Log.d("TASKS", "no need to applyRotationalForces... angle:  " + angle);
+                        controlled.setRotationVector(Vector.ZERO_VECTOR);
+                        return SUCCESS;
+                    } else {
+                        Log.d("TASKS", "rotating... angle:  " + angle);
+                        controlled.setRotationVector(rotVector.getUnitVector());
+                        return RUNNING;
+                    }
+                }
+                Log.d("TASKS", "rotateTo doesnt contains keys");
+                return FAILURE;
             }
         };
-    }
-
-    public static BNode rotateToMoveTo(){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
-                return rotate(context, MOVE_TO);
-            }
-        };
-    }
-
-    private static Status rotate(BContext context, BKeyType point){
-
-        if (context.containsKeys(MOVE_TO, CONTROLLED_ENTITY)){
-
-            Point target = (Point) context.getValue(point);
-
-            Log.d("TASKS", "rotateTo contains keys");
-            AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-
-
-            Player player = ((LevelState) context.getValue(LEVEL_STATE)).getPlayer();
-            float wiggleRoom = CollisionManager.getWiggleRoom(player, controlled);
-
-            Vector rotVector = new Vector(controlled.getCenter(), player.getCenter());
-
-            float angle = Vector.calculateAngleBetweenVectors(((TankBody)controlled.getShape()).getTurretFUnit(),
-                    rotVector);
-
-            Log.d("TASKS", "rotation target: " + target);
-            Log.d("TASKS", "rotVector: " + rotVector.relativeToString() + ", controlledForwardVector: " + controlled.getForwardUnitVector().relativeToString());
-
-            Log.d("TANKK", "wiggleRoom: " + wiggleRoom + ", angle: " + angle);
-            if (Math.abs(angle) < wiggleRoom){
-                Log.d("TASKS", "no need to applyRotationalForces... angle:  " + angle);
-                controlled.setRotationVector(Vector.ZERO_VECTOR);
-                return SUCCESS;
-            } else {
-                Log.d("TASKS", "rotating... angle:  " + angle);
-                controlled.setRotationVector(rotVector.getUnitVector());
-                return RUNNING;
-            }
-        }
-        Log.d("TASKS", "rotateTo doesnt contains keys");
-        return FAILURE;
     }
 
     public static BNode aim(){
@@ -662,7 +628,9 @@ public class Tasks {
 
                     Random r = new Random();
 
-                    float angle = 0.3f * r.nextFloat();
+                    float maxInaccuracy = (float) context.variableOrDefault("aim_max_inaccuracy_angle", 0.03f);
+
+                    float angle = maxInaccuracy * r.nextFloat();
 
                     Vector v = new Vector(controlled.getCenter(), aimPoint);
                     v = v.rotate((float)Math.cos(angle),(float) Math.sin(angle));
@@ -706,8 +674,6 @@ public class Tasks {
                     LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
 
-                    Point aimPoint = (Point) context.getValue(TARGET);
-
                     Log.d("SHOOT", "SHooting");
 
                     levelState.addBullet(controlled.getWeapon().shoot(((TankBody) controlled.getShape()).getShootingVector()));
@@ -719,25 +685,156 @@ public class Tasks {
         };
     }
 
-    public static BNode plotPathToAnAI(){
+    public static BNode setHeadingAsPlayer(){
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(LEVEL_STATE, CONTROLLED_ENTITY)){
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                if (context.containsKeys(LEVEL_STATE)) {
+
+                    context.addVariable("heading", ((LevelState)context.getValue(LEVEL_STATE)).getPlayer());
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
+                }
+
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode detonate(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(CONTROLLED_ENTITY)){
+
+                    AIEntity controlled = ((AIEntity) context.getValue(CONTROLLED_ENTITY));
+
+                    controlled.setHealth(0);
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
+                }
+
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode flashRed(int duration){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(CONTROLLED_ENTITY)){
+
+                    AIEntity controlled = ((AIEntity)context.getValue(CONTROLLED_ENTITY));
+
+                    context.addVariable("flash_duration", duration);
+
+                    if (getStatus() != RUNNING){
+                        context.addVariable("flash_remaining", duration);
+                    }
+
+                    int flashRemaining = (int) context.getVariable("flash_remaining");
+
+                    if (flashRemaining > 0){
+                        flashRemaining--;
+
+                        if (flashRemaining % 2 == 0){
+                            controlled.setColor(Color.RED);
+                        } else {
+                            controlled.setColor(Color.BLACK);
+                        }
+
+                    } else {
+                        setStatus(SUCCESS);
+                        return SUCCESS;
+                    }
+
+                    context.addVariable("flash_remaining", flashRemaining);
+
+                    setStatus(RUNNING);
+                    return RUNNING;
+                }
+
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode findAIToHeal(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(OVERLORD, CONTROLLED_ENTITY)){
+                    Overlord overlord = (Overlord) context.getValue(OVERLORD);
                     AIEntity thisEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
 
-                    for (AIEntity aiEntity : levelState.getAliveAIEntities()){
+                    float minRatio = (float) context.variableOrDefault("healing_min_ratio", 0.04f);
+                    for (AIEntity aiEntity : overlord.getAliveEntities()){
                         if (aiEntity.equals(thisEntity))
                             continue;
 
-                        context.addPair(MOVE_TO, aiEntity.getCenter());
-                        Status status = plotPath().process(context);
+                        if (aiEntity.getRadioHealthLeft() < minRatio) {
 
-                        if (status == SUCCESS)
+                            Log.d("HEALER", thisEntity.getName() + " plotting to " + aiEntity.getName());
+                            context.addPair(MOVE_TO, aiEntity.getCenter());
+
+                            setStatus(SUCCESS);
                             return SUCCESS;
+                        }
                     }
+                } else {
+                    Log.d("HEALER", "plot path to ai doesnt have required fields");
                 }
+
+                Log.d("HEALER", "plot path to ai might not have any entities with low health");
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode healField(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+
+                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE)){
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    CollisionManager collisionManager = ((LevelState) context.getValue(LEVEL_STATE)).getCollisionManager();
+
+                    Log.d("HEALER", "healfield executing");
+                    for (SpatialBin spatialBin : collisionManager.getSpatialBins()){
+                        if (spatialBin.contains(controlled)){
+
+                            for (Collidable collidable : spatialBin.getTemps()){
+
+                                if (collidable instanceof AIEntity){
+                                    float ratioLeft = ((AIEntity) collidable).getRadioHealthLeft();
+
+                                    float minRatio = (float) context.variableOrDefault("healing_min_ratio", 0.04f);
+
+                                    if (Float.compare(ratioLeft, minRatio) < 1){
+
+                                        ((AIEntity) collidable).restoreHealth(60);
+                                        Log.d("HEALER", "healfield restoring health of " + collidable.getName());
+
+                                        setStatus(SUCCESS);
+                                        return SUCCESS;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Log.d("HEALER", "healfield failed as required variables are missing");
+                }
+                Log.d("HEALER", "healfield failed");
+                setStatus(FAILURE);
                 return FAILURE;
             }
         };

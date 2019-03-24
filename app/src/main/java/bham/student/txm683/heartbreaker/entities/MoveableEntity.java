@@ -1,9 +1,11 @@
 package bham.student.txm683.heartbreaker.entities;
 
+import android.graphics.Canvas;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -11,7 +13,7 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MoveableEntity extends Entity {
+public abstract class MoveableEntity extends Entity implements Renderable {
     private Vector requestedMovementVector;
     private float maxSpeed;
 
@@ -48,6 +50,21 @@ public abstract class MoveableEntity extends Entity {
 
         this.extraForces = new ArrayList<>();
         this.rotationForces = new ArrayList<>();
+    }
+
+    @Override
+    public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
+        shape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
+    }
+
+    @Override
+    public void setColor(int color) {
+        shape.setColor(color);
+    }
+
+    @Override
+    public void revertToDefaultColor() {
+        shape.revertToDefaultColor();
     }
 
     public Shape getShape() {
