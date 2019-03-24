@@ -80,7 +80,7 @@ public class Graph <T> {
 
     public boolean containsNode(Node<T> node){return nodes.containsKey(node.getNodeID());}
 
-    public List<T> applyAStar(Node<T> startNode, Node<T> targetNode, IHeuristic<T> heuristic){
+    public List<T> applyAStar(Node<T> startNode, Node<T> targetNode, boolean returnIncompletePath, IHeuristic<T> heuristic){
 
         //creates a priority queue based on a Tile's fCost (Lowest cost at head)
         PriorityQueue<Pair<Node<T>, Integer>> openSet;
@@ -148,6 +148,9 @@ public class Graph <T> {
                 }
             }
         }
+
+        if (returnIncompletePath)
+            return tracePath(formPathStack(cameFrom, targetNode));
         return new ArrayList<>();
     }
 

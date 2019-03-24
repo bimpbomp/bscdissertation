@@ -54,7 +54,7 @@ public class AStar {
         this.waypointPath = new ArrayList<>();
     }
 
-    public boolean plotPath(){
+    public boolean plotPath(boolean returnIncompletePath){
         reset();
 
         if (startNode == null || targetNode == null){
@@ -62,7 +62,7 @@ public class AStar {
             return false;
         }
 
-        Integer[] roughPath  = meshGraph.applyAStar(startNode, targetNode, this::calculateEuclideanHeuristic).toArray(new Integer[0]);
+        Integer[] roughPath  = meshGraph.applyAStar(startNode, targetNode, returnIncompletePath, this::calculateEuclideanHeuristic).toArray(new Integer[0]);
 
         StringBuilder stringBuilder = new StringBuilder();
         StringBuilder sb2 = new StringBuilder();
@@ -121,7 +121,7 @@ public class AStar {
                 }
             }
 
-            controlled.getContext().addPair(PATH, new PathWrapper(waypointPath, pathMeshIds));
+            controlled.getContext().addValue(PATH, new PathWrapper(waypointPath, pathMeshIds));
             return true;
         }
 

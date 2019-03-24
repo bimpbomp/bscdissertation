@@ -300,8 +300,8 @@ public class CollisionManager {
                 case BOMB:
                     break;
                 case HEALTH:
-                    ((Player) collidable).restoreHealth(50);
-                    Log.d(TAG, collidable.getName() + " gained 50 health");
+                    ((Player) collidable).restoreHealth(100);
+                    Log.d(TAG, collidable.getName() + " gained 100 health");
                     break;
             }
             levelState.removePickup(pickup);
@@ -583,9 +583,9 @@ public class CollisionManager {
             }
 
             Log.d("SIGHT", "vector: " + ray + ", blocked: " + blocked);
-            aiEntity.getContext().addPair(SIGHT_VECTOR, ray);
-            aiEntity.getContext().addPair(SIGHT_BLOCKED, blocked);
-            aiEntity.getContext().addPair(FRIENDLY_BLOCKING_SIGHT, friendlyBlocking);
+            aiEntity.getContext().addValue(SIGHT_VECTOR, ray);
+            aiEntity.getContext().addValue(SIGHT_BLOCKED, blocked);
+            aiEntity.getContext().addValue(FRIENDLY_BLOCKING_SIGHT, friendlyBlocking);
         }
     }
 

@@ -17,8 +17,10 @@ public class Behaviour {
     }
 
     public static BNode flee(){
-        //TODO implement
-        return null;
+        return new Sequence(
+                Tasks.findAI(),
+                travelTo()
+        );
     }
 
     public static BNode walkToRandomMeshBehaviour(){

@@ -68,7 +68,7 @@ public class BContext {
         return false;
     }
 
-    public void addPair(BKeyType key, Object value){
+    public void addValue(BKeyType key, Object value){
         this.pairs.put(key, value);
     }
 

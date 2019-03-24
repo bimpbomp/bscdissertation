@@ -209,7 +209,7 @@ public class Level implements Runnable {
                         id = mapCollidableToMesh(aiEntity);
 
                         if (id > 0)
-                            aiEntity.getContext().addPair(BKeyType.CURRENT_MESH, levelState.getRootMeshPolygons().get(id));
+                            aiEntity.getContext().addValue(BKeyType.CURRENT_MESH, levelState.getRootMeshPolygons().get(id));
                     }
 
                     //remove blocked edges from meshgraph

@@ -42,7 +42,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     }
 
     protected void initContext(){
-        context.addPair(BKeyType.CONTROLLED_ENTITY, this);
+        context.addValue(BKeyType.CONTROLLED_ENTITY, this);
 
         context.addVariable("arrived", false);
         context.addVariable("arriving", false);
@@ -63,11 +63,11 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     }
 
     public void setLevelState(LevelState levelState){
-        this.context.addPair(BKeyType.LEVEL_STATE, levelState);
+        this.context.addValue(BKeyType.LEVEL_STATE, levelState);
     }
 
     void setOverlord(Overlord overlord){
-        context.addPair(OVERLORD, overlord);
+        context.addValue(OVERLORD, overlord);
     }
 
     public void onDeath(){

@@ -19,6 +19,8 @@ import bham.student.txm683.heartbreaker.physics.SpatialBin;
 import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.heartbreaker.utils.graph.Graph;
+import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.*;
 
@@ -286,13 +288,15 @@ public class Tasks {
                     //Log.d("TASK plotPath", "levelstate is null: " + (context.getValue(LEVEL_STATE) == null));
 
                     LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
-                    //context.addPair(MOVE_TO, levelState.getPlayer().getCenter());
+                    //context.addValue(MOVE_TO, levelState.getPlayer().getCenter());
 
                     AStar a = new AStar((AIEntity) context.getValue(CONTROLLED_ENTITY),
                             levelState.getRootMeshPolygons(),
                             levelState.getMeshGraph());
 
-                    boolean plotted = a.plotPath();
+                    boolean returnIncompletePath = (Boolean) context.variableOrDefault("return_incomplete_path", false);
+
+                    boolean plotted = a.plotPath(returnIncompletePath);
 
                     if (plotted) {
                         context.addVariable("plottingFailed", false);
@@ -313,7 +317,42 @@ public class Tasks {
             @Override
             public Status process(BContext context) {
 
-                //TODO implement
+                if (context.containsKeys(LEVEL_STATE)){
+
+                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+
+                    Graph<Integer> graph = levelState.getMeshGraph();
+
+                    int playerMesh = levelState.getPlayer().getMesh();
+
+                    if (playerMesh < 0){
+                        setStatus(FAILURE);
+                        return FAILURE;
+                    }
+
+                    List<Node<Integer>> neighbours = graph.getNode(playerMesh).getNeighbours();
+
+                    if (neighbours.size() == 0){
+                        setStatus(FAILURE);
+                        return FAILURE;
+                    }
+
+                    Random r = new Random();
+
+                    MeshPolygon meshPolygon = levelState.getRootMeshPolygons().get(neighbours.get(r.nextInt(neighbours.size())).getNodeID());
+
+                    if (meshPolygon == null){
+                        setStatus(FAILURE);
+                        return FAILURE;
+                    }
+
+                    Point p = meshPolygon.getCenter();
+
+                    context.addValue(MOVE_TO, p);
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
+                }
 
                 setStatus(FAILURE);
                 return FAILURE;
@@ -351,7 +390,14 @@ public class Tasks {
                             patrolIdx = 0;
                     }
 
-                    Point point = levelState.getRootMeshPolygons().get(patrolPath.get(patrolIdx)).getCenter();
+                    MeshPolygon meshPolygon = levelState.getRootMeshPolygons().get(patrolPath.get(patrolIdx));
+
+                    if (meshPolygon == null){
+                        setStatus(FAILURE);
+                        return FAILURE;
+                    }
+
+                    Point point = meshPolygon.getCenter();
 
                     float distance = new Vector(controlled.getCenter(), point).getLength();
 
@@ -371,7 +417,7 @@ public class Tasks {
 
                     Log.d("AVOID", "heading to: " + patrolPath.get(patrolIdx));
 
-                    context.addPair(MOVE_TO, point);
+                    context.addValue(MOVE_TO, point);
 
                     return Status.SUCCESS;
                 }
@@ -397,7 +443,7 @@ public class Tasks {
                     MeshPolygon meshPolygon = levelState.getRootMeshPolygons().get(id);
 
                     if (meshPolygon != null){
-                        context.addPair(MOVE_TO, meshPolygon.getCenter());
+                        context.addValue(MOVE_TO, meshPolygon.getCenter());
 
                         setStatus(SUCCESS);
                         return SUCCESS;
@@ -635,7 +681,7 @@ public class Tasks {
                     Vector v = new Vector(controlled.getCenter(), aimPoint);
                     v = v.rotate((float)Math.cos(angle),(float) Math.sin(angle));
 
-                    context.addPair(TARGET, v.getHead());
+                    context.addValue(TARGET, v.getHead());
 
                     Log.d("TASKS", "t: " + t);
                     Log.d("TASKS", "aimpoint: " + aimPoint + ", playerpos: " + playerPos);
@@ -781,11 +827,39 @@ public class Tasks {
                         if (aiEntity.getRadioHealthLeft() < minRatio) {
 
                             Log.d("HEALER", thisEntity.getName() + " plotting to " + aiEntity.getName());
-                            context.addPair(MOVE_TO, aiEntity.getCenter());
+                            context.addValue(MOVE_TO, aiEntity.getCenter());
 
                             setStatus(SUCCESS);
                             return SUCCESS;
                         }
+                    }
+                } else {
+                    Log.d("HEALER", "plot path to ai doesnt have required fields");
+                }
+
+                Log.d("HEALER", "plot path to ai might not have any entities with low health");
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
+    public static BNode findAI(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+                if (context.containsKeys(OVERLORD, CONTROLLED_ENTITY)){
+                    Overlord overlord = (Overlord) context.getValue(OVERLORD);
+                    AIEntity thisEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+
+                    for (AIEntity aiEntity : overlord.getAliveEntities()){
+                        if (aiEntity.equals(thisEntity))
+                            continue;
+
+                        context.addValue(MOVE_TO, aiEntity.getCenter());
+
+                        setStatus(SUCCESS);
+                        return SUCCESS;
                     }
                 } else {
                     Log.d("HEALER", "plot path to ai doesnt have required fields");
