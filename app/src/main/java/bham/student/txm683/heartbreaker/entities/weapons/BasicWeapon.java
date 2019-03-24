@@ -39,6 +39,7 @@ public class BasicWeapon extends Weapon {
 
     @Override
     public Projectile[] shoot(Vector shootVector) {
+        tickCooldown();
 
         if (!inCooldown()) {
             Projectile bullet = new Projectile(getOwner()+getNextID(), getOwner(), shootVector.getHead(), bulletRadius,
@@ -49,7 +50,7 @@ public class BasicWeapon extends Weapon {
             return new Projectile[]{bullet};
         }
 
-        tickCooldown();
+
         return new Projectile[0];
     }
 
