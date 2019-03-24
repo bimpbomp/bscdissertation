@@ -72,9 +72,6 @@ public class Door extends Entity implements Renderable {
 
         doorShape.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
         lockedSymbol.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
-
-        if (renderEntityName)
-            drawName(canvas, getCenter().add(renderOffset));
     }
 
     @Override
@@ -134,9 +131,10 @@ public class Door extends Entity implements Renderable {
     public void setLocked(boolean locked) {
         this.locked = locked;
 
-        if (locked)
+        if (locked) {
             lockedSymbol.setColor(LOCKED_COLOR);
-        else
+            doorShape.revertToDefaultColor();
+        } else
             lockedSymbol.setColor(UNLOCKED_COLOR);
     }
 
