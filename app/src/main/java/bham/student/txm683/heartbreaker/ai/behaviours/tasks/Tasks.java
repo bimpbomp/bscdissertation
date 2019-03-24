@@ -17,6 +17,7 @@ import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.SpatialBin;
+import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -219,6 +220,7 @@ public class Tasks {
                     if (steeringForce.getLength() > maxForce)
                         steeringForce.setLength(maxForce);
 
+                    Log.d("BOOM", "force: " + steeringForce.relativeToString());
                     context.addVariable("seek_steering", steeringForce);
 
                     setStatus(SUCCESS);
@@ -299,6 +301,7 @@ public class Tasks {
 
                     boolean plotted = a.plotPath(returnIncompletePath);
 
+                    Log.d("FLASH", "plotting path: " + plotted);
                     if (plotted) {
                         context.addVariable("plottingFailed", false);
                         setStatus(SUCCESS);
@@ -307,6 +310,8 @@ public class Tasks {
                         context.addVariable("plottingFailed", true);
                     }
                 }
+
+                Log.d("TASK", "plotting path has failed");
                 setStatus(FAILURE);
                 return FAILURE;
             }
@@ -350,6 +355,8 @@ public class Tasks {
                     Point p = meshPolygon.getCenter();
 
                     context.addValue(MOVE_TO, p);
+
+                    Log.d("FLASH", ((AIEntity)context.getValue(CONTROLLED_ENTITY)).getName() + " is finding an adjacent mesh");
 
                     setStatus(SUCCESS);
                     return SUCCESS;
@@ -738,7 +745,7 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsKeys(LEVEL_STATE)) {
 
-                    context.addVariable("heading", ((LevelState)context.getValue(LEVEL_STATE)).getPlayer());
+                    context.addVariable("heading", ((LevelState)context.getValue(LEVEL_STATE)).getPlayer().getCenter());
 
                     setStatus(SUCCESS);
                     return SUCCESS;
@@ -759,6 +766,10 @@ public class Tasks {
                     AIEntity controlled = ((AIEntity) context.getValue(CONTROLLED_ENTITY));
 
                     controlled.setHealth(0);
+                    LevelState levelState = (LevelState ) context.getValue(LEVEL_STATE);
+
+                    levelState.addExplosion(new Explosion("death" + controlled.getName(), controlled.getName(),
+                            controlled.getCenter(), 150f, 60, Color.RED));
 
                     setStatus(SUCCESS);
                     return SUCCESS;
@@ -803,13 +814,15 @@ public class Tasks {
 
                     AIEntity controlled = ((AIEntity)context.getValue(CONTROLLED_ENTITY));
 
+                    if (!context.containsVariables("flash_remaining"))
+                        context.addVariable("flash_remaining", 75);
+
+                    context.addVariable("fuse_started", true);
                     context.addVariable("flash_duration", duration);
 
-                    if (getStatus() != RUNNING){
-                        context.addVariable("flash_remaining", duration);
-                    }
-
                     int flashRemaining = (int) context.getVariable("flash_remaining");
+
+                    Log.d("FLASH", flashRemaining + "");
 
                     if (flashRemaining > 0){
                         flashRemaining--;

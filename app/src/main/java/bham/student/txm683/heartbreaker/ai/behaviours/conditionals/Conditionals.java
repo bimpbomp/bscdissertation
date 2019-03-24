@@ -72,6 +72,14 @@ public class Conditionals {
         });
     }
 
+    public static ConditionalBNode fuseStarted (BNode child){
+        return new ConditionalBNode(child, context -> {
+            Log.d("TASK", context.containsVariables("fuse_started")+"");
+            return context.containsVariables("fuse_started");
+
+        });
+    }
+
     public static ConditionalBNode notAtDestination (BNode child) {
         return new ConditionalBNode(child, notAtDestinationCondition);
     }

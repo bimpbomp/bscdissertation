@@ -5,7 +5,6 @@ import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
 import bham.student.txm683.heartbreaker.ai.behaviours.composites.Sequence;
 import bham.student.txm683.heartbreaker.ai.behaviours.conditionals.Conditionals;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RepeatN;
-import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RepeatUntilFail;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RunTillArrived;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.Succeeder;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Tasks;
@@ -56,24 +55,31 @@ public class Behaviour {
         );
     }
 
+    public static BNode delayedShoot(int delayInTicks, int idleAfter){
+        return new Sequence(
+                new RepeatN(delayInTicks,
+                        new Sequence(
+                                Tasks.aim(),
+                                Tasks.rotateToTarget()
+                        )
+                ),
+                Tasks.shoot(),
+                Tasks.doNothing(idleAfter)
+        );
+    }
+
     public static BNode turretTree(){
         return new Selector(
                 brokenDownTree(),
-                new Sequence(
-                        Tasks.findMeshAdjacentToPlayer(),
-                        travelTo(false),
+                new Selector(
                         Conditionals.canSeePlayer(
-                                new Sequence(
-                                        new RepeatN(50,
-                                                new Sequence(
-                                                        Tasks.aim(),
-                                                        Tasks.rotateToTarget()
-                                                )
-                                        ),
-                                        Tasks.shoot(),
-                                        Tasks.doNothing(25)
-                                )
+                                delayedShoot(50, 50)
+                        ),
+                        new Sequence(
+                                Tasks.findMeshAdjacentToPlayer(),
+                                travelTo(false)
                         )
+
                 )
         );
     }
@@ -94,7 +100,8 @@ public class Behaviour {
         return new Sequence(
                 Tasks.setHeadingAsPlayer(),
                 Tasks.seek(),
-                Tasks.courseCorrect()
+                //Tasks.courseCorrect(),
+                Tasks.applyMovementForces()
         );
     }
 
@@ -108,12 +115,18 @@ public class Behaviour {
     }
 
     public static BNode selfDestructTree(){
-        return new RepeatUntilFail(
-                new Selector(
-                        Conditionals.canSeePlayer(
-                                new Sequence(
-                                        driveAtPlayer(),
-                                        explodeTree()
+        BNode explode = explodeTree();
+        return new Selector(
+                Conditionals.canSeePlayer(
+                        new Sequence(
+                                driveAtPlayer(),
+                                explode
+                        )
+                ),
+                new ForgetfulSequence(
+                        new Succeeder(
+                                Conditionals.fuseStarted(
+                                        explode
                                 )
                         ),
                         Tasks.findMeshAdjacentToPlayer(),
@@ -123,9 +136,10 @@ public class Behaviour {
     }
 
     public static BNode explodeTree(){
-        return new Sequence(
-                Tasks.flashRed(75),
-                Tasks.detonate()
+        return new Succeeder(new Sequence(
+                        Tasks.flashRed(75),
+                        Tasks.detonate()
+                )
         );
     }
 
@@ -172,8 +186,9 @@ public class Behaviour {
 
     public static BNode droneTree(){
         return new Selector(
-                brokenDownTree(),
-                chaseTree()
+                /*brokenDownTree(),
+                chaseTree()*/
+                selfDestructTree()
         );
     }
 }

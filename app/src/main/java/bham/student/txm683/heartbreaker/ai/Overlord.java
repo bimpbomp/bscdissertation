@@ -126,9 +126,19 @@ public class Overlord {
 
 
             //tick all alive enemies.
+            List<AIEntity> dead = new ArrayList<>();
             for (AIEntity aiEntity : aliveEntities) {
                 aiEntity.tick(secondsSinceLastGameTick);
+
+                if (aiEntity.getHealth() < 1)
+                    dead.add(aiEntity);
             }
+
+            for (AIEntity entity: dead){
+                levelState.aiDied(entity);
+            }
+
+
         }
     }
 

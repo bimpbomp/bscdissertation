@@ -74,7 +74,10 @@ public class Turret extends AIEntity {
     @Override
     public void tick(float secondsSinceLastGameTick) {
 
-        behaviourTreeRoot.process(context);
+        if (getOrders() == null)
+            behaviourTreeRoot.process(context);
+        else
+            getOrders().process(context);
 
         super.tick(secondsSinceLastGameTick);
     }

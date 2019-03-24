@@ -32,9 +32,13 @@ public class ConditionalBNode extends BNode {
                 //if child isn't running, reset it
                 child.reset(context);
             }
-            return child.process(context);
+
+            Status status = child.process(context);
+            setStatus(status);
+            return status;
         }
         Log.d("hb::" + this.getClass().getSimpleName(), "eval false");
+        setStatus(FAILURE);
         return FAILURE;
     }
 }

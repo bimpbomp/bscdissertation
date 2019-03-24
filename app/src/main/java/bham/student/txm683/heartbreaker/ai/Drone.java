@@ -92,7 +92,12 @@ public class Drone extends AIEntity{
     @Override
     public void tick(float secondsSinceLastGameTick) {
 
-        behaviourTreeRoot.process(context);
+
+        if (getOrders() == null)
+            behaviourTreeRoot.process(context);
+        else
+            getOrders().process(context);
+
         //shootTreeRoot.process(context);
 
         super.tick(secondsSinceLastGameTick);
