@@ -11,7 +11,6 @@ public class ColorScheme {
     public static final int HEALER_COLOR = Color.rgb(222, 49, 99);
     public static final int TURRET_COLOR = Color.rgb(227, 66, 52);
     public static final int PLAYER_COLOR = Color.WHITE;
-    public static final int LOWER_PLAYER_COLOR = Color.MAGENTA;
 
     private static Random random = new Random();
 

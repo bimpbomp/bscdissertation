@@ -23,6 +23,10 @@ public class GameTickTimer {
         active = false;
     }
 
+    public void reset(){
+        start();
+    }
+
     /**
      * Returns the number of ticks that have passed or 0 if no ticks/not active
      * @return ticks that have passed

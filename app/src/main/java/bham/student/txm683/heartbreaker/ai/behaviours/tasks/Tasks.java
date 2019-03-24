@@ -12,6 +12,7 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.TankBody;
+import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
@@ -279,7 +280,7 @@ public class Tasks {
         };
     }
 
-    public static BNode plotPath(){
+    public static BNode plotPath(boolean returnIncompletePath){
         return new BNode() {
             @Override
             public Status process(BContext context) {
@@ -294,7 +295,7 @@ public class Tasks {
                             levelState.getRootMeshPolygons(),
                             levelState.getMeshGraph());
 
-                    boolean returnIncompletePath = (Boolean) context.variableOrDefault("return_incomplete_path", false);
+                    //boolean returnIncompletePath = (Boolean) context.variableOrDefault("return_incomplete_path", false);
 
                     boolean plotted = a.plotPath(returnIncompletePath);
 
@@ -312,7 +313,7 @@ public class Tasks {
         };
     }
 
-    public static BNode plotPathToMeshAdjacentToPlayer(){
+    public static BNode findMeshAdjacentToPlayer(){
         return new BNode() {
             @Override
             public Status process(BContext context) {
@@ -769,6 +770,31 @@ public class Tasks {
         };
     }
 
+    public static BNode brokenDown(){
+        return new BNode() {
+            @Override
+            public Status process(BContext context) {
+
+                if (context.containsKeys(CONTROLLED_ENTITY)){
+                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+
+                    controlled.setBrokenDown(true);
+
+                    TankBody tankBody = (TankBody) controlled.getShape();
+
+                    tankBody.setBodyColor(ColorScheme.manipulateColor(tankBody.getDefaultColor(), 0.7f));
+                    tankBody.setTurretColor(ColorScheme.manipulateColor(tankBody.getDefaultColor(), 1.5f));
+
+                    setStatus(SUCCESS);
+                    return SUCCESS;
+                }
+
+                setStatus(FAILURE);
+                return FAILURE;
+            }
+        };
+    }
+
     public static BNode flashRed(int duration){
         return new BNode() {
             @Override
@@ -856,6 +882,7 @@ public class Tasks {
                         if (aiEntity.equals(thisEntity))
                             continue;
 
+                        Log.d("FINDAI", "plotting to: " + aiEntity.getName());
                         context.addValue(MOVE_TO, aiEntity.getCenter());
 
                         setStatus(SUCCESS);

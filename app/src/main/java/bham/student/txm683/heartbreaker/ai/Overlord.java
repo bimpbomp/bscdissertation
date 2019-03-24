@@ -58,7 +58,6 @@ public class Overlord {
         maxAliveAtOnce = jsonObject.getInt("max_in_level");
         maxSpawns = jsonObject.getInt("spawns_in_wave");
 
-        //TODO temp
         maxAliveAtOnce = 3;
         //maxSpawns = 100;
 
@@ -66,7 +65,7 @@ public class Overlord {
 
         uniqueID = new UniqueID();
 
-        spawnerTimer = new GameTickTimer(1000 * 2);
+        spawnerTimer = new GameTickTimer(1000 * 5);
         spawnerTimer.start();
 
         totalSpawns = 0;
@@ -109,19 +108,6 @@ public class Overlord {
     }
 
     public void update(float secondsSinceLastGameTick) {
-        for (AIEntity aiEntity : aliveEntities) {
-            aiEntity.tick(secondsSinceLastGameTick);
-        }
-
-        /*Log.d("OVERLORD","number of ai: " + aliveEntities.size());
-
-        StringBuilder stringBuilder = new StringBuilder();
-        for (AIEntity entity : aliveEntities){
-            stringBuilder.append(entity.getName());
-            stringBuilder.append(", ");
-        }
-        stringBuilder.append("END");
-        Log.d("OVERLOAD", "controlling: " + stringBuilder.toString());*/
 
         if (!inLockDown && isTriggered()){
             lockDown(true);
@@ -130,10 +116,18 @@ public class Overlord {
         }
 
         if (inLockDown){
-            if (spawnerTimer.tick() > 0 && aliveEntities.size() < maxAliveAtOnce && totalSpawns < maxSpawns){
-                boolean spawned = spawnEntity();
+            //if the player is in the arena
 
-                Log.d("OVERLORD", "spawned: " + spawned);
+            //spawn an enemy if you can, otherwise reset the timer
+            if (spawnerTimer.tick() > 0 && aliveEntities.size() < maxAliveAtOnce && totalSpawns < maxSpawns){
+                spawnEntity();
+            }
+
+
+
+            //tick all alive enemies.
+            for (AIEntity aiEntity : aliveEntities) {
+                aiEntity.tick(secondsSinceLastGameTick);
             }
         }
     }

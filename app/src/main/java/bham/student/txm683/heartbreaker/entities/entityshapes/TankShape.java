@@ -53,6 +53,10 @@ public class TankShape extends Polygon implements Shape {
         return new TankShape(center, vertexVectors.toArray(new Vector[0]), color);
     }
 
+    public int getDefaultColor(){
+        return defaultColor;
+    }
+
     @Override
     void setForwardUnitVector() {
         forwardUnitVector = vertexVectors[1].getUnitVector();

@@ -77,7 +77,7 @@ public class HealthBar {
 
     public void draw(Canvas canvas, Point offsetPosition){
 
-        if (display) {
+        if (display && health > 0) {
             if (count > countMax){
                 display = false;
             } else

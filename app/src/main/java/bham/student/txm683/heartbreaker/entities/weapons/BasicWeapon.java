@@ -32,9 +32,9 @@ public class BasicWeapon extends Weapon {
         this.bulletRadius *= radiusModifier;
     }
 
-    public BasicWeapon(String owner, int cooldownTicks){
+    public BasicWeapon(String owner, int damage){
         this(owner);
-        setAfterFiringCooldownInTicks(cooldownTicks);
+        this.damage = damage;
     }
 
     @Override

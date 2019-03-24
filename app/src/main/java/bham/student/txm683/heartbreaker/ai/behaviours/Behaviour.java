@@ -16,18 +16,11 @@ public class Behaviour {
 
     }
 
-    public static BNode flee(){
-        return new Sequence(
-                Tasks.findAI(),
-                travelTo()
-        );
-    }
-
     public static BNode walkToRandomMeshBehaviour(){
 
         return new Sequence(
-                Tasks.patrol(),
-                Tasks.plotPath(),
+                Tasks.pickRandomMesh(),
+                Tasks.plotPath(false),
                 Tasks.followPath(),
                 Tasks.courseCorrect()
         );
@@ -45,9 +38,9 @@ public class Behaviour {
         );
     }
 
-    public static BNode travelTo(){
+    public static BNode travelTo(boolean returnIncompletePath){
         return new Sequence(
-                Tasks.plotPath(),
+                Tasks.plotPath(returnIncompletePath),
                 new RunTillArrived(
                         new ForgetfulSequence(
                                 Tasks.followPath(),
@@ -64,20 +57,22 @@ public class Behaviour {
     }
 
     public static BNode turretTree(){
-        return new Sequence(
-                Tasks.pickRandomMesh(),
-                Tasks.plotPath(),
-                travelTo(),
-                Conditionals.canSeePlayer(
-                        new Sequence(
-                                new RepeatN(50,
-                                        new Sequence(
-                                                Tasks.aim(),
-                                                Tasks.rotateToTarget()
-                                        )
-                                ),
-                                Tasks.shoot(),
-                                Tasks.doNothing(25)
+        return new Selector(
+                brokenDownTree(),
+                new Sequence(
+                        Tasks.findMeshAdjacentToPlayer(),
+                        travelTo(false),
+                        Conditionals.canSeePlayer(
+                                new Sequence(
+                                        new RepeatN(50,
+                                                new Sequence(
+                                                        Tasks.aim(),
+                                                        Tasks.rotateToTarget()
+                                                )
+                                        ),
+                                        Tasks.shoot(),
+                                        Tasks.doNothing(25)
+                                )
                         )
                 )
         );
@@ -87,11 +82,11 @@ public class Behaviour {
         return new Selector(
                 new Sequence(
                        Tasks.findAIToHeal(),
-                       travelTo(),
+                       travelTo(true),
                        Tasks.healField()
                 ),
                 Tasks.patrol(),
-                travelTo()
+                travelTo(false)
         );
     }
 
@@ -121,8 +116,8 @@ public class Behaviour {
                                         explodeTree()
                                 )
                         ),
-                        Tasks.plotPathToMeshAdjacentToPlayer(),
-                        travelTo()
+                        Tasks.findMeshAdjacentToPlayer(),
+                        travelTo(false)
                 )
         );
     }
@@ -136,33 +131,26 @@ public class Behaviour {
 
     public static BNode chaseTree(){
 
-        return new Selector(
-                Conditionals.healthBelowThreshold(
-                        new Succeeder(
-                                flee()
+        return new Sequence(
+                Tasks.findMeshAdjacentToPlayer(),
+                new RunTillArrived(
+                        new ForgetfulSequence(
+                                new Succeeder(
+                                        Conditionals.canSeePlayer(
+                                                shootBehaviour()
+                                        )
+                                ),
+                                travelTo(false)
                         )
                 ),
-                new Sequence(
-                        Tasks.plotPathToMeshAdjacentToPlayer(),
-                        new RunTillArrived(
-                                new ForgetfulSequence(
-                                        new Succeeder(
-                                                Conditionals.canSeePlayer(
+                new Selector(
+                        Conditionals.canSeePlayer(
+                                new RepeatN(2,
+                                        new Sequence(
+                                                new Succeeder(
                                                         shootBehaviour()
-                                                )
-                                        ),
-                                        travelTo()
-                                )
-                        ),
-                        new Selector(
-                                Conditionals.canSeePlayer(
-                                        new RepeatN(2,
-                                                new Sequence(
-                                                        new Succeeder(
-                                                                shootBehaviour()
-                                                        ),
-                                                        Tasks.doNothing(25)
-                                                )
+                                                ),
+                                                Tasks.doNothing(25)
                                         )
                                 )
                         )
@@ -170,12 +158,22 @@ public class Behaviour {
         );
     }
 
+    public static BNode brokenDownTree(){
+        return Conditionals.healthBelowThreshold(
+                new Succeeder(
+                        new Sequence(
+                                Tasks.brokenDown(),
+                                shootBehaviour(),
+                                Tasks.doNothing(50)
+                        )
+                )
+        );
+    }
+
     public static BNode droneTree(){
         return new Selector(
-                new Sequence(
-                        Tasks.patrol(),
-                        travelTo()
-                )
+                brokenDownTree(),
+                chaseTree()
         );
     }
 }

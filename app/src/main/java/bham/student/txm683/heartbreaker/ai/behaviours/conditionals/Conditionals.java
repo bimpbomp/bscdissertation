@@ -10,8 +10,10 @@ public class Conditionals {
 
     private static Condition healthAboveThresholdCondition = context -> {
             if (context.containsKeys(CONTROLLED_ENTITY)){
-                int health = ((AIEntity) context.getValue(CONTROLLED_ENTITY)).getHealth();
-                int bound = (int) context.variableOrDefault("flee_health", health/4);
+                AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+
+                int health = controlled.getHealth();
+                int bound = (int) context.variableOrDefault("flee_health", controlled.getInitialHealth()/4);
 
                 return health > bound;
             }

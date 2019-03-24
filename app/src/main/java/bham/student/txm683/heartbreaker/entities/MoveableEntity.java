@@ -261,6 +261,10 @@ public abstract class MoveableEntity extends Entity implements Renderable {
         return angularAcc * secondsSinceLastGameTick;
     }
 
+    public int getMass() {
+        return mass;
+    }
+
     @Override
     public boolean canMove() {
         return true;

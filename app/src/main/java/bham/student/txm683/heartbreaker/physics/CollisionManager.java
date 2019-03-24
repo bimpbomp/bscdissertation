@@ -384,18 +384,38 @@ public class CollisionManager {
             Point firstAmountMoved;
             Point secondAmountMoved;
 
+            if (firstCollidable instanceof MoveableEntity && secondCollidable instanceof MoveableEntity){
+
+                int firstMass = ((MoveableEntity) firstCollidable).getMass();
+                int secondMass = ((MoveableEntity) secondCollidable).getMass();
+
+                if (firstMass == secondMass){
+                    firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
+                    secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
+                } else if (firstMass > secondMass){
+                    firstAmountMoved = new Point();
+                    secondAmountMoved = pushVector.sMult(-1).getRelativeToTailPoint();
+                } else {
+                    firstAmountMoved = pushVector.getRelativeToTailPoint();
+                    secondAmountMoved = new Point();
+                }
+
+            } else {
+
+                firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
+                secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
+            }
+
             //update position of first entity with half of the push vector
-            firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
             newCenter = firstCollidable.getCenter().add(firstAmountMoved);
             firstCollidable.setCenter(newCenter);
 
             //update position of second entity with half of the inverted pushVector
             //i.e pushes second entity away from first
-            secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
             newCenter = secondCollidable.getCenter().add(secondAmountMoved);
             secondCollidable.setCenter(newCenter);
 
-            restitutionCollision((Entity) firstCollidable, (Entity) secondCollidable, 0.2f);
+            //restitutionCollision((Entity) firstCollidable, (Entity) secondCollidable, 0.2f);
 
         } else {
 

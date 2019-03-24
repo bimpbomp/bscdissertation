@@ -68,6 +68,18 @@ public class TankBody implements Renderable, Shape {
         turret.setColor(ColorScheme.manipulateColor(color, 0.7f));
     }
 
+    public void setBodyColor(int color){
+        body.setColor(color);
+    }
+
+    public void setTurretColor(int color){
+        turret.setColor(color);
+    }
+
+    public int getDefaultColor(){
+        return body.getDefaultColor();
+    }
+
     @Override
     public void revertToDefaultColor() {
         body.revertToDefaultColor();

@@ -31,7 +31,11 @@ public class AStar {
     public AStar(AIEntity controlled, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
         this.controlled = controlled;
 
-        this.startNode = meshGraph.getNode(((MeshPolygon)controlled.getContext().getValue(CURRENT_MESH)).getId());
+        if (controlled.getContext().containsKeys(CURRENT_MESH)){
+            this.startNode = meshGraph.getNode(((MeshPolygon)controlled.getContext().getValue(CURRENT_MESH)).getId());
+        } else {
+            this.startNode = null;
+        }
 
         LevelState levelState = (LevelState) controlled.getContext().getValue(LEVEL_STATE);
         targetPoint = (Point) controlled.getContext().getValue(MOVE_TO);
@@ -40,7 +44,8 @@ public class AStar {
 
         this.targetNode = meshGraph.getNode(targetMeshId);
 
-        Log.d("ASTAR", "current mesh id: " + startNode.getNodeID() + ", target mesh id: " + targetNode.getNodeID());
+        if (startNode != null && targetNode != null)
+            Log.d("ASTAR", "current mesh id: " + startNode.getNodeID() + ", target mesh id: " + targetNode.getNodeID());
 
         this.meshPolygonMap = meshPolygonMap;
         this.meshGraph = meshGraph;

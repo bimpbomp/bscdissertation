@@ -25,6 +25,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     protected BContext context;
 
+    private boolean brokenDown;
+
     private PickupType drops;
 
     private boolean isOnScreen;
@@ -39,6 +41,8 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         this.healthBar = new HealthBar(initialHealth);
 
         isOnScreen = false;
+
+        brokenDown = false;
     }
 
     protected void initContext(){
@@ -79,7 +83,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         super.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
         healthBar.draw(canvas, getCenter().add(renderOffset).add(0,75));
 
-        drawPath(canvas, renderOffset);
+        //drawPath(canvas, renderOffset);
     }
 
     private void drawPath(Canvas canvas, Point renderOffset){
@@ -134,6 +138,19 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
         paint.setColor(Color.BLACK);
         canvas.drawCircle(p.getX(), p.getY(), 20, paint);
+    }
+
+    @Override
+    public boolean canMove() {
+        return !brokenDown;
+    }
+
+    public boolean isBrokenDown() {
+        return brokenDown;
+    }
+
+    public void setBrokenDown(boolean brokenDown) {
+        this.brokenDown = brokenDown;
     }
 
     public float getRadioHealthLeft(){
