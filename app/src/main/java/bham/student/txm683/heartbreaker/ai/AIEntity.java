@@ -71,7 +71,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         context.addVariable("arrival_distance", 200);
         context.addVariable("arrival_magnitude", 100);
 
-        context.addVariable("path_velocity_time_step", 0.04f);
+        context.addVariable("path_velocity_time_step", 0.2f);
         context.addVariable("path_magnitude", 50);
         context.addVariable("path_distance_for_arrived", 75);
         context.addVariable("path_distance_for_arrival", 200);
@@ -96,7 +96,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         super.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
         healthBar.draw(canvas, getCenter().add(renderOffset).add(0,75));
 
-        //drawPath(canvas, renderOffset);
+        drawPath(canvas, renderOffset);
     }
 
     private void drawPath(Canvas canvas, Point renderOffset){
@@ -147,10 +147,11 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
             }
         }
 
-        Point p = getCenter().add(getVelocity().getRelativeToTailPoint()).add(renderOffset);
-
-        paint.setColor(Color.BLACK);
-        canvas.drawCircle(p.getX(), p.getY(), 20, paint);
+        if (context.containsVariables("future_position")){
+            Point p = ((Point) context.getVariable("future_position")).add(renderOffset);
+            paint.setColor(Color.BLACK);
+            canvas.drawCircle(p.getX(), p.getY(), 20, paint);
+        }
     }
 
     @Override

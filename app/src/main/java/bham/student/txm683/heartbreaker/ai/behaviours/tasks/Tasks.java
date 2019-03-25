@@ -483,7 +483,7 @@ public class Tasks {
 
                     //project ai into the future
 
-                    float velocityTimeStep = (float) context.variableOrDefault("path_velocity_time_step", 0.04f);
+                    float velocityTimeStep = (float) context.variableOrDefault("path_velocity_time_step", 0.2f);
 
                     Vector vel = controlled.getVelocity().sMult(velocityTimeStep);
 
@@ -492,6 +492,8 @@ public class Tasks {
                     }
 
                     Point futurePos = controlled.getCenter().add(vel.getRelativeToTailPoint());
+
+                    context.addVariable("future_position", futurePos);
 
                     Point closestPoint;
 
@@ -815,10 +817,9 @@ public class Tasks {
                     AIEntity controlled = ((AIEntity)context.getValue(CONTROLLED_ENTITY));
 
                     if (!context.containsVariables("flash_remaining"))
-                        context.addVariable("flash_remaining", 75);
+                        context.addVariable("flash_remaining", duration);
 
                     context.addVariable("fuse_started", true);
-                    context.addVariable("flash_duration", duration);
 
                     int flashRemaining = (int) context.getVariable("flash_remaining");
 
@@ -912,16 +913,19 @@ public class Tasks {
         };
     }
 
-    public static BNode healField(){
+    public static BNode healField(int radius){
         return new BNode() {
             @Override
             public Status process(BContext context) {
 
                 if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE)){
                     AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                    CollisionManager collisionManager = ((LevelState) context.getValue(LEVEL_STATE)).getCollisionManager();
+                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                    CollisionManager collisionManager = levelState.getCollisionManager();
 
                     Log.d("HEALER", "healfield executing");
+
+                    boolean healedSomething = false;
                     for (SpatialBin spatialBin : collisionManager.getSpatialBins()){
                         if (spatialBin.contains(controlled)){
 
@@ -934,15 +938,23 @@ public class Tasks {
 
                                     if (Float.compare(ratioLeft, minRatio) < 1){
 
-                                        ((AIEntity) collidable).restoreHealth(60);
-                                        Log.d("HEALER", "healfield restoring health of " + collidable.getName());
+                                        if (new Vector(collidable.getCenter(), controlled.getCenter()).getLength() < radius) {
 
-                                        setStatus(SUCCESS);
-                                        return SUCCESS;
+                                            ((AIEntity) collidable).restoreHealth(60);
+                                            Log.d("HEALER", "healfield restoring health of " + collidable.getName());
+
+                                            healedSomething = true;
+                                        }
                                     }
                                 }
                             }
                         }
+                    }
+
+                    if (healedSomething){
+                        levelState.addExplosion(new Explosion(controlled.getName() +"death", controlled.getName(), controlled.getCenter(), radius, 100, Color.BLUE));
+                        setStatus(SUCCESS);
+                        return SUCCESS;
                     }
                 } else {
                     Log.d("HEALER", "healfield failed as required variables are missing");

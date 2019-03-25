@@ -21,7 +21,5 @@ public class MeshConstructorV2Test {
         testTileList.add(Arrays.asList(-1, -1, -1, -1, -1, -1, -1));
 
         MeshConstructorV2 meshConstructorV2 = new MeshConstructorV2();
-
-        meshConstructorV2.constructMesh(testTileList);
     }
 }

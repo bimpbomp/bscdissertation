@@ -41,10 +41,14 @@ public class MapReader {
 
     private int width, height;
 
+    private int count;
+
     public MapReader(Context context){
         this.context = context;
         this.meshGenList = new ArrayList<>();
         this.doorSpawns = new ArrayList<>();
+
+        count = 0;
 
         width = 0;
         height = 0;
@@ -97,6 +101,7 @@ public class MapReader {
                     tileValues.add(-1);
 
                 } else {
+                    count++;
                     if (TileType.isDoor(pixel)){
 
                         Tile tile = new Tile(columnIdx, rowIdx);
@@ -113,6 +118,10 @@ public class MapReader {
 
             meshGenList.add(tileValues);
         }
+    }
+
+    public int getCount() {
+        return count;
     }
 
     private Point convertToGlobal(Tile tile){

@@ -45,7 +45,11 @@ public class MapConstructor {
 
             List<MeshPolygon> meshPolygons = meshConstructor.getMeshPolygons();
 
+            Log.d("MESHPRINT", "number of nodes: " + meshPolygons.size() + ", number of empty tiles: " + mapReader.getCount());
+
             printTileList(mapReader.getMeshGenList());
+
+
 
             //GenerateBoundaryWalls
             List<Wall> walls = generateWallsV2(mapReader.getMeshGenList());
@@ -68,7 +72,16 @@ public class MapConstructor {
 
     private void constructDoors(){
         List<Door> doors = new ArrayList<>();
+
+        Log.d("TEST", "number of doors: " + mapReader.getDoorSpawns().size());
+
+        if (mapReader.getDoorSpawns().size() == 0){
+            return;
+        }
         for (DoorBuilder doorBuilder : mapReader.getDoorSpawns()){
+
+            Log.d("TEST", doorBuilder.getName());
+
             Tile sideSets = null;
             int doorSet = 0;
 

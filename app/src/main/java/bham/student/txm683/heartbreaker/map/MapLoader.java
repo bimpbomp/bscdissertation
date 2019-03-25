@@ -88,11 +88,13 @@ public class MapLoader {
 
         Log.d("LOADING", "LOADED PAST map constructor");
 
-        JSONArray jsonArray = jsonObject.getJSONArray("overlords");
-
         List<Overlord> overlords = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++){
-            overlords.add(new Overlord(jsonArray.getJSONObject(i), map.getTileSize()));
+
+        if (jsonObject.has("overlords")) {
+            JSONArray jsonArray = jsonObject.getJSONArray("overlords");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                overlords.add(new Overlord(jsonArray.getJSONObject(i), map.getTileSize()));
+            }
         }
 
         map.setOverlords(overlords);

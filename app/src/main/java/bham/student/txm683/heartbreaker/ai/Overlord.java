@@ -34,34 +34,54 @@ public class Overlord {
 
     private int totalSpawns;
 
+    private Random r;
+
     public Overlord(JSONObject jsonObject, int tileSize) throws JSONException {
         this.aliveEntities = new ArrayList<>();
         this.controlledDoors = new ArrayList<>();
         this.spawnPoints = new ArrayList<>();
         this.triggers = new ArrayList<>();
 
-        JSONArray jsonArray = jsonObject.getJSONArray("lock_on_entry");
-        for (int i = 0; i < jsonArray.length(); i++){
-            controlledDoors.add(jsonArray.getString(i));
+        r = new Random();
+
+        JSONArray jsonArray;
+
+        if (jsonObject.has("lock_on_entry")) {
+            jsonArray = jsonObject.getJSONArray("lock_on_entry");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                controlledDoors.add(jsonArray.getString(i));
+            }
         }
 
-        jsonArray = jsonObject.getJSONArray("spawn_points");
-        for (int i = 0; i < jsonArray.length(); i++){
-            spawnPoints.add(new Point(jsonArray.getJSONObject(i)).sMult(tileSize));
+        if (jsonObject.has("spawn_points")) {
+            jsonArray = jsonObject.getJSONArray("spawn_points");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                spawnPoints.add(new Point(jsonArray.getJSONObject(i)).sMult(tileSize));
+            }
         }
 
-        jsonArray = jsonObject.getJSONArray("triggers");
-        for (int i = 0; i < jsonArray.length(); i++){
-            triggers.add(new Point(jsonArray.getJSONObject(i)).sMult(tileSize));
+        if (jsonObject.has("triggers")) {
+            jsonArray = jsonObject.getJSONArray("triggers");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                triggers.add(new Point(jsonArray.getJSONObject(i)).sMult(tileSize));
+            }
+
+            inLockDown = false;
+        } else {
+            inLockDown = true;
         }
 
-        maxAliveAtOnce = jsonObject.getInt("max_in_level");
-        maxSpawns = jsonObject.getInt("spawns_in_wave");
+        if (jsonObject.has("max_in_level"))
+            maxAliveAtOnce = jsonObject.getInt("max_in_level");
+        else
+            maxAliveAtOnce = 2;
 
-        maxAliveAtOnce = 3;
-        //maxSpawns = 100;
+        if (jsonObject.has("spawns_in_wave"))
+            maxSpawns = jsonObject.getInt("spawns_in_wave");
+        else
+            maxSpawns = 4;
 
-        inLockDown = false;
+        maxSpawns = 1;
 
         uniqueID = new UniqueID();
 
@@ -71,40 +91,45 @@ public class Overlord {
         totalSpawns = 0;
     }
 
-    private boolean spawnEntity(){
+    public boolean isDefeated(){
+        return aliveEntities.size() == 0 && maxSpawns == totalSpawns;
+    }
+
+    private void spawnEntity(){
         BoundingBox visibleBounds = levelState.getLevelView().getVisibleBounds();
 
-        for (Point spawn : spawnPoints){
-            if (!visibleBounds.intersecting(spawn)){
+        Point spawn = null;
+        for (Point potentialSpawn : spawnPoints){
+            if (!visibleBounds.intersecting(potentialSpawn)){
                 //spawn point not on screen
-                AIEntity entity;
-
-                Random r = new Random();
-
-                int i = r.nextInt(100);
-
-                boolean hasTurret = false;
-
-                for (AIEntity alive : aliveEntities){
-                    if (alive instanceof Turret){
-                        hasTurret = true;
-                        break;
-                    }
-                }
-
-                if (!hasTurret)
-                    entity = new Turret("T" + uniqueID.id(), spawn);
-                else
-                    entity = new Drone("D" + uniqueID.id(), spawn);
-
-                addAI(entity);
-
-                totalSpawns++;
-
-                return true;
+                spawn = potentialSpawn;
             }
         }
-        return false;
+
+        int randomNumber;
+        if (spawn == null) {
+            //no spawn points off screen
+            randomNumber = r.nextInt(spawnPoints.size());
+
+            spawn = spawnPoints.get(randomNumber);
+        }
+
+        randomNumber = r.nextInt(150);
+        AIEntity entity;
+        if (randomNumber < 40)
+            entity = new Turret("T" + uniqueID.id(), spawn);
+        else {
+            randomNumber = r.nextInt(100);
+
+            if (randomNumber < 60)
+                entity = new Drone("D" + uniqueID.id(), spawn, false);
+            else
+                entity = new Drone("D" + uniqueID.id(), spawn, true);
+        }
+
+        addAI(entity);
+
+        totalSpawns++;
     }
 
     public void update(float secondsSinceLastGameTick) {
@@ -123,8 +148,6 @@ public class Overlord {
                 spawnEntity();
             }
 
-
-
             //tick all alive enemies.
             List<AIEntity> dead = new ArrayList<>();
             for (AIEntity aiEntity : aliveEntities) {
@@ -137,8 +160,6 @@ public class Overlord {
             for (AIEntity entity: dead){
                 levelState.aiDied(entity);
             }
-
-
         }
     }
 

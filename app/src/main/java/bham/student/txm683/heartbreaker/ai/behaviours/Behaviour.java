@@ -25,7 +25,7 @@ public class Behaviour {
         );
     }
 
-    public static BNode shootBehaviour(){
+    private static BNode shootBehaviour(){
         return Conditionals.canSeePlayer(
                 new ForgetfulSequence(
                         Tasks.aim(),
@@ -37,7 +37,7 @@ public class Behaviour {
         );
     }
 
-    public static BNode travelTo(boolean returnIncompletePath){
+    private static BNode travelTo(boolean returnIncompletePath){
         return new Sequence(
                 Tasks.plotPath(returnIncompletePath),
                 new RunTillArrived(
@@ -68,34 +68,6 @@ public class Behaviour {
         );
     }
 
-    public static BNode turretTree(){
-        return new Selector(
-                brokenDownTree(),
-                new Selector(
-                        Conditionals.canSeePlayer(
-                                delayedShoot(50, 50)
-                        ),
-                        new Sequence(
-                                Tasks.findMeshAdjacentToPlayer(),
-                                travelTo(false)
-                        )
-
-                )
-        );
-    }
-
-    public static BNode healerTree(){
-        return new Selector(
-                new Sequence(
-                       Tasks.findAIToHeal(),
-                       travelTo(true),
-                       Tasks.healField()
-                ),
-                Tasks.patrol(),
-                travelTo(false)
-        );
-    }
-
     public static BNode driveAtPlayer(){
         return new Sequence(
                 Tasks.setHeadingAsPlayer(),
@@ -114,8 +86,8 @@ public class Behaviour {
         );
     }
 
-    public static BNode selfDestructTree(){
-        BNode explode = explodeTree();
+    public static BNode selfDestructTree(int fuse){
+        BNode explode = explodeTree(fuse);
         return new Selector(
                 Conditionals.canSeePlayer(
                         new Sequence(
@@ -135,15 +107,15 @@ public class Behaviour {
         );
     }
 
-    public static BNode explodeTree(){
+    public static BNode explodeTree(int fuse){
         return new Succeeder(new Sequence(
-                        Tasks.flashRed(75),
+                        Tasks.flashRed(fuse),
                         Tasks.detonate()
                 )
         );
     }
 
-    public static BNode chaseTree(){
+    private static BNode chaseTree(){
 
         return new Sequence(
                 Tasks.findMeshAdjacentToPlayer(),
@@ -172,7 +144,7 @@ public class Behaviour {
         );
     }
 
-    public static BNode brokenDownTree(){
+    private static BNode brokenDownTree(){
         return Conditionals.healthBelowThreshold(
                 new Succeeder(
                         new Sequence(
@@ -186,9 +158,44 @@ public class Behaviour {
 
     public static BNode droneTree(){
         return new Selector(
-                /*brokenDownTree(),
-                chaseTree()*/
-                selfDestructTree()
+                brokenDownTree(),
+                chaseTree()
+        );
+    }
+
+    public static BNode turretTree(){
+        return new Selector(
+                brokenDownTree(),
+                new Selector(
+                        Conditionals.canSeePlayer(
+                                delayedShoot(50, 10)
+                        ),
+                        new Sequence(
+                                Tasks.findMeshAdjacentToPlayer(),
+                                travelTo(false)
+                        )
+
+                )
+        );
+    }
+
+    public static BNode destructDroneTree(){
+        return new Selector (
+                Conditionals.healthBelowThreshold(
+                        selfDestructTree(100)
+                ),
+                chaseTree()
+        );
+    }
+
+    public static BNode healerTree(){
+        return new Selector(
+                new Sequence(
+                        Tasks.findAIToHeal(),
+                        travelTo(true),
+                        Tasks.healField(150)
+                ),
+                Tasks.doNothing(75)
         );
     }
 }

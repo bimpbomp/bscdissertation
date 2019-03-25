@@ -79,7 +79,7 @@ public class Level implements Runnable {
 
         removedConnections = new HashSet<>();
 
-        countdownToEnd = 25 * 5;
+        countdownToEnd = 25 * 2;
     }
 
     public LevelState getLevelState() {
@@ -181,7 +181,6 @@ public class Level implements Runnable {
 
         BenchMarker benchMarker = new BenchMarker();
 
-        //levelState.setPaused(false);
         while (running){
 
             loops = 0;
@@ -212,8 +211,6 @@ public class Level implements Runnable {
                             aiEntity.getContext().addValue(BKeyType.CURRENT_MESH, levelState.getRootMeshPolygons().get(id));
                     }
 
-                    //remove blocked edges from meshgraph
-                    //TODO change to calculate total area of each polygon covered by moveable entities
                     removeBlockedFromGraph();
                     benchMarker.output("meshCalc");
 
@@ -242,7 +239,7 @@ public class Level implements Runnable {
                         levelState.getLevelEnder().setStatus(LevelEndStatus.PLAYER_DIED);
                         inputManager.setActivePopup(diedPopup);
 
-                    } else if (levelState.getCore() != null && levelState.getCore().getHealth() < 1) {
+                    } else if (levelState.getAiManager().overlordsDefeated()) {
 
                         if (countdownToEnd > 0){
                             countdownToEnd--;

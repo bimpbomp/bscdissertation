@@ -22,20 +22,22 @@ public class Drone extends AIEntity{
 
     private Weapon weapon;
     private BNode behaviourTreeRoot;
-    private BNode shootTreeRoot;
 
-    public Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
+    private Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
         super(name, center, size, maxSpeed, 1, constructShape(center, size, colorValue), initialHealth);
 
         this.weapon = new BasicWeapon(getName(), 20);
 
         this.behaviourTreeRoot = Behaviour.droneTree();
-        this.shootTreeRoot = Behaviour.shootBehaviour();
     }
 
-    public Drone(String name, Point center){
+    public Drone(String name, Point center, boolean selfDestruct){
         this(name, center, 100, ColorScheme.CHASER_COLOR,
                 300, 100);
+
+        if (selfDestruct){
+            behaviourTreeRoot = Behaviour.destructDroneTree();
+        }
     }
 
     @Override
@@ -54,7 +56,7 @@ public class Drone extends AIEntity{
         Point center = new Point(jsonObject.getJSONObject("sp")).sMult(tileSize);
         String name = jsonObject.getString("name");
 
-        Drone drone = new Drone(name, center);
+        Drone drone = new Drone(name, center, false);
 
         if (jsonObject.has("osr")){
             Vector osr = new Vector(new Point(jsonObject.getJSONObject("osr")));
@@ -93,12 +95,7 @@ public class Drone extends AIEntity{
     public void tick(float secondsSinceLastGameTick) {
 
 
-        if (getOrders() == null)
-            behaviourTreeRoot.process(context);
-        else
-            getOrders().process(context);
-
-        //shootTreeRoot.process(context);
+        behaviourTreeRoot.process(context);
 
         super.tick(secondsSinceLastGameTick);
     }

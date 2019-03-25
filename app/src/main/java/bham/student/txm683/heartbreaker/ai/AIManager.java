@@ -25,6 +25,15 @@ public class AIManager {
         }
     }
 
+    public boolean overlordsDefeated(){
+        for (Overlord overlord : overlords){
+            if (!overlord.isDefeated()){
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void removeAI(AIEntity ai){
         for (Overlord overlord : overlords){
             overlord.removeAI(ai);

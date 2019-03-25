@@ -1,5 +1,8 @@
 package bham.student.txm683.heartbreaker.ai;
 
+import android.graphics.Color;
+import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
 import bham.student.txm683.heartbreaker.entities.TankBody;
@@ -7,6 +10,7 @@ import bham.student.txm683.heartbreaker.entities.TankModifiers;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.map.ColorScheme;
+import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -38,7 +42,7 @@ public class Turret extends AIEntity {
     }
 
     public Turret(String name, Point center){
-        this(name ,center, 150, ColorScheme.TURRET_COLOR, 300);
+        this(name ,center, 150, ColorScheme.TURRET_COLOR, 200);
     }
 
     public static Turret build(JSONObject jsonObject, int tileSize) throws JSONException {
@@ -64,6 +68,14 @@ public class Turret extends AIEntity {
         }
 
         return new Turret(name, center);
+    }
+
+    @Override
+    public void onDeath() {
+        if (context.containsKeys(BKeyType.LEVEL_STATE)){
+            ((LevelState) context.getValue(BKeyType.LEVEL_STATE)).addExplosion(
+                    new Explosion(getName() +"death", getName(), getCenter(), getWidth()*1.5f, 100, Color.RED));
+        }
     }
 
     @Override
