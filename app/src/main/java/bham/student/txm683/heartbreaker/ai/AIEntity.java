@@ -96,7 +96,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         super.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
         healthBar.draw(canvas, getCenter().add(renderOffset).add(0,75));
 
-        drawPath(canvas, renderOffset);
+        //drawPath(canvas, renderOffset);
     }
 
     private void drawPath(Canvas canvas, Point renderOffset){

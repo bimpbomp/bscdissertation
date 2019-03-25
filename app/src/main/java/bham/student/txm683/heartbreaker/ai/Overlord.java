@@ -81,8 +81,6 @@ public class Overlord {
         else
             maxSpawns = 4;
 
-        maxSpawns = 1;
-
         uniqueID = new UniqueID();
 
         spawnerTimer = new GameTickTimer(1000 * 5);
