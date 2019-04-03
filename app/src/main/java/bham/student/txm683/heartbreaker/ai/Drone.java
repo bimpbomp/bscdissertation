@@ -8,9 +8,9 @@ import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
-import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
+import bham.student.txm683.heartbreaker.rendering.ColorScheme;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -32,7 +32,7 @@ public class Drone extends AIEntity{
     }
 
     public Drone(String name, Point center, boolean selfDestruct){
-        this(name, center, 100, ColorScheme.CHASER_COLOR,
+        this(name, center, 100, ColorScheme.DRONE_COLOR,
                 300, 100);
 
         if (selfDestruct){

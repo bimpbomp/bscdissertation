@@ -1,9 +1,8 @@
 package bham.student.txm683.heartbreaker.intentbundleholders;
 
 import android.os.Bundle;
-import bham.student.txm683.heartbreaker.LevelEndStatus;
 
-import static bham.student.txm683.heartbreaker.LevelEndStatus.ERROR;
+import static bham.student.txm683.heartbreaker.intentbundleholders.LevelEndStatus.ERROR;
 
 public class LevelEnder {
 

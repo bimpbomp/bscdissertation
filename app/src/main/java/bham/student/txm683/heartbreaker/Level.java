@@ -8,10 +8,10 @@ import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.input.RectButtonBuilder;
+import bham.student.txm683.heartbreaker.intentbundleholders.LevelEndStatus;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.MapLoader;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
-import bham.student.txm683.heartbreaker.messaging.MessageBus;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.EntityController;
@@ -37,8 +37,6 @@ public class Level implements Runnable {
     private InputManager inputManager;
     private EntityController entityController;
     private CollisionManager collisionManager;
-
-    private MessageBus messageBus;
 
     private boolean running;
 
@@ -69,8 +67,6 @@ public class Level implements Runnable {
 
         this.mapName = mapName;
         this.stage = "1";
-
-        this.messageBus = new MessageBus();
 
         this.levelView = levelView;
 
@@ -219,8 +215,6 @@ public class Level implements Runnable {
                     benchMarker.begin();
                     levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
 
-                    if (levelState.getCore() != null)
-                        levelState.getCore().tick(gameTickTimeStepInMillis/1000f);
                     benchMarker.output("AI");
 
                     benchMarker.begin();
@@ -326,7 +320,7 @@ public class Level implements Runnable {
     }
 
     public void shutDown(){
-        //levelState.getAiManager().shutDown();
+
     }
 
     public void setRunning(boolean isRunning){

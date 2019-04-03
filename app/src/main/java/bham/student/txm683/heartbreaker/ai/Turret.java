@@ -9,9 +9,9 @@ import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.entities.TankModifiers;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
-import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
+import bham.student.txm683.heartbreaker.rendering.ColorScheme;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
@@ -35,7 +35,7 @@ public class Turret extends AIEntity {
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
         super(name, center, size, 200, 5, new TankBody(center, size, colorValue, modifiers),initialHealth);
 
-        this.weapon = new BasicWeapon(name, 50, 60, 1.5f);
+        this.weapon = new BasicWeapon(name, 50, 60, 30f, getShape().getColor());
 
         this.behaviourTreeRoot = TankBehaviour.turretTree();
     }
@@ -84,11 +84,6 @@ public class Turret extends AIEntity {
 
     @Override
     public void tick(float secondsSinceLastGameTick) {
-
-        if (getOrders() == null)
-            behaviourTreeRoot.process(context);
-        else
-            getOrders().process(context);
 
         super.tick(secondsSinceLastGameTick);
     }

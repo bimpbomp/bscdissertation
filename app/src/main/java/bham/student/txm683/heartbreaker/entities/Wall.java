@@ -3,7 +3,6 @@ package bham.student.txm683.heartbreaker.entities;
 import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -76,11 +75,6 @@ public class Wall extends Entity implements Renderable {
     @Override
     public ShapeIdentifier getShapeIdentifier() {
         return shape.getShapeIdentifier();
-    }
-
-    @Override
-    public CollidableType getCollidableType() {
-        return CollidableType.WALL;
     }
 
     @Override

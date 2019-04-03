@@ -3,11 +3,6 @@ package bham.student.txm683.heartbreaker.utils;
 public class UniqueID {
     private int nextID;
 
-    /**
-     * New objects should default to this value until assigned a unique value
-     */
-    public static final int UNASSIGNED = -1;
-
     public UniqueID(){
         nextID = 0;
     }

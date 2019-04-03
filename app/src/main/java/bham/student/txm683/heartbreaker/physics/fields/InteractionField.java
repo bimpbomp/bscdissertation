@@ -1,7 +1,6 @@
 package bham.student.txm683.heartbreaker.physics.fields;
 
 import bham.student.txm683.heartbreaker.physics.Collidable;
-import bham.student.txm683.heartbreaker.physics.CollidableType;
 
 import java.util.Objects;
 
@@ -27,11 +26,6 @@ public abstract class InteractionField implements Collidable {
     @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public CollidableType getCollidableType() {
-        return CollidableType.INTERACTION_FIELD;
     }
 
     @Override

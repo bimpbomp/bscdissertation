@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.InteractionField;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
@@ -114,11 +113,6 @@ public class Door extends Entity implements Renderable {
     }
 
     @Override
-    public CollidableType getCollidableType() {
-        return CollidableType.DOOR;
-    }
-
-    @Override
     public Point getCenter() {
         return doorShape.getCenter();
     }
@@ -162,9 +156,5 @@ public class Door extends Entity implements Renderable {
 
     public boolean isUnlocked(){
         return !locked;
-    }
-
-    public int getDoorID(){
-        return Integer.parseInt(getName().substring(1));
     }
 }

@@ -5,7 +5,6 @@ import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ICircle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
-import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -99,9 +98,6 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
         getShape().translate(offsetCenter);
 
         getShape().draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
-
-        /*if (r != null)
-            r.draw(canvas,renderOffset, secondsSinceLastRender, renderEntityName);*/
     }
 
     @Override
@@ -123,8 +119,6 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
         r.rotate(v.getUnitVector());
 
         return r.getVertices();
-
-        //return getBoundingBox().getCollisionVertices();
     }
 
     @Override
@@ -138,17 +132,8 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
     }
 
     @Override
-    public CollidableType getCollidableType() {
-        return CollidableType.PROJECTILE;
-    }
-
-    @Override
     public Point getCenter() {
         return currentCenter;
-    }
-
-    public Point getPreviousCenter() {
-        return nextTickCenter;
     }
 
     @Override

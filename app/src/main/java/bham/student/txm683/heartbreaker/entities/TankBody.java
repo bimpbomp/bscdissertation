@@ -7,7 +7,7 @@ import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.heartbreaker.entities.entityshapes.TankShape;
-import bham.student.txm683.heartbreaker.map.ColorScheme;
+import bham.student.txm683.heartbreaker.rendering.ColorScheme;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;

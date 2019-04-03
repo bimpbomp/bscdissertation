@@ -11,11 +11,11 @@ import bham.student.txm683.heartbreaker.entities.*;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.physics.fields.DoorField;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
-import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
+import bham.student.txm683.heartbreaker.pickups.PickupType;
+import bham.student.txm683.heartbreaker.rendering.ColorScheme;
 import bham.student.txm683.heartbreaker.utils.*;
 
 import java.util.ArrayList;
@@ -226,8 +226,6 @@ public class CollisionManager {
                                 }
                             } else if (nonSolidEntity instanceof DoorField){
                                 pushVector = collisionCheckTwoPolygonalCollidables(nonSolidEntity, solidEntity);
-                                //Log.d("hb::SolidNonSolid", "solid: " + solidEntity.getName() + ", and nonSolid: " + nonSolidEntity.getName() + " with owner " + ((DoorField) nonSolidEntity).getOwner());
-                                //Log.d("hb:: DoorCollision", pushVector.relativeToString());
 
                                 if (!pushVector.equals(Vector.ZERO_VECTOR)){
                                     //collision occurred
@@ -291,19 +289,9 @@ public class CollisionManager {
 
     private void resolvePickupActivation(Pickup pickup, Collidable collidable){
         if (collidable instanceof Player){
-            switch (pickup.getPickupType()){
-
-                case KEY:
-                    if (pickup instanceof Key)
-                        levelState.getPlayer().addKey((Key) pickup);
-                    Log.d(TAG, collidable.getName() + " picked up a key");
-                    break;
-                case BOMB:
-                    break;
-                case HEALTH:
-                    ((Player) collidable).restoreHealth(100);
-                    Log.d(TAG, collidable.getName() + " gained 100 health");
-                    break;
+            if (pickup.getPickupType() == PickupType.HEALTH) {
+                ((Player) collidable).restoreHealth(100);
+                Log.d(TAG, collidable.getName() + " gained 100 health");
             }
             levelState.removePickup(pickup);
         }
@@ -344,19 +332,6 @@ public class CollisionManager {
 
     private void resolveDoorFieldActivation(DoorField doorField, Collidable collidable){
         Door fieldOwner = levelState.getMap().getDoors().get(doorField.getOwner());
-
-        if (fieldOwner != null && collidable instanceof Player){
-            //if it's locked and the player has the key, then unlock it
-            if (fieldOwner.isLocked()){
-                for (Key key : ((Player) collidable).getKeys()){
-
-                    if (key.getUnlocks().equals(fieldOwner.getName())) {
-                        fieldOwner.setLocked(false);
-                        break;
-                    }
-                }
-            }
-        }
 
         if (fieldOwner != null && fieldOwner.isUnlocked()) {
             //if the interaction field belongs to a door, and it's unlocked
@@ -404,8 +379,6 @@ public class CollisionManager {
             //i.e pushes second entity away from first
             newCenter = secondCollidable.getCenter().add(secondAmountMoved);
             secondCollidable.setCenter(newCenter);
-
-            //restitutionCollision((Entity) firstCollidable, (Entity) secondCollidable, 0.2f);
 
         } else {
 
@@ -483,7 +456,7 @@ public class CollisionManager {
         return Vector.ZERO_VECTOR;
     }
 
-    private static Vector collisionCheckCircleAndPolygon(Circle circle, Collidable polygon){
+    public static Vector collisionCheckCircleAndPolygon(Circle circle, Collidable polygon){
         ArrayList<Vector> edges = new ArrayList<>(getEdges(polygon.getShapeIdentifier(), polygon.getCollisionVertices()));
 
         Vector[] orthogonalAxes = getEdgeNormals(edges);
@@ -564,7 +537,6 @@ public class CollisionManager {
         int smallestDistance = Integer.MAX_VALUE;
 
         Vector fUnit = entity.getForwardUnitVector();
-        //Vector steeringAxis = fUnit.rotateAntiClockwise90();
 
         float height = 200f;
 

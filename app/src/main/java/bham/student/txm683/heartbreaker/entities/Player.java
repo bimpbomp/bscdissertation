@@ -3,10 +3,8 @@ package bham.student.txm683.heartbreaker.entities;
 import android.graphics.Canvas;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
-import bham.student.txm683.heartbreaker.map.ColorScheme;
-import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
-import bham.student.txm683.heartbreaker.pickups.Key;
+import bham.student.txm683.heartbreaker.rendering.ColorScheme;
 import bham.student.txm683.heartbreaker.rendering.HealthBar;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -14,16 +12,11 @@ import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Player extends MoveableEntity implements Damageable, Renderable {
+public class Player extends TankMoveableEntity implements Damageable, Renderable {
 
     private HealthBar healthBar;
 
     private Weapon primaryWeapon;
-
-    private List<Key> keys;
 
     private int mesh;
 
@@ -33,8 +26,6 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
         this.healthBar = new HealthBar(initialHealth);
 
         this.primaryWeapon = new BasicWeapon(name, 20, 40, 20, getShape().getColor());
-
-        this.keys = new ArrayList<>();
 
         mesh = -1;
     }
@@ -70,14 +61,6 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
     public void setMesh(int mesh) {
         this.mesh = mesh;
-    }
-
-    public void addKey(Key key){
-        this.keys.add(key);
-    }
-
-    public List<Key> getKeys(){
-        return keys;
     }
 
     public Projectile[] shoot(){
@@ -121,10 +104,5 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
     @Override
     public void revertToDefaultColor() {
         getShape().revertToDefaultColor();
-    }
-
-    @Override
-    public CollidableType getCollidableType() {
-        return CollidableType.PLAYER;
     }
 }

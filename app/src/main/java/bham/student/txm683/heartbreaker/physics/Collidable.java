@@ -15,10 +15,7 @@ public interface Collidable {
     String getName();
 
     ShapeIdentifier getShapeIdentifier();
-    CollidableType getCollidableType();
 
     Point getCenter();
     void setCenter(Point newCenter);
-
-    //Vector getForwardUnitVector();
 }

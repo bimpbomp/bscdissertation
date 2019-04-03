@@ -6,7 +6,6 @@ import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.rendering.RenderingTools;
 import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public abstract class Entity  implements Collidable {
@@ -26,14 +25,6 @@ public abstract class Entity  implements Collidable {
 
     public void drawName(Canvas canvas, Point center){
         RenderingTools.renderCenteredText(canvas, paint, getName(), center);
-    }
-
-    public Vector getVelocity(){
-        return Vector.ZERO_VECTOR;
-    }
-
-    public void setVelocity(Vector v){
-        //do nothing
     }
 
     @Override

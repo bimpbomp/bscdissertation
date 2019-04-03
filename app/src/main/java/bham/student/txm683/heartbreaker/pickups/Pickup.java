@@ -27,14 +27,6 @@ public class Pickup extends InteractionField implements Renderable {
 
         switch (pickupType){
 
-            case KEY:
-                //yellow
-                color = Color.rgb(255,255,51);
-                break;
-            case BOMB:
-                //red ish
-                color = Color.rgb(255, 102,102);
-                break;
             case HEALTH:
                 //green ish
                 color = Color.rgb(102,255,178);

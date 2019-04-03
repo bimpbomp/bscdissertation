@@ -9,7 +9,6 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.entities.TankMoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
-import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.rendering.HealthBar;
@@ -81,11 +80,9 @@ public abstract class AIEntity extends TankMoveableEntity implements Renderable,
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
         super.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
         healthBar.draw(canvas, getCenter().add(renderOffset).add(0,75));
-
-        //drawPath(canvas, renderOffset);
     }
 
-    private void drawPath(Canvas canvas, Point renderOffset){
+    protected void drawPath(Canvas canvas, Point renderOffset){
         Paint paint = new Paint();
         if (context.containsCompulsory(PATH)){
 
@@ -207,10 +204,5 @@ public abstract class AIEntity extends TankMoveableEntity implements Renderable,
     @Override
     public void restoreHealth(int healthToRestore) {
         healthBar.restoreHealth(healthToRestore);
-    }
-
-    @Override
-    public CollidableType getCollidableType() {
-        return CollidableType.AI_ENTITY;
     }
 }

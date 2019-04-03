@@ -1,4 +1,4 @@
-package bham.student.txm683.heartbreaker.map;
+package bham.student.txm683.heartbreaker.rendering;
 
 import android.graphics.Color;
 
@@ -7,8 +7,7 @@ import java.util.Random;
 public class ColorScheme {
     public static final int DOOR_COLOR = Color.BLUE;
     public static final int WALL_COLOR = Color.rgb(32,32,32);
-    public static final int CHASER_COLOR = Color.rgb(255, 153, 51);
-    public static final int HEALER_COLOR = Color.rgb(222, 49, 99);
+    public static final int DRONE_COLOR = Color.rgb(255, 153, 51);
     public static final int TURRET_COLOR = Color.rgb(227, 66, 52);
     public static final int PLAYER_COLOR = Color.WHITE;
 

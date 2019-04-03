@@ -51,6 +51,9 @@ public abstract class MoveableEntity extends Entity implements Renderable {
         this.maxDimension = maxDimension;
 
         this.extraForces = new ArrayList<>();
+
+        this.maxAngularVelocity = 0.5f;
+        this.maxAcceleration = 300f;
     }
 
     public void setMaxAngularVelocity(float maxAngularVelocity) {
@@ -123,12 +126,10 @@ public abstract class MoveableEntity extends Entity implements Renderable {
         return requestedMovementVector;
     }
 
-    @Override
     public void setVelocity(Vector v){
         this.velocity = v;
     }
 
-    @Override
     public Vector getVelocity(){
         return velocity;
     }
@@ -171,9 +172,8 @@ public abstract class MoveableEntity extends Entity implements Renderable {
 
                 Vector acc = movementForce.sMult(1f/mass);
 
-                int maxAcc = 300;
-                if (acc.getLength() > maxAcc) {
-                    acc = acc.setLength(maxAcc);
+                if (acc.getLength() > maxAcceleration) {
+                    acc = acc.setLength(maxAcceleration);
                 }
 
                 velocity = velocity.vAdd(acc);
@@ -198,10 +198,8 @@ public abstract class MoveableEntity extends Entity implements Renderable {
         //rotate body
         float angularVelocity = getAngularVelocity(v.getUnitVector(), secondsSinceLastGameTick, getShape().getForwardUnitVector());
 
-        float maxAngularVel = 0.5f;
-
-        if (angularVelocity > maxAngularVel)
-            angularVelocity = maxAngularVel;
+        if (angularVelocity > maxAngularVelocity)
+            angularVelocity = maxAngularVelocity;
 
         getShape().rotate(angularVelocity);
     }

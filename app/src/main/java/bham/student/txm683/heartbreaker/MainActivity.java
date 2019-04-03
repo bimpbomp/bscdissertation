@@ -3,12 +3,10 @@ package bham.student.txm683.heartbreaker;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
-import bham.student.txm683.heartbreaker.audio.AudioController;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelLauncher;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 
@@ -26,7 +24,6 @@ public class MainActivity extends Activity {
     private LevelView levelView;
 
     private LevelState levelState;
-    private AudioController audioController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +40,6 @@ public class MainActivity extends Activity {
             LevelLauncher levelLauncher = new LevelLauncher(bundle);
             mapName = levelLauncher.getMapName();
         }
-
-        audioController = new AudioController(10);
         levelView = new LevelView(this, mapName);
 
         setContentView(levelView);
@@ -58,9 +53,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        audioController.initSounds(this);
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         Log.d(TAG, "onStart");
     }
@@ -99,11 +91,6 @@ public class MainActivity extends Activity {
         super.onStop();
         if (levelState != null)
             this.levelState.setReadyToRender(false);
-
-        /*String saveString = levelState.getSaveString();
-        saveToFile(SAVE_FILE_NAME, saveString);*/
-
-        audioController.releaseResources();
 
         Log.d(TAG, "onStop");
     }
@@ -166,20 +153,4 @@ public class MainActivity extends Activity {
         }
         return readInString.toString();
     }
-
-    /*
-    *    FileInputStream fileIn=openFileInput("mytextfile.txt");
-         InputStreamReader InputRead= new InputStreamReader(fileIn);
-
-         char[] inputBuffer= new char[READ_BLOCK_SIZE];
-         String s="";
-         int charRead;
-
-         while ((charRead=InputRead.read(inputBuffer))>0) {
-         // char to string conversion
-         String readstring=String.copyValueOf(inputBuffer,0,charRead);
-         s +=readstring;
-         }
-         InputRead.close();
-    * */
 }

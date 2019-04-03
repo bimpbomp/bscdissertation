@@ -2,14 +2,11 @@ package bham.student.txm683.heartbreaker.utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import bham.student.txm683.heartbreaker.SaveableState;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Point implements SaveableState {
-
-    private static final String DELIMITER = ",";
+public class Point {
 
     private final float x;
     private final float y;
@@ -87,30 +84,4 @@ public class Point implements SaveableState {
                 "," + y +
                 ')';
     }
-
-    @Override
-    public JSONObject getStateObject() throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("x", x);
-        jsonObject.put("y", y);
-
-        return jsonObject;
-    }
-
-    /*private static Point createPointFromStateString(String stateString) throws ParseException {
-        String[] split = stateString.split(",");
-
-        Point point;
-        try {
-            float sX = Float.parseFloat(split[0]);
-            float sY = Float.parseFloat(split[1]);
-            point = new Point(sX, sY);
-        } catch (IndexOutOfBoundsException e){
-            throw new ParseException("Error parsing String for creation of Point object: String cannot be" +
-                    " split with " + DELIMITER, 0);
-        } catch (NumberFormatException e){
-            throw new ParseException("Error parsing String for creation of Point object: error parsing floats",0);
-        }
-        return point;
-    }*/
 }

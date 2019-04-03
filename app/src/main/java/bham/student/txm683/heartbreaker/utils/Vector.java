@@ -2,11 +2,10 @@ package bham.student.txm683.heartbreaker.utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import bham.student.txm683.heartbreaker.SaveableState;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Vector implements SaveableState {
+public class Vector {
 
     public static final Vector ZERO_VECTOR;
 
@@ -83,7 +82,6 @@ public class Vector implements SaveableState {
         if ((Float.compare(0f, xRelativeToTail)== 0) && (Float.compare(0f, yRelativeToTail) == 0))
             return 0;
         else {
-            //float a = (xRelativeToTail * xRelativeToTail) + (yRelativeToTail * yRelativeToTail);
             return (float)Math.sqrt((xRelativeToTail * xRelativeToTail) + (yRelativeToTail * yRelativeToTail));
         }
     }
@@ -236,20 +234,6 @@ public class Vector implements SaveableState {
     }
 
     /**
-     * AFFINE SPACE OPERATION
-     *
-     * Evaluates whether two vectors lie between the same points.
-     * Does not take direction into account.
-     *
-     * @param vector Vector to be compared
-     * @return True if points are equal
-     */
-    public boolean affineEquals(Vector vector){
-        return (head.equals(vector.head) && tail.equals(vector.tail)) || (head.equals(tail) && tail.equals(head));
-
-    }
-
-    /**
      * VECTOR SPACE OPERATION
      *
      * Evaluates whether two vectors are equal in direction and magnitude.
@@ -304,13 +288,5 @@ public class Vector implements SaveableState {
 
     public String relativeToString(){
         return "x: " + xRelativeToTail + ", y: " + yRelativeToTail;
-    }
-
-    @Override
-    public JSONObject getStateObject() throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("head", head.getStateObject());
-        jsonObject.put("tail", tail.getStateObject());
-        return jsonObject;
     }
 }

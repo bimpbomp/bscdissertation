@@ -9,8 +9,8 @@ import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.TankBody;
-import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
+import bham.student.txm683.heartbreaker.rendering.ColorScheme;
 import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.PriorityQueue;

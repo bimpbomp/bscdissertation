@@ -5,7 +5,6 @@ import android.graphics.Color;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ICircle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.physics.CollidableType;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.BoundingBox;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -170,11 +169,6 @@ public class Portal extends Entity implements ICircle, Renderable {
     @Override
     public ShapeIdentifier getShapeIdentifier() {
         return ShapeIdentifier.CIRCLE;
-    }
-
-    @Override
-    public CollidableType getCollidableType() {
-        return null;
     }
 
     @Override

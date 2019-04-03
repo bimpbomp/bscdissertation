@@ -2,12 +2,11 @@ package bham.student.txm683.heartbreaker.utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import bham.student.txm683.heartbreaker.SaveableState;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Tile implements SaveableState {
+public class Tile {
 
     private final int x;
     private final int y;
@@ -47,27 +46,6 @@ public class Tile implements SaveableState {
 
     public Tile add(Tile t){
         return this.add(t.x, t.y);
-    }
-
-    public static Tile mapToTile(Point point, int tileSize){
-        return new Tile(((int) point.getX()/tileSize) * tileSize, ((int) point.getY()/tileSize) * tileSize);
-    }
-
-    public static Tile mapToCenterOfTile(Point point, int tileSize){
-        return mapToTile(point, tileSize).add(tileSize/2, tileSize/2);
-    }
-
-    public static Tile mapToCenterOfTile(Tile tile, int tileSize){
-        return mapToTile(new Point(tile), tileSize).add(tileSize/2, tileSize/2);
-    }
-
-    @Override
-    public JSONObject getStateObject() throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("x", x);
-        jsonObject.put("y", y);
-
-        return jsonObject;
     }
 
     @Override
