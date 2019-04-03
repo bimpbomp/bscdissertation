@@ -40,4 +40,8 @@ public class GameTickTimer {
         }
         return 0;
     }
+
+    public boolean isActive() {
+        return active;
+    }
 }

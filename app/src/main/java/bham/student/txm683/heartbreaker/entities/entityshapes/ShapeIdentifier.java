@@ -9,5 +9,4 @@ public enum ShapeIdentifier {
     TRAPEZIUM,
     HEXAGON,
     OCTAGON,
-    PERIMETER
 }

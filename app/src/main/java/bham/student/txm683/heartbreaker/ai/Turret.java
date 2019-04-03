@@ -36,7 +36,6 @@ public class Turret extends AIEntity {
         super(name, center, size, 200, 5, new TankBody(center, size, colorValue, modifiers),initialHealth);
 
         this.weapon = new BasicWeapon(name, 50, 60, 1.5f);
-        //this.weapon = new BombThrower(name);
 
         this.behaviourTreeRoot = TankBehaviour.turretTree();
     }

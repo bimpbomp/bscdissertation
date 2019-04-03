@@ -10,74 +10,84 @@ public abstract class Weapon {
     private String owner;
     private UniqueID uniqueID;
 
-    private int afterFiringCooldownInTicks;
-    private int currentCooldown;
-
     private GameTickTimer timer;
 
-    private AmmoType ammoType;
-
     private float speed;
+    private int damage;
+    private float bulletRadius;
+    private int bulletLife;
 
-    public Weapon(String owner, int afterFiringCooldownInTicks, AmmoType ammoType, float bulletSpeed){
+    private int ammo;
+
+    private int color;
+
+    public Weapon(String owner, int cooldownBetweenShotsInMillis, int damage, float speed, float bulletRadius, int bulletLife, int color){
         this.owner = owner;
         this.uniqueID = new UniqueID();
 
-        this.afterFiringCooldownInTicks = afterFiringCooldownInTicks;
-        this.currentCooldown = 0;
+        this.timer = new GameTickTimer(cooldownBetweenShotsInMillis);
 
-        this.timer = new GameTickTimer(25);
+        this.damage = damage;
+        this.speed = speed;
+        this.bulletRadius = bulletRadius;
+        this.bulletLife = bulletLife;
 
-        this.ammoType = ammoType;
+        this.color = color;
+    }
 
-        this.speed = bulletSpeed;
+    public int getAmmo(){
+        return ammo;
+    }
+
+    public void addAmmo(int amountToAdd){
+        ammo += amountToAdd;
+    }
+
+    public Projectile[] shoot(Vector shootVector) {
+        tickCooldown();
+
+        if (!inCooldown()) {
+            Projectile bullet = new Projectile(getOwner()+getNextID(), getOwner(), shootVector.getHead(), bulletRadius,
+                    speed, getDamage(), bulletLife, color);
+            bullet.setRequestedMovementVector(shootVector.getUnitVector());
+
+            startCooldown();
+
+            if (ammo != Integer.MAX_VALUE)
+                ammo--;
+
+            return new Projectile[]{bullet};
+        }
+        return new Projectile[0];
+    }
+
+    public int getDamage() {
+        return damage;
     }
 
     public float getSpeed() {
         return speed;
     }
 
-    public AmmoType getAmmoType() {
-        return ammoType;
-    }
-
-    public abstract Projectile[] shoot(Vector shootVector);
-
     public void tickCooldown(){
-        if (inCooldown()) {
-            currentCooldown -= timer.tick();
-
-            if (currentCooldown <= 0)
-                timer.stop();
+        if (inCooldown() && timer.tick() > 0) {
+            timer.stop();
         }
     }
 
-    void startCooldown(){
+    public void startCooldown(){
         timer.start();
-        currentCooldown = afterFiringCooldownInTicks;
     }
 
     public boolean inCooldown(){
-        return currentCooldown > 0;
+        return timer.isActive();
     }
 
-    public abstract int getAmmo();
-
-    public abstract void addAmmo(int amountToAdd);
-
-    int getNextID(){
+    public int getNextID(){
         return uniqueID.id();
     }
 
-    public abstract int getSymbolisingColor();
-
     public String getOwner() {
         return owner;
-    }
-
-    public abstract float getBulletRadius();
-
-    void setAfterFiringCooldownInTicks(int ticks){
-        this.afterFiringCooldownInTicks = ticks;
     }
 }

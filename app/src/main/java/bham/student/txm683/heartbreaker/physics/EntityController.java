@@ -4,7 +4,6 @@ import android.util.Log;
 import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.entities.Bomb;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.entities.Projectile;
@@ -43,11 +42,6 @@ public class EntityController {
 
             if (projectile.outOfLife()){
                 levelState.removeBullet(projectile);
-
-                //if it's a bomb, spawn its explosion
-                if (projectile instanceof Bomb){
-                    levelState.addExplosion(((Bomb) projectile).explode());
-                }
             }
         }
 

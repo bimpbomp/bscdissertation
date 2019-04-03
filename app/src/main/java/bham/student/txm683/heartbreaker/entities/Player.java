@@ -32,7 +32,7 @@ public class Player extends MoveableEntity implements Damageable, Renderable {
 
         this.healthBar = new HealthBar(initialHealth);
 
-        this.primaryWeapon = new BasicWeapon(name);
+        this.primaryWeapon = new BasicWeapon(name, 20, 40, 20, getShape().getColor());
 
         this.keys = new ArrayList<>();
 

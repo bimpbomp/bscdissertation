@@ -30,7 +30,9 @@ public abstract class MoveableEntity extends Entity implements Renderable {
     private int mass;
 
     private List<Vector> extraForces;
-    private List<Vector> rotationForces;
+
+    protected float maxAngularVelocity;
+    protected float maxAcceleration;
 
     public MoveableEntity(String name, Point spawn, int maxDimension, float maxSpeed, int mass, Shape shape){
         super(name);
@@ -49,7 +51,14 @@ public abstract class MoveableEntity extends Entity implements Renderable {
         this.maxDimension = maxDimension;
 
         this.extraForces = new ArrayList<>();
-        this.rotationForces = new ArrayList<>();
+    }
+
+    public void setMaxAngularVelocity(float maxAngularVelocity) {
+        this.maxAngularVelocity = maxAngularVelocity;
+    }
+
+    public void setMaxAcceleration(float maxAcceleration) {
+        this.maxAcceleration = maxAcceleration;
     }
 
     @Override
@@ -98,11 +107,7 @@ public abstract class MoveableEntity extends Entity implements Renderable {
     public void tick(float secondsSinceLastGameTick){
         applyMovementForces(secondsSinceLastGameTick);
 
-        /*if (this instanceof AIEntity)
-            applyRotationalForces(secondsSinceLastGameTick);*/
-
         extraForces.clear();
-        rotationForces.clear();
     }
 
     public Vector calculateMovementVector(float secondsSinceLastGameTick){
@@ -132,11 +137,7 @@ public abstract class MoveableEntity extends Entity implements Renderable {
         this.extraForces.add(force);
     }
 
-    public void addRotationForce(Vector force){
-        this.rotationForces.add(force);
-    }
-
-    void applyMovementForces(float secondsSinceLastGameTick){
+    public void applyMovementForces(float secondsSinceLastGameTick){
         if (velocity.getLength() < 3f)
             velocity = Vector.ZERO_VECTOR;
 
@@ -154,7 +155,6 @@ public abstract class MoveableEntity extends Entity implements Renderable {
                 if (angle > 0.785f)
                     movementForce = movementForce.sMult(angle/ (float) Math.PI);
 
-                //Log.d("MOVEMENT", getName() + ": dot: " + dot + " angle: " + angle + " prop: " + (angle/ (float) Math.PI));
             }
 
 
@@ -195,62 +195,19 @@ public abstract class MoveableEntity extends Entity implements Renderable {
 
         shape.translate(v);
 
-        if (/*this instanceof Player*/true){
+        //rotate body
+        float angularVelocity = getAngularVelocity(v.getUnitVector(), secondsSinceLastGameTick, getShape().getForwardUnitVector());
 
-            //rotate body
-            float angularVelocity = getAngularVelocity(v.getUnitVector(), secondsSinceLastGameTick, shape.getForwardUnitVector());
+        float maxAngularVel = 0.5f;
 
-            float maxAngularVel = 0.5f;
-            //Log.d("TANK", "angVel: " + angularVelocity);
+        if (angularVelocity > maxAngularVel)
+            angularVelocity = maxAngularVel;
 
-            if (angularVelocity > maxAngularVel)
-                angularVelocity = maxAngularVel;
-
-            shape.rotate(angularVelocity);
-
-            //rotate turret
-            Vector turretFUnit = ((TankBody) shape).getTurretFUnit();
-
-            if (getRotationVector().equals(Vector.ZERO_VECTOR))
-
-                ((TankBody) shape).rotateTurret(angularVelocity);
-            else {
-                angularVelocity = getAngularVelocity(getRotationVector(), secondsSinceLastGameTick,
-                        turretFUnit);
-
-                if (angularVelocity > maxAngularVel)
-                    angularVelocity = maxAngularVel;
-
-                ((TankBody) shape).rotateTurret(angularVelocity);
-            }
-        }
+        getShape().rotate(angularVelocity);
     }
 
-    protected void applyRotationalForces(float secondsSinceLastGameTick){
-        Vector force = Vector.ZERO_VECTOR;
-        if (!getRotationVector().equals(Vector.ZERO_VECTOR)) {
-            force = getRotationVector();
-        }
-
-        if (this instanceof AIEntity) {
-
-            force = velocity.getUnitVector();
-        }
-
-        if (!force.equals(Vector.ZERO_VECTOR)) {
-
-            float angularVelocity = getAngularVelocity(force, secondsSinceLastGameTick, shape.getForwardUnitVector());
-            shape.rotate(angularVelocity);
-        }
-    }
-
-    private float getAngularVelocity(Vector force, float secondsSinceLastGameTick, Vector forwardUnitVector){
-        /*float dot = Math.min(shape.getForwardUnitVector().det(force.getUnitVector()), 1f);
-            float det = shape.getForwardUnitVector().det(force.getUnitVector());*/
-
+    public float getAngularVelocity(Vector force, float secondsSinceLastGameTick, Vector forwardUnitVector){
         Vector momArm = new Vector(getCenter(), getCenter().add(forwardUnitVector.sMult(20f).getRelativeToTailPoint()));
-
-        //momArm = momArm.applyRotationalForces(dot, det);
 
         Vector parCom = momArm.sMult(force.dot(momArm) / momArm.getLength());
 

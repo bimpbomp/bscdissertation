@@ -6,8 +6,7 @@ import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
-import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
-import bham.student.txm683.heartbreaker.entities.MoveableEntity;
+import bham.student.txm683.heartbreaker.entities.TankMoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.physics.CollidableType;
@@ -21,7 +20,7 @@ import java.util.List;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
 
-public abstract class AIEntity extends MoveableEntity implements Renderable, Damageable {
+public abstract class AIEntity extends TankMoveableEntity implements Renderable, Damageable {
 
     protected BContext context;
 
@@ -33,8 +32,6 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     private HealthBar healthBar;
 
-    private BNode orders;
-
     public AIEntity(String name, Point spawn, int maxDimension, float maxSpeed, int mass, Shape shape, int initialHealth) {
         super(name, spawn, maxDimension, maxSpeed, mass, shape);
         context = new BContext();
@@ -45,16 +42,6 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
         isOnScreen = false;
 
         brokenDown = false;
-
-        this.orders = null;
-    }
-
-    public BNode getOrders() {
-        return orders;
-    }
-
-    public void setOrders(BNode orders) {
-        this.orders = orders;
     }
 
     protected void initContext(){
@@ -176,6 +163,10 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     public void setDrops(PickupType drops) {
         this.drops = drops;
+    }
+
+    public PickupType getDrops() {
+        return drops;
     }
 
     public abstract Weapon getWeapon();

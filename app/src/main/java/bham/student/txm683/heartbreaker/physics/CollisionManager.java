@@ -17,8 +17,6 @@ import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Key;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.*;
-import bham.student.txm683.heartbreaker.utils.graph.Graph;
-import bham.student.txm683.heartbreaker.utils.graph.Node;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,6 +29,7 @@ public class CollisionManager {
 
     private List<SpatialBin> spatialBins;
 
+    //used to combat floating point inaccuracies
     private static final float PUSH_VECTOR_ERROR = 0.001f;
 
     private LevelState levelState;
@@ -52,6 +51,11 @@ public class CollisionManager {
         initSpatPatV4();
 
         benchMarker = new BenchMarker();
+    }
+
+    private void addCheckedPairNames(Collidable entity1, Collidable entity2){
+        checkedPairNames.add(entity1.getName() + entity2.getName());
+        checkedPairNames.add(entity2.getName() + entity1.getName());
     }
 
     public void checkCollisions(){
@@ -322,12 +326,7 @@ public class CollisionManager {
     private void resolveProjectileHit(Projectile projectile, Collidable collidable, Vector pV){
         //if the projectile damages on contact and the collidable can take damage, damage it
 
-        if (projectile instanceof Bomb && !projectile.getOwner().equals(collidable.getName())){
-            changeVelocityForBounce(projectile, pV);
-            return;
-        }
-
-        if (collidable instanceof Damageable) {
+        if (collidable instanceof Damageable && !projectile.getOwner().equals(collidable.getName())) {
             //only damage the collidable if the projectile doesn't belong to them
             if (!projectile.getOwner().equals(collidable.getName()) && ((Damageable) collidable).inflictDamage(projectile.getDamage())) {
                 Log.d(TAG, collidable.getName() + " has died");
@@ -338,13 +337,8 @@ public class CollisionManager {
             } else {
                 Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
             }
-        }
 
-        if (!projectile.getOwner().equals(collidable.getName())) {
             levelState.getBullets().remove(projectile);
-
-            /*moveEntityCenter(projectile, pV.getRelativeToTailPoint());
-            projectile.setRequestedMovementVector(reflectVectorAcrossPushVector(projectile.getRequestedMovementVector(), pV));*/
         }
     }
 
@@ -418,15 +412,11 @@ public class CollisionManager {
 
             MoveableEntity moveableCollidable;
 
-            Collidable staticCollidable;
-
             if (firstCollidable.canMove()) {
                 moveableCollidable = (MoveableEntity) firstCollidable;
-                staticCollidable = secondCollidable;
 
             } else {
                 moveableCollidable = (MoveableEntity) secondCollidable;
-                staticCollidable = firstCollidable;
 
                 pushVector = pushVector.sMult(-1f);
             }
@@ -477,42 +467,6 @@ public class CollisionManager {
         float maxAngle = Math.abs(Vector.calculateAngleBetweenVectors(aToP, aToMax));
 
         return Math.min(minAngle, maxAngle);
-    }
-
-    private void restitutionCollision(Entity a, Entity b, float cor){
-        Vector ua = a.getVelocity();
-        Vector ub = b.getVelocity();
-
-        Vector uaAddub = ua.vAdd(ub);
-
-        Vector va = uaAddub.vAdd(ub.vSub(ua)).sMult(0.5f);
-        Vector vb = uaAddub.vAdd(ua.vSub(ub)).sMult(0.5f);
-
-        a.setVelocity(va);
-        b.setVelocity(vb);
-    }
-
-    private void changeVelocityForBounce(Collidable collidable, Vector pushVector){
-
-        if (collidable instanceof MoveableEntity){
-            Vector normal = pushVector.rotateAntiClockwise90().getUnitVector();
-            Vector vel = ((MoveableEntity) collidable).getVelocity();
-
-            float dot = pushVector.dot(vel);
-            Vector newV = pushVector.sMult(-1 * dot * 0.5f);
-
-            Vector v = reflectVectorAcrossPushVector(vel, pushVector);
-
-            Log.d("VEL", "dot: " + dot + ", vel: " + vel.relativeToString() + ", norm: " + normal.relativeToString() + ", newV: " + newV.relativeToString());
-
-            //((MoveableEntity) collidable).setVelocity(newV);
-
-            if (collidable instanceof Projectile){
-                ((Projectile) collidable).setRequestedMovementVector(v);
-            } else
-                ((MoveableEntity) collidable).setVelocity(v);
-            //((MoveableEntity) collidable).addForce(v);
-        }
     }
 
     //checks that two circles are not intersecting by checking the distance between radii,
@@ -663,64 +617,6 @@ public class CollisionManager {
         return steeringAxis;
     }
 
-    public static Point nearestPointOnCurve(Point position, List<Point> path, float step){
-        int controlPointIdx = getClosestPointOnPathIdx(position, path);
-
-        if (path.size() < 3){
-            throw new IllegalArgumentException("given basePath is not a curve. Only has length: " + path.size());
-        }
-
-        Point p0;
-        Point p1;
-        Point p2;
-
-        if (controlPointIdx == 0){
-
-            p0 = path.get(controlPointIdx);
-            p1 = path.get(controlPointIdx+1);
-            p2 = path.get(controlPointIdx+2);
-        } else if (controlPointIdx == path.size()-1){
-
-            p0 = path.get(controlPointIdx-2);
-            p1 = path.get(controlPointIdx-1);
-            p2 = path.get(controlPointIdx);
-        } else {
-
-            p0 = path.get(controlPointIdx-1);
-            p1 = path.get(controlPointIdx);
-            p2 = path.get(controlPointIdx+1);
-        }
-
-        //treat controlPointIdx as the middle point on a quadratic b curve.
-        QCurve curve = new QCurve(p0, p1, p2);
-
-        if (step > 1f){
-            step = 0.25f;
-        }
-
-        float t = 0f;
-        Point closestPoint = null;
-        int closestDistance = Integer.MAX_VALUE;
-
-        int distance;
-        Point currentPoint;
-        while (Float.compare(t, 1f) < 1){
-
-            currentPoint = curve.evalQCurve(t);
-            distance = (int) new Vector(position, currentPoint).getLength();
-
-            Log.d("CURVEE", "position: " + position +  ", currentPoint: " + currentPoint + ", distance: " + distance);
-
-            if (distance < closestDistance){
-                closestDistance = distance;
-                closestPoint = currentPoint;
-            }
-
-            t += step;
-        }
-        return closestPoint;
-    }
-
     public static int getClosestPointOnPathIdx(Point position, List<Point> path){
 
         if (path.size() > 1) {
@@ -747,105 +643,11 @@ public class CollisionManager {
         return -1;
     }
 
-    public static Point getClosestPointOnLine(Point a, Point b, Point p){
-        Vector v = new Vector(a,b);
-        Vector u = new Vector(p,a);
-
-        float t = -1 * (u.dot(v))/(v.dot(v));
-
-        if (t > 0 && t < 1){
-            return a.sMult(1-t).add(b.sMult(t));
-        }
-
-        return gt(a,b,p,0) < gt(a,b,p,1) ? a : b;
-    }
-
-    private static float gt(Point a, Point b, Point p, float t){
-        return (float) Math.pow(new Vector(p, a.sMult(1-t).add(b.sMult(t))).getLength(), 2);
-    }
-
-    public Vector movingTargetAvoidanceForTanks(AIEntity controlled){
-
-        Entity priorityEntity = levelState.getPlayer();
-
-        float t = unalignedCollisionAvoidance(controlled, levelState.getPlayer());
-
-        float smallestT = Float.MAX_VALUE;
-
-        if (t > 0 && smallestT > t){
-            smallestT = t;
-        }
-
-        for (AIEntity entity : levelState.getAliveAIEntities()){
-            if (entity.getName().equals(controlled.getName()))
-                continue;
-
-            t = unalignedCollisionAvoidance(controlled, entity);
-
-            if (t < 0)
-                continue;
-
-            if (smallestT > t){
-                smallestT = t;
-                priorityEntity = entity;
-            }
-        }
-
-        Log.d("AAA", "t: " + smallestT + " priority: " + priorityEntity.getName());
-        return movingObjectAvoidanceSteering(controlled, priorityEntity, smallestT);
-    }
-
-    private static float unalignedCollisionAvoidance(AIEntity controlled, Entity entity){
-        Vector cVel = controlled.getVelocity();
-        Vector eVel = entity.getVelocity();
-
-        Vector relVel = eVel.vSub(cVel);
-        float relSpeed = relVel.getLength();
-
-        relVel = relVel.getUnitVector();
-
-        Vector relPos = new Vector(entity.getCenter(), controlled.getCenter());
-
-        float proj = relVel.dot(relPos);
-
-        if (relSpeed < 2)
-            return -1;
-
-        return proj / relSpeed;
-    }
-
-    private static Vector movingObjectAvoidanceSteering(Entity entity1, Entity entity2, float t){
-        Point cFuturePos = entity1.getCenter().add(entity1.getVelocity().sMult(t).getRelativeToTailPoint());
-        Point eFuturePos = entity2.getCenter().add(entity2.getVelocity().sMult(t).getRelativeToTailPoint());
-
-        Vector v = new Vector(eFuturePos, cFuturePos);
-
-        Log.d("AAA", v.relativeToString() + ", length: " + v.getLength());
-
-        if (Float.isNaN(v.getLength()) || v.getLength() > 150)
-            return Vector.ZERO_VECTOR;
-
-        return v;
-    }
-
-    private static Node<Point> mapToNearestNode(Point point, Graph<Point> graph){
-        Node<Point> nearest = null;
-        int distance = Integer.MAX_VALUE;
-
-        for (Node<Point> node : graph.getNodes()){
-            if (euclideanHeuristic(node.getNodeID(), point) < distance){
-                nearest = node;
-            }
-        }
-
-        return nearest;
-    }
-
     public static int euclideanHeuristic(Point point, Point point1){
         return (int) new Vector(point, point1).getLength();
     }
 
-    private static boolean collisionCheckRay(Collidable collidable, Vector ray){
+    public static boolean collisionCheckRay(Collidable collidable, Vector ray){
         Point[] rayVertices = new Point[]{ray.getTail(), ray.getHead()};
 
         Vector[] axes = getEdgeNormals(getEdges(collidable.getShapeIdentifier(), collidable.getCollisionVertices()));
@@ -880,7 +682,7 @@ public class CollisionManager {
         return Vector.ZERO_VECTOR;
     }
 
-    private static List<Vector> applySAT(Vector[] axes, Point[] firstEntityVertices, Point[] secondEntityVertices){
+    public static List<Vector> applySAT(Vector[] axes, Point[] firstEntityVertices, Point[] secondEntityVertices){
         Vector pushVector;
         List<Vector> pushVectors = new ArrayList<>();
 
@@ -897,14 +699,14 @@ public class CollisionManager {
         return pushVectors;
     }
 
-    private static Vector reflectVectorAcrossPushVector(Vector initialVector, Vector pushVector){
-        pushVector = pushVector.getUnitVector();
-        float dot = pushVector.dot(initialVector);
+    public static Vector reflectVectorAcrossAxis(Vector initialVector, Vector reflectionAxis){
+        reflectionAxis = reflectionAxis.getUnitVector();
+        float dot = reflectionAxis.dot(initialVector);
 
-        return initialVector.vSub(pushVector.sMult(dot*2));
+        return initialVector.vSub(reflectionAxis.sMult(dot*2));
     }
 
-    private static Point[] getCircleVerticesForAxis(Vector axis, Point center, float radius){
+    public static Point[] getCircleVerticesForAxis(Vector axis, Point center, float radius){
 
         Vector radiusVector = axis.sMult(radius);
 
@@ -912,17 +714,12 @@ public class CollisionManager {
                 center.add(radiusVector.sMult(-1f).getRelativeToTailPoint())};
     }
 
-    private static void moveEntityCenter(Collidable entity, Point amountToMove){
+    public static void moveEntityCenter(Collidable entity, Point amountToMove){
         Point newCenter = entity.getCenter().add(amountToMove);
         entity.setCenter(newCenter);
     }
 
-    private void addCheckedPairNames(Collidable entity1, Collidable entity2){
-        checkedPairNames.add(entity1.getName() + entity2.getName());
-        checkedPairNames.add(entity2.getName() + entity1.getName());
-    }
-
-    private static Vector getMinimumPushVector(List<Vector> pushVectors, Point center1, Point center2){
+    public static Vector getMinimumPushVector(List<Vector> pushVectors, Point center1, Point center2){
         Vector minPushVector = Vector.ZERO_VECTOR;
         if (pushVectors.size() > 0) {
             minPushVector = pushVectors.get(0);
@@ -938,7 +735,7 @@ public class CollisionManager {
         return minPushVector;
     }
 
-    private static Vector[] convertToVectorsFromOrigin(Point[] vertices){
+    public static Vector[] convertToVectorsFromOrigin(Point[] vertices){
         Vector[] verticesVectors = new Vector[vertices.length];
         for (int i = 0; i < vertices.length; i++){
             verticesVectors[i] = new Vector(vertices[i]);
@@ -948,7 +745,7 @@ public class CollisionManager {
 
     //checks if the max and min points on the given direction axis overlap, returns the overlap
     //this function is the variation for checking TWO polygons
-    private static Vector isSeparatingAxis(Vector axis, Point[] firstEntityVertices, Point[] secondEntityVertices){
+    public static Vector isSeparatingAxis(Vector axis, Point[] firstEntityVertices, Point[] secondEntityVertices){
         Pair<Float, Float> minMaxResult = projectOntoAxis(axis, firstEntityVertices);
 
         float firstEntityMinLength = minMaxResult.first;
@@ -969,7 +766,7 @@ public class CollisionManager {
         return Vector.ZERO_VECTOR;
     }
 
-    private static Pair<Float, Float> projectOntoAxis(Vector axis, Point... vertices){
+    public static Pair<Float, Float> projectOntoAxis(Vector axis, Point... vertices){
         float minLength = Float.POSITIVE_INFINITY;
         float maxLength = Float.NEGATIVE_INFINITY;
 
@@ -985,35 +782,9 @@ public class CollisionManager {
         return new Pair<>(minLength, maxLength);
     }
 
-    private static Pair<Point, Point> getMinMaxPointsForAxis(Vector axis, Point... vertices){
-        float minLength = Float.POSITIVE_INFINITY;
-        float maxLength = Float.NEGATIVE_INFINITY;
-
-        Point maxVertex = new Point();
-        Point minVertex = new Point();
-
-        float projection;
-
-        for (Vector vertexVector : convertToVectorsFromOrigin(vertices)){
-            projection = vertexVector.dot(axis);
-
-            if (projection < minLength){
-                minVertex = vertexVector.getHead();
-                minLength = projection;
-            }
-
-            if (projection > maxLength){
-                maxVertex = vertexVector.getHead();
-                maxLength = projection;
-            }
-        }
-
-        return new Pair<>(minVertex, maxVertex);
-    }
-
     //Returns the unit normals for the given edges.
     //Rotated anticlockwise, so assumes the edges given cycle clockwise around a shape
-    private static Vector[] getEdgeNormals(ArrayList<Vector> edges){
+    public static Vector[] getEdgeNormals(ArrayList<Vector> edges){
         Vector[] orthogonals = new Vector[edges.size()];
 
         for (int i = 0; i < edges.size(); i++){
@@ -1022,14 +793,14 @@ public class CollisionManager {
         return orthogonals;
     }
 
-    private static Vector getEdgeNormal(Vector edge){
+    public static Vector getEdgeNormal(Vector edge){
         return edge.rotateAntiClockwise90().getUnitVector();
     }
 
     //joins the vertices together to form edge vectors.
     //joins the last and the first vertex to form a closed shape
     //if the shape is a rectangle, only the orthogonal edges are returned
-    private static ArrayList<Vector> getEdges(ShapeIdentifier shapeIdentifier, Point[] vertices){
+    public static ArrayList<Vector> getEdges(ShapeIdentifier shapeIdentifier, Point[] vertices){
         ArrayList<Vector> edges = new ArrayList<>();
 
         if (shapeIdentifier != RECTANGLE) {
