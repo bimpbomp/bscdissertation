@@ -19,7 +19,6 @@ import bham.student.txm683.heartbreaker.utils.Point;
 
 import java.util.List;
 
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.OVERLORD;
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
 
 public abstract class AIEntity extends MoveableEntity implements Renderable, Damageable {
@@ -59,7 +58,7 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     }
 
     protected void initContext(){
-        context.addValue(BKeyType.CONTROLLED_ENTITY, this);
+        context.addCompulsory(BKeyType.CONTROLLED_ENTITY, this);
 
         context.addVariable("arrived", false);
         context.addVariable("arriving", false);
@@ -80,11 +79,11 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
     }
 
     public void setLevelState(LevelState levelState){
-        this.context.addValue(BKeyType.LEVEL_STATE, levelState);
+        this.context.addCompulsory(BKeyType.LEVEL_STATE, levelState);
     }
 
     void setOverlord(Overlord overlord){
-        context.addValue(OVERLORD, overlord);
+        context.addVariable("overlord", overlord);
     }
 
     public void onDeath(){
@@ -101,15 +100,15 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     private void drawPath(Canvas canvas, Point renderOffset){
         Paint paint = new Paint();
-        if (context.containsKeys(PATH)){
+        if (context.containsCompulsory(PATH)){
 
             paint.setColor(getShape().getColor());
 
-            List<Point> path = ((PathWrapper) context.getValue(PATH)).basePath();
+            List<Point> path = ((PathWrapper) context.getCompulsory(PATH)).basePath();
 
             if (path.size() > 1){
 
-                List<Point> iPath = ((PathWrapper) context.getValue(PATH)).getIPath();
+                List<Point> iPath = ((PathWrapper) context.getCompulsory(PATH)).getIPath();
 
                 for (int i = 0; i < iPath.size(); i++){
                     Point p = iPath.get(i).add(renderOffset);
@@ -165,10 +164,6 @@ public abstract class AIEntity extends MoveableEntity implements Renderable, Dam
 
     public void setBrokenDown(boolean brokenDown) {
         this.brokenDown = brokenDown;
-    }
-
-    public float getRadioHealthLeft(){
-        return getHealth()/ (float) getInitialHealth();
     }
 
     public boolean isOnScreen() {

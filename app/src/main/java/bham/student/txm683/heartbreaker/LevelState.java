@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
-import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.entities.Projectile;
@@ -38,8 +37,6 @@ public class LevelState {
     private CopyOnWriteArrayList<Explosion> explosions;
 
     private Tile screenDimensions;
-
-    private Core core;
 
     private Portal portal;
 
@@ -83,13 +80,6 @@ public class LevelState {
         this.pickups = new CopyOnWriteArrayList<>(map.getPickups());
 
         this.portal = map.getPortal();
-
-        this.core = null;
-        for (AIEntity aiEntity : aliveAIEntities){
-            if (aiEntity instanceof Core){
-                this.core = (Core) aiEntity;
-            }
-        }
 
         levelEnder = new LevelEnder();
 
@@ -202,10 +192,6 @@ public class LevelState {
 
 
         return collidables;
-    }
-
-    public Core getCore() {
-        return core;
     }
 
     public CopyOnWriteArrayList<Pickup> getPickups() {

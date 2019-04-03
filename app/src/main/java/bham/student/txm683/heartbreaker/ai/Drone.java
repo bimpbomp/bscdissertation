@@ -3,7 +3,7 @@ package bham.student.txm683.heartbreaker.ai;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
-import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
+import bham.student.txm683.heartbreaker.ai.behaviours.TankBehaviour;
 import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
@@ -28,7 +28,7 @@ public class Drone extends AIEntity{
 
         this.weapon = new BasicWeapon(getName(), 20);
 
-        this.behaviourTreeRoot = Behaviour.droneTree();
+        this.behaviourTreeRoot = TankBehaviour.droneTree();
     }
 
     public Drone(String name, Point center, boolean selfDestruct){
@@ -36,7 +36,7 @@ public class Drone extends AIEntity{
                 300, 100);
 
         if (selfDestruct){
-            behaviourTreeRoot = Behaviour.destructDroneTree();
+            behaviourTreeRoot = TankBehaviour.destructDroneTree();
         }
     }
 
@@ -78,8 +78,8 @@ public class Drone extends AIEntity{
         Random r = new Random();
         int i = r.nextInt(100);
 
-        if (context.containsKeys(BKeyType.LEVEL_STATE)) {
-            LevelState levelState = (LevelState) context.getValue(BKeyType.LEVEL_STATE);
+        if (context.containsCompulsory(BKeyType.LEVEL_STATE)) {
+            LevelState levelState = (LevelState) context.getCompulsory(BKeyType.LEVEL_STATE);
             if (i < 65) {
                 levelState.getPickups().add(new Pickup("HEALTH" + i, PickupType.HEALTH, getCenter()));
             }

@@ -5,12 +5,12 @@ import java.util.Map;
 
 public class BContext {
 
-    private Map<BKeyType, Object> pairs;
+    private Map<BKeyType, Object> compulsoryFields;
 
     private Map<String, Object> variables;
 
     public BContext(){
-        this.pairs = new HashMap<>();
+        this.compulsoryFields = new HashMap<>();
         this.variables = new HashMap<>();
     }
 
@@ -47,36 +47,45 @@ public class BContext {
         return variables.getOrDefault(key, defaultValue);
     }
 
-    public boolean containsKeys(BKeyType... keys){
+    public boolean containsCompulsory(BKeyType... keys){
         if (keys == null || keys.length == 0)
             return false;
 
         for (BKeyType key : keys) {
             //if the key isn't in the context, return false
-            if (!pairs.containsKey(key))
+            if (!compulsoryFields.containsKey(key))
                 return false;
 
-            Class sclass = pairs.get(key).getClass();
-            while (sclass != null && !sclass.equals(Object.class)){
 
-                if (sclass.equals(key.getType()))
+            //check through all classes in the inheritance chain of this item,
+            //checking for if one of the classes is of the type stated in the Key's BKeyType enum
+            Object item = compulsoryFields.get(key);
+
+            if (item == null)
+                continue;
+
+            Class aClass = item.getClass();
+
+            while (aClass != null && !aClass.equals(Object.class)){
+
+                if (aClass.equals(key.getType()))
                     return true;
 
-                sclass = sclass.getSuperclass();
+                aClass = aClass.getSuperclass();
             }
         }
         return false;
     }
 
-    public void addValue(BKeyType key, Object value){
-        this.pairs.put(key, value);
+    public void addCompulsory(BKeyType key, Object value){
+        this.compulsoryFields.put(key, value);
     }
 
-    public void removePair(BKeyType key){
-        this.pairs.remove(key);
+    public void removeCompulsory(BKeyType key){
+        this.compulsoryFields.remove(key);
     }
 
-    public Object getValue(BKeyType key){
-        return pairs.getOrDefault(key, null);
+    public Object getCompulsory(BKeyType key){
+        return compulsoryFields.getOrDefault(key, null);
     }
 }

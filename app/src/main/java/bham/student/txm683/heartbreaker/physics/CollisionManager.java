@@ -7,7 +7,6 @@ import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.Core;
 import bham.student.txm683.heartbreaker.entities.*;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
@@ -186,9 +185,7 @@ public class CollisionManager {
                         secondCollidable = bin.get(j);
 
                         //if both entities are static or not solid, skip
-                        if (firstCollidable instanceof Core || secondCollidable instanceof Core){
-                            //do nothing
-                        } else if (firstCollidable instanceof Damageable || secondCollidable instanceof Damageable){
+                        if (firstCollidable instanceof Damageable || secondCollidable instanceof Damageable){
                             //do nothing
                         } else if ((!firstCollidable.canMove() && !secondCollidable.canMove()) ||
                                 (!firstCollidable.isSolid() && !secondCollidable.isSolid())) {
@@ -592,10 +589,6 @@ public class CollisionManager {
                             }
                         }
                     }
-
-                    if (levelState.getCore() != null && collisionCheckRay(levelState.getCore(), ray)){
-                        friendlyBlocking = true;
-                    }
                 }
 
 
@@ -605,9 +598,9 @@ public class CollisionManager {
             }
 
             Log.d("SIGHT", "vector: " + ray + ", blocked: " + blocked);
-            aiEntity.getContext().addValue(SIGHT_VECTOR, ray);
-            aiEntity.getContext().addValue(SIGHT_BLOCKED, blocked);
-            aiEntity.getContext().addValue(FRIENDLY_BLOCKING_SIGHT, friendlyBlocking);
+            aiEntity.getContext().addCompulsory(SIGHT_VECTOR, ray);
+            aiEntity.getContext().addCompulsory(SIGHT_BLOCKED, blocked);
+            aiEntity.getContext().addCompulsory(FRIENDLY_BLOCKING_SIGHT, friendlyBlocking);
         }
     }
 

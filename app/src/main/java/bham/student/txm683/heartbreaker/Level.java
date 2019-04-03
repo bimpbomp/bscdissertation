@@ -208,7 +208,7 @@ public class Level implements Runnable {
                         id = mapCollidableToMesh(aiEntity);
 
                         if (id > 0)
-                            aiEntity.getContext().addValue(BKeyType.CURRENT_MESH, levelState.getRootMeshPolygons().get(id));
+                            aiEntity.getContext().addCompulsory(BKeyType.CURRENT_MESH, levelState.getRootMeshPolygons().get(id));
                     }
 
                     removeBlockedFromGraph();

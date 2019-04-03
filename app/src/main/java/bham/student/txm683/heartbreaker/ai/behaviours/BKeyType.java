@@ -2,7 +2,6 @@ package bham.student.txm683.heartbreaker.ai.behaviours;
 
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.Overlord;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.Point;
@@ -17,8 +16,7 @@ public enum BKeyType {
     SIGHT_VECTOR (Vector.class),
     CURRENT_MESH (MeshPolygon.class),
     TARGET (Point.class),
-    PATH (PathWrapper.class),
-    OVERLORD (Overlord.class);
+    PATH (PathWrapper.class);
 
     private Class type;
 

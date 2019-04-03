@@ -7,6 +7,7 @@ import bham.student.txm683.heartbreaker.ai.behaviours.conditionals.Conditionals;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RepeatN;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.RunTillArrived;
 import bham.student.txm683.heartbreaker.ai.behaviours.decorators.Succeeder;
+import bham.student.txm683.heartbreaker.ai.behaviours.tasks.TankTasks;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Tasks;
 
 public class Behaviour {
@@ -25,7 +26,7 @@ public class Behaviour {
         );
     }
 
-    private static BNode shootBehaviour(){
+    public static BNode shootBehaviour(){
         return Conditionals.canSeePlayer(
                 new ForgetfulSequence(
                         Tasks.aim(),
@@ -37,7 +38,7 @@ public class Behaviour {
         );
     }
 
-    private static BNode travelTo(boolean returnIncompletePath){
+    public static BNode travelTo(boolean returnIncompletePath){
         return new Sequence(
                 Tasks.plotPath(returnIncompletePath),
                 new RunTillArrived(
@@ -49,7 +50,7 @@ public class Behaviour {
                                                 Tasks.arrival()
                                         )
                                 ),
-                                Tasks.applyMovementForces()
+                                TankTasks.applyMovementForces()
                         )
                 )
         );
@@ -72,8 +73,7 @@ public class Behaviour {
         return new Sequence(
                 Tasks.setHeadingAsPlayer(),
                 Tasks.seek(),
-                //Tasks.courseCorrect(),
-                Tasks.applyMovementForces()
+                TankTasks.applyMovementForces()
         );
     }
 
@@ -109,13 +109,13 @@ public class Behaviour {
 
     public static BNode explodeTree(int fuse){
         return new Succeeder(new Sequence(
-                        Tasks.flashRed(fuse),
-                        Tasks.detonate()
+                        TankTasks.flashRed(fuse),
+                        TankTasks.detonate()
                 )
         );
     }
 
-    private static BNode chaseTree(){
+    public static BNode chaseTree(){
 
         return new Sequence(
                 Tasks.findMeshAdjacentToPlayer(),
@@ -144,58 +144,5 @@ public class Behaviour {
         );
     }
 
-    private static BNode brokenDownTree(){
-        return Conditionals.healthBelowThreshold(
-                new Succeeder(
-                        new Sequence(
-                                Tasks.brokenDown(),
-                                shootBehaviour(),
-                                Tasks.doNothing(50)
-                        )
-                )
-        );
-    }
 
-    public static BNode droneTree(){
-        return new Selector(
-                brokenDownTree(),
-                chaseTree()
-        );
-    }
-
-    public static BNode turretTree(){
-        return new Selector(
-                brokenDownTree(),
-                new Selector(
-                        Conditionals.canSeePlayer(
-                                delayedShoot(50, 10)
-                        ),
-                        new Sequence(
-                                Tasks.findMeshAdjacentToPlayer(),
-                                travelTo(false)
-                        )
-
-                )
-        );
-    }
-
-    public static BNode destructDroneTree(){
-        return new Selector (
-                Conditionals.healthBelowThreshold(
-                        selfDestructTree(100)
-                ),
-                chaseTree()
-        );
-    }
-
-    public static BNode healerTree(){
-        return new Selector(
-                new Sequence(
-                        Tasks.findAIToHeal(),
-                        travelTo(true),
-                        Tasks.healField(150)
-                ),
-                Tasks.doNothing(75)
-        );
-    }
 }

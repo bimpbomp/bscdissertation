@@ -4,7 +4,7 @@ import android.graphics.Color;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
-import bham.student.txm683.heartbreaker.ai.behaviours.Behaviour;
+import bham.student.txm683.heartbreaker.ai.behaviours.TankBehaviour;
 import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.entities.TankModifiers;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
@@ -38,7 +38,7 @@ public class Turret extends AIEntity {
         this.weapon = new BasicWeapon(name, 50, 60, 1.5f);
         //this.weapon = new BombThrower(name);
 
-        this.behaviourTreeRoot = Behaviour.turretTree();
+        this.behaviourTreeRoot = TankBehaviour.turretTree();
     }
 
     public Turret(String name, Point center){
@@ -72,8 +72,8 @@ public class Turret extends AIEntity {
 
     @Override
     public void onDeath() {
-        if (context.containsKeys(BKeyType.LEVEL_STATE)){
-            ((LevelState) context.getValue(BKeyType.LEVEL_STATE)).addExplosion(
+        if (context.containsCompulsory(BKeyType.LEVEL_STATE)){
+            ((LevelState) context.getCompulsory(BKeyType.LEVEL_STATE)).addExplosion(
                     new Explosion(getName() +"death", getName(), getCenter(), getWidth()*1.5f, 100, Color.RED));
         }
     }

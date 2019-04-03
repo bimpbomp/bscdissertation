@@ -9,7 +9,6 @@ public class AIManager {
     private LevelState levelState;
     private List<Overlord> overlords;
 
-
     public AIManager(LevelState levelState, List<Overlord> overlords) {
         this.levelState = levelState;
         this.overlords = overlords;

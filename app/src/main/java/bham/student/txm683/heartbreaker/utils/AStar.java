@@ -31,14 +31,14 @@ public class AStar {
     public AStar(AIEntity controlled, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
         this.controlled = controlled;
 
-        if (controlled.getContext().containsKeys(CURRENT_MESH)){
-            this.startNode = meshGraph.getNode(((MeshPolygon)controlled.getContext().getValue(CURRENT_MESH)).getId());
+        if (controlled.getContext().containsCompulsory(CURRENT_MESH)){
+            this.startNode = meshGraph.getNode(((MeshPolygon)controlled.getContext().getCompulsory(CURRENT_MESH)).getId());
         } else {
             this.startNode = null;
         }
 
-        LevelState levelState = (LevelState) controlled.getContext().getValue(LEVEL_STATE);
-        targetPoint = (Point) controlled.getContext().getValue(MOVE_TO);
+        LevelState levelState = (LevelState) controlled.getContext().getCompulsory(LEVEL_STATE);
+        targetPoint = (Point) controlled.getContext().getCompulsory(MOVE_TO);
 
         int targetMeshId = levelState.mapToMesh(targetPoint);
 
@@ -81,8 +81,7 @@ public class AStar {
             }
             stringBuilder.append("END");
 
-            Point p = controlled.getCenter();
-            //Point p = new Point(100,100);
+            Point p;
 
             for (int i = 1; i < roughPath.length-1; i++){
                 MeshPolygon meshPolygon = meshPolygonMap.get(roughPath[i]);
@@ -91,8 +90,6 @@ public class AStar {
                     Log.d("ASTAR", "null pointer in basePath for " + controlled.getName());
                     break;
                 }
-
-                //p = meshPolygon.getNearestPoint(p, controlled.getWidth());
                 p = meshPolygon.getCenter();
 
                 waypointPath.add(p);
@@ -126,7 +123,7 @@ public class AStar {
                 }
             }
 
-            controlled.getContext().addValue(PATH, new PathWrapper(waypointPath, pathMeshIds));
+            controlled.getContext().addCompulsory(PATH, new PathWrapper(waypointPath, pathMeshIds));
             return true;
         }
 

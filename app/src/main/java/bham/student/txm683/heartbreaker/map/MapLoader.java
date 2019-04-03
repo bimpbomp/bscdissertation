@@ -2,7 +2,10 @@ package bham.student.txm683.heartbreaker.map;
 
 import android.util.Log;
 import bham.student.txm683.heartbreaker.MainActivity;
-import bham.student.txm683.heartbreaker.ai.*;
+import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.Drone;
+import bham.student.txm683.heartbreaker.ai.Overlord;
+import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
@@ -68,11 +71,6 @@ public class MapLoader {
             enemies.addAll(parseEnemies(jsonObject.getJSONArray("turrets"), "turrets"));
 
         Log.d("LOADING", "LOADED PAST turrets");
-
-        if (jsonObject.has("core"))
-            enemies.add(Core.build(jsonObject.getJSONObject("core"), map.getTileSize()));
-
-        Log.d("LOADING", "LOADED PAST core");
 
         map.setEnemies(enemies);
 

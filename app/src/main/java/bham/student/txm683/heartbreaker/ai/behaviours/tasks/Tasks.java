@@ -1,30 +1,25 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.tasks;
 
-import android.graphics.Color;
 import android.util.Log;
-import android.util.Pair;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.ai.Overlord;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.entities.TankBody;
-import bham.student.txm683.heartbreaker.map.ColorScheme;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
-import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.CollisionManager;
-import bham.student.txm683.heartbreaker.physics.SpatialBin;
-import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
 import static bham.student.txm683.heartbreaker.ai.behaviours.Status.*;
@@ -35,6 +30,16 @@ public class Tasks {
 
     }
 
+    /**
+     * This task will return RUNNING for the number of ticks given as an argument.
+     *
+     * It uses a variable in the context called "idle_time" when executing to count how many ticks are left in it's run.
+     * It isn't advised to alter this value as it may cause an infinite loop
+     *
+     *
+     * @param idlePeriod number of times that the task should return RUNNING
+     * @return doNothing BNode
+     */
     public static BNode doNothing(int idlePeriod){
         return new BNode() {
             int cooldown;
@@ -54,120 +59,65 @@ public class Tasks {
 
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY)){
-                    if (getStatus() == RUNNING){
-                        Log.d("TASKS doNothing", "is already running");
+                if (getStatus() == RUNNING){
+                    Log.d("Tasks::doNothing", "is already running");
 
-                        if (context.containsVariables("idle_time")){
-                            int timeLeftInIdle = (int) context.getVariable("idle_time") - 1;
-                            context.addVariable("idle_time", timeLeftInIdle);
+                    if (context.containsVariables("idle_time")){
+                        int timeLeftInIdle = (int) context.getVariable("idle_time") - 1;
+                        context.addVariable("idle_time", timeLeftInIdle);
 
-                            if (timeLeftInIdle < 1){
-                                Log.d("TASKS doNothing", "has succeeded");
-                                setStatus(SUCCESS);
-                            } else {
-                                Log.d("TASKS doNothing", timeLeftInIdle + " time left");
-                                setStatus(RUNNING);
-                            }
+                        if (timeLeftInIdle < 1){
+                            Log.d("Tasks::doNothing", "has succeeded");
+                            setStatus(SUCCESS);
+                        } else {
+                            Log.d("Tasks::doNothing", timeLeftInIdle + " time left");
+                            setStatus(RUNNING);
                         }
-
-                    } else {
-                        Log.d("TASKS doNothing", "was not already running");
-                        context.addVariable("idle_time", cooldown);
-                        setStatus(RUNNING);
                     }
 
-                    return getStatus();
+                } else {
+                    Log.d("TASKS doNothing", "was not already running");
+                    context.addVariable("idle_time", cooldown);
+                    setStatus(RUNNING);
                 }
-                Log.d("TASKS", "doNothing has failed");
-                setStatus(FAILURE);
-                return FAILURE;
+
+                return getStatus();
             }
         };
     }
 
-    public static BNode applyMovementForces(){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
 
-                if (context.containsKeys(CONTROLLED_ENTITY)){
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-
-                    Vector force = Vector.ZERO_VECTOR;
-
-                    PriorityQueue<Pair<Integer, Vector>> forces = new PriorityQueue<>(10, (a, b) -> {
-                        if (a.first < b.first)
-                            return -1;
-                        else if (a.second.equals(b.second))
-                            return 0;
-                        return 1; });
-
-                    boolean evading = false;
-                    if (context.containsVariables("evasion_steering")){
-                        forces.add(new Pair<>(1, (Vector) context.getVariable("evasion_steering")));
-                        force = force.vAdd((Vector) context.getVariable("evasion_steering"));
-                        evading = true;
-                    }
-
-                    if (context.containsVariables("path_steering")) {
-                        forces.add(new Pair<>(2, (Vector) context.getVariable("path_steering")));
-
-                        if (force.equals(Vector.ZERO_VECTOR)) {
-
-                            Vector v = (Vector) context.getVariable("path_steering");
-
-                            if (evading)
-                                v = v.sMult(0.5f);
-
-                            force = force.vAdd(v);
-                        }
-                    }
-
-                    if (context.containsVariables("arrival_steering")) {
-                        forces.add(new Pair<>(3, (Vector) context.getVariable("arrival_steering")));
-                    } else if (context.containsVariables("seek_steering")) {
-                        forces.add(new Pair<>(3, (Vector) context.getVariable("seek_steering")));
-                    }
-
-
-
-                    int numForces = forces.size();
-
-                    if (numForces > 1) {
-                        while (!forces.isEmpty()) {
-
-                            Pair<Integer, Vector> pair = forces.poll();
-                            Vector currentForce = pair.second;
-
-                            force = force.vAdd(currentForce.sMult(0.75f));
-                        }
-                    } else if (numForces == 1){
-                        force = force.vAdd(forces.poll().second);
-                    }
-
-                    controlled.addForce(force);
-
-                    Log.d("HEALER", "applying force to " + controlled.getName());
-
-                    context.removeVariables("evasion_steering", "path_steering", "arrival_steering", "seek_steering");
-
-                    setStatus(SUCCESS);
-                    return SUCCESS;
-                }
-                setStatus(FAILURE);
-                return FAILURE;
-            }
-        };
-    }
-
+    /**
+     * This task will execute the arrival steering behaviour, it will slow as it approaches it's target.
+     * This task will return FAILURE unless the context contains the following compulsories:
+     * <ul>
+     *     <li>CONTROLLED_ENTITY</li>
+     * </ul>
+     *
+     * This task will return FAILURE unless the context contains the following variables:
+     * <ul>
+     *     <li>"heading"</li>
+     * </ul>
+     *
+     * The context can have the following variables to alter the resulting behaviour:
+     * <ul>
+     *     <li>"arrival_distance": the distance from the target,
+     *     at which the controlled entity will begin to slow it's approach. (Default: 200)</li>
+     *     <li>"arrival_magnitude": the maximum length of the calculated steering vector. (Default: 100)</li>
+     * </ul>
+     *
+     * It will add the calculated steering vector to the context with the key "arrival_steering"
+     *
+     *@return The BNode containing this task
+     */
     public static BNode arrival(){
         return new BNode() {
+
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY) && context.containsVariables("heading")){
+                if (context.containsCompulsory(CONTROLLED_ENTITY) && context.containsVariables("heading")){
 
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
                     Point heading = (Point) context.getVariable("heading");
 
                     Vector desiredVel = new Vector(controlled.getCenter(), heading);
@@ -200,12 +150,36 @@ public class Tasks {
         };
     }
 
+    /**
+     * This task will execute the seek steering behaviour. It will head towards the heading at the maximum force
+     * permanently.
+     *
+     * This task will return FAILURE unless the context contains the following compulsories:
+     * <ul>
+     *     <li>CONTROLLED_ENTITY</li>
+     * </ul>
+     *
+     * This task will return FAILURE unless the context contains the following variables:
+     * <ul>
+     *     <li>"heading"</li>
+     * </ul>
+     *
+     * The context can have the following variables to alter the resulting behaviour:
+     * <ul>
+     *     <li>"seek_magnitude": the maximum length of the calculated steering vector. (Default: 50)</li>
+     * </ul>
+     *
+     * It will add the calculated steering vector to the context with the key "seek_steering"
+     *
+     *
+     * @return The BNode containing this task
+     */
     public static BNode seek(){
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY) && context.containsVariables("heading")){
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                if (context.containsCompulsory(CONTROLLED_ENTITY) && context.containsVariables("heading")){
+                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
                     Point heading = (Point) context.getVariable("heading");
 
                     Vector vel = controlled.getVelocity();
@@ -220,7 +194,7 @@ public class Tasks {
                     if (steeringForce.getLength() > maxForce)
                         steeringForce.setLength(maxForce);
 
-                    Log.d("BOOM", "force: " + steeringForce.relativeToString());
+                    Log.d("Tasks::seek", "force: " + steeringForce.relativeToString());
                     context.addVariable("seek_steering", steeringForce);
 
                     setStatus(SUCCESS);
@@ -233,37 +207,59 @@ public class Tasks {
         };
     }
 
+    /**
+     * This task will execute the courseCorrect behaviour, it will detect if an obstacle is in the way of the
+     * controlled entity for a given distance, and will turn to avoid the closest obstacle if one is found.
+     *
+     * This task will return FAILURE unless the context contains the following compulsories:
+     * <ul>
+     *     <li>CONTROLLED_ENTITY</li>
+     *     <li>LEVEL_STATE</li>
+     * </ul>
+     *
+     * This task will return FAILURE unless the context contains the following variables:
+     * <ul>
+     *     <li>"heading"</li>
+     * </ul>
+     *
+     * The context can have the following variables to alter the resulting behaviour:
+     * <ul>
+     *     <li>"evasion_magnitude": the maximum length of the calculated steering vector. (Default: 50)</li>
+     * </ul>
+     *
+     * It will add the calculated steering vector to the context with the key "evasion_steering"
+     *
+     *
+     *@return The BNode containing this task
+     */
     public static BNode courseCorrect(){
         return new BNode() {
 
             @Override
             public Status process(BContext context) {
 
+                if (context.containsCompulsory(CONTROLLED_ENTITY, LEVEL_STATE) && context.containsVariables("heading")){
 
-                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE) && context.containsVariables("heading")){
-
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     Point heading = (Point) context.getVariable("heading");
 
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
 
-                    CollisionManager collisionManager = ((LevelState) context.getValue(LEVEL_STATE)).getCollisionManager();
+                    CollisionManager collisionManager = ((LevelState) context.getCompulsory(LEVEL_STATE)).getCollisionManager();
 
                     Vector steeringAxis = collisionManager.getPathAroundObstacle(controlled, heading);
-
-                    //Vector steeringAxis = collisionManager.movingTargetAvoidanceForTanks(controlled);
 
                     if (!steeringAxis.equals(Vector.ZERO_VECTOR)){
                         //correction needs to take place
 
                         int maxForce = (int) context.variableOrDefault("evasion_magnitude", 50);
 
-                        Log.d("BEH", "courseCorrect: steeringForce: " + steeringAxis.setLength(maxForce).relativeToString());
+                        Log.d("Tasks::courseCorrect", "steeringForce: " + steeringAxis.setLength(maxForce).relativeToString());
 
                         context.addVariable("evasion_steering", steeringAxis.setLength(maxForce));
                     } else {
-                        Log.d("AVOID", "no obstacles in way");
+                        Log.d("Tasks::courseCorrect", "no obstacles in way");
 
                         if (levelState.mapToMesh(controlled.getCenter().add(controlled.getVelocity()
                                 .sMult(0.1f).getRelativeToTailPoint())) == -1){
@@ -274,7 +270,7 @@ public class Tasks {
                     setStatus(SUCCESS);
                     return SUCCESS;
                 }
-                Log.d("AVOID", "FAILED");
+                Log.d("Tasks::courseCorrect", "FAILED");
 
                 setStatus(FAILURE);
                 return FAILURE;
@@ -282,26 +278,58 @@ public class Tasks {
         };
     }
 
+    /*
+This task will return FAILURE unless the context contains the following compulsories:
+<ul>
+    <li>CONTROLLED_ENTITY</li>
+</ul>
+
+This task will return FAILURE unless the context contains the following variables:
+<ul>
+    <li>"heading"</li>
+</ul>
+
+The context can have the following variables to alter the resulting behaviour:
+<ul>
+    <li>"seek_magnitude": the maximum length of the calculated steering vector. (Default: 50)</li>
+</ul>
+     */
+
+    /**
+     * This task will use the AStar class to plot a path to the provided destination using the navmesh
+     *
+     * This task will return FAILURE unless the context contains the following compulsories:
+     * <ul>
+     *     <li>CONTROLLED_ENTITY</li>
+     *     <li>CURRENT_MESH</li>
+     *     <li>LEVEL_STATE</li>
+     *     <li>MOVE_TO</li>
+     * </ul>
+     *
+     * This task will add a boolean for if plotting failed to the context under the key "plottingFailed",
+     * and a compulsory to the PATH key.
+     *
+     * @param returnIncompletePath Even if a complete path to the target cannot be established,
+     *                             if this argument is true, a path getting as close as possible
+     *                             to the target will be returned
+     * @return The BNode containing this task
+     */
     public static BNode plotPath(boolean returnIncompletePath){
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY, CURRENT_MESH, LEVEL_STATE)){
-                    Log.d("TASK plotPath", "plotting...");
-                    //Log.d("TASK plotPath", "levelstate is null: " + (context.getValue(LEVEL_STATE) == null));
+                if (context.containsCompulsory(CONTROLLED_ENTITY, CURRENT_MESH, LEVEL_STATE, MOVE_TO)){
+                    Log.d("Tasks::plotPath", "plotting...");
 
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
-                    //context.addValue(MOVE_TO, levelState.getPlayer().getCenter());
+                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
 
-                    AStar a = new AStar((AIEntity) context.getValue(CONTROLLED_ENTITY),
+                    AStar a = new AStar((AIEntity) context.getCompulsory(CONTROLLED_ENTITY),
                             levelState.getRootMeshPolygons(),
                             levelState.getMeshGraph());
 
-                    //boolean returnIncompletePath = (Boolean) context.variableOrDefault("return_incomplete_path", false);
-
                     boolean plotted = a.plotPath(returnIncompletePath);
 
-                    Log.d("FLASH", "plotting path: " + plotted);
+                    Log.d("Tasks::plotPath", "plotting path: " + plotted);
                     if (plotted) {
                         context.addVariable("plottingFailed", false);
                         setStatus(SUCCESS);
@@ -311,21 +339,31 @@ public class Tasks {
                     }
                 }
 
-                Log.d("TASK", "plotting path has failed");
+                Log.d("Tasks::plotPath", "plotting path has failed");
                 setStatus(FAILURE);
                 return FAILURE;
             }
         };
     }
 
+    /**
+     * This task will find a mesh that is adjacent to the mesh that the player is currently in
+     *
+     * This task will return FAILURE unless the context contains the following compulsories:
+     * <ul>
+     *     <li>LEVEL_STATE</li>
+     * </ul>
+     *
+     * @return The BNode containing this task
+     */
     public static BNode findMeshAdjacentToPlayer(){
         return new BNode() {
             @Override
             public Status process(BContext context) {
 
-                if (context.containsKeys(LEVEL_STATE)){
+                if (context.containsCompulsory(LEVEL_STATE)){
 
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
 
                     Graph<Integer> graph = levelState.getMeshGraph();
 
@@ -354,9 +392,9 @@ public class Tasks {
 
                     Point p = meshPolygon.getCenter();
 
-                    context.addValue(MOVE_TO, p);
+                    context.addCompulsory(MOVE_TO, p);
 
-                    Log.d("FLASH", ((AIEntity)context.getValue(CONTROLLED_ENTITY)).getName() + " is finding an adjacent mesh");
+                    Log.d("Tasks::adjacentMeshToPlayer", ((AIEntity)context.getCompulsory(CONTROLLED_ENTITY)).getName() + " is finding an adjacent mesh");
 
                     setStatus(SUCCESS);
                     return SUCCESS;
@@ -368,7 +406,15 @@ public class Tasks {
         };
     }
 
-    public static BNode patrol(){
+    /**
+     *
+     * This task will perform a patrol route out of the provided patrol path.
+     *
+     * @param patrolPathPoints A list containing the patrol points in desired order. It will form a loop
+     *                         from the last point to the first.
+     * @return The BNode for this task
+     */
+    public static BNode patrol(List<Integer> patrolPathPoints){
         return new BNode() {
 
             List<Integer> patrolPath;
@@ -376,15 +422,14 @@ public class Tasks {
             @Override
             public void construct() {
                 super.construct();
-                patrolPath = new ArrayList<>();
-                patrolPath.addAll(Arrays.asList(4, 19, 55, 34, 56));
+                patrolPath = patrolPathPoints;
             }
 
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(LEVEL_STATE, CONTROLLED_ENTITY)){
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                if (context.containsCompulsory(LEVEL_STATE, CONTROLLED_ENTITY)){
+                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
+                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     if (!context.containsVariables("patrol")){
                         context.addVariable("patrol", 0);
@@ -410,22 +455,22 @@ public class Tasks {
                     float distance = new Vector(controlled.getCenter(), point).getLength();
 
                     if (controlled.getBoundingBox().intersecting(point)){
-                        Log.d("AVOID", "arrived at: " + patrolPath.get(patrolIdx));
+                        Log.d("Tasks::patrol", "arrived at: " + patrolPath.get(patrolIdx));
                         patrolIdx++;
 
                         if (patrolIdx >= patrolPath.size()){
                             patrolIdx = 0;
                         }
                     } else {
-                        Log.d("AVOID", "not arrived to patrol point in mesh " + patrolPath.get(patrolIdx) + " yet, " +
+                        Log.d("Tasks::patrol", "not arrived to patrol point in mesh " + patrolPath.get(patrolIdx) + " yet, " +
                                 "distance to go: " + distance);
                     }
 
                     context.addVariable("patrol", patrolIdx);
 
-                    Log.d("AVOID", "heading to: " + patrolPath.get(patrolIdx));
+                    Log.d("Tasks::patrol", "heading to: " + patrolPath.get(patrolIdx));
 
-                    context.addValue(MOVE_TO, point);
+                    context.addCompulsory(MOVE_TO, point);
 
                     return Status.SUCCESS;
                 }
@@ -434,13 +479,17 @@ public class Tasks {
         };
     }
 
+    /**
+     * This task will pick a random mesh out of the mesh graph and set it as the MOVE_TO compulsory
+     * @return The BNode for this task
+     */
     public static BNode pickRandomMesh(){
         return new BNode() {
             @Override
             public Status process(BContext context) {
 
-                if (context.containsKeys(LEVEL_STATE)){
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                if (context.containsCompulsory(LEVEL_STATE)){
+                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
 
                     Random r = new Random();
 
@@ -451,7 +500,7 @@ public class Tasks {
                     MeshPolygon meshPolygon = levelState.getRootMeshPolygons().get(id);
 
                     if (meshPolygon != null){
-                        context.addValue(MOVE_TO, meshPolygon.getCenter());
+                        context.addCompulsory(MOVE_TO, meshPolygon.getCenter());
 
                         setStatus(SUCCESS);
                         return SUCCESS;
@@ -476,10 +525,10 @@ public class Tasks {
 
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY, PATH)){
+                if (context.containsCompulsory(CONTROLLED_ENTITY, PATH)){
 
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                    List<Point> path = ((PathWrapper) context.getValue(PATH)).getIPath();
+                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    List<Point> path = ((PathWrapper) context.getCompulsory(PATH)).getIPath();
 
                     //project ai into the future
 
@@ -595,13 +644,13 @@ public class Tasks {
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(MOVE_TO, CONTROLLED_ENTITY)){
+                if (context.containsCompulsory(MOVE_TO, CONTROLLED_ENTITY)){
 
                     Log.d("TASKS", "rotateTo contains keys");
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
 
-                    Player player = ((LevelState) context.getValue(LEVEL_STATE)).getPlayer();
+                    Player player = ((LevelState) context.getCompulsory(LEVEL_STATE)).getPlayer();
                     float wiggleRoom = CollisionManager.getWiggleRoom(player, controlled);
 
                     Vector rotVector = new Vector(controlled.getCenter(), player.getCenter());
@@ -638,16 +687,16 @@ public class Tasks {
 
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE, SIGHT_BLOCKED)){
+                if (context.containsCompulsory(CONTROLLED_ENTITY, LEVEL_STATE, SIGHT_BLOCKED)){
 
-                    if ((Boolean) context.getValue(SIGHT_BLOCKED) || (Boolean) context.getValue(FRIENDLY_BLOCKING_SIGHT)) {
+                    if ((Boolean) context.getCompulsory(SIGHT_BLOCKED) || (Boolean) context.getCompulsory(FRIENDLY_BLOCKING_SIGHT)) {
                         Log.d("TASKS", "sight is blocked, cannot aim " + (++count));
                         return FAILURE;
                     }
 
                     Log.d("TASKS", "processing aim!");
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
+                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
                     Player player = levelState.getPlayer();
 
                     float projSpeed = controlled.getWeapon().getSpeed();
@@ -691,7 +740,7 @@ public class Tasks {
                     Vector v = new Vector(controlled.getCenter(), aimPoint);
                     v = v.rotate((float)Math.cos(angle),(float) Math.sin(angle));
 
-                    context.addValue(TARGET, v.getHead());
+                    context.addCompulsory(TARGET, v.getHead());
 
                     Log.d("TASKS", "t: " + t);
                     Log.d("TASKS", "aimpoint: " + aimPoint + ", playerpos: " + playerPos);
@@ -726,9 +775,9 @@ public class Tasks {
             @Override
             public Status process(BContext context) {
 
-                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE, TARGET)){
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
+                if (context.containsCompulsory(CONTROLLED_ENTITY, LEVEL_STATE, TARGET)){
+                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
+                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     Log.d("SHOOT", "SHooting");
 
@@ -745,221 +794,14 @@ public class Tasks {
         return new BNode() {
             @Override
             public Status process(BContext context) {
-                if (context.containsKeys(LEVEL_STATE)) {
+                if (context.containsCompulsory(LEVEL_STATE)) {
 
-                    context.addVariable("heading", ((LevelState)context.getValue(LEVEL_STATE)).getPlayer().getCenter());
-
-                    setStatus(SUCCESS);
-                    return SUCCESS;
-                }
-
-                setStatus(FAILURE);
-                return FAILURE;
-            }
-        };
-    }
-
-    public static BNode detonate(){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY)){
-
-                    AIEntity controlled = ((AIEntity) context.getValue(CONTROLLED_ENTITY));
-
-                    controlled.setHealth(0);
-                    LevelState levelState = (LevelState ) context.getValue(LEVEL_STATE);
-
-                    levelState.addExplosion(new Explosion("death" + controlled.getName(), controlled.getName(),
-                            controlled.getCenter(), 150f, 60, Color.RED));
+                    context.addVariable("heading", ((LevelState)context.getCompulsory(LEVEL_STATE)).getPlayer().getCenter());
 
                     setStatus(SUCCESS);
                     return SUCCESS;
                 }
 
-                setStatus(FAILURE);
-                return FAILURE;
-            }
-        };
-    }
-
-    public static BNode brokenDown(){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
-
-                if (context.containsKeys(CONTROLLED_ENTITY)){
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-
-                    controlled.setBrokenDown(true);
-
-                    TankBody tankBody = (TankBody) controlled.getShape();
-
-                    tankBody.setBodyColor(ColorScheme.manipulateColor(tankBody.getDefaultColor(), 0.7f));
-                    tankBody.setTurretColor(ColorScheme.manipulateColor(tankBody.getDefaultColor(), 1.5f));
-
-                    setStatus(SUCCESS);
-                    return SUCCESS;
-                }
-
-                setStatus(FAILURE);
-                return FAILURE;
-            }
-        };
-    }
-
-    public static BNode flashRed(int duration){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
-                if (context.containsKeys(CONTROLLED_ENTITY)){
-
-                    AIEntity controlled = ((AIEntity)context.getValue(CONTROLLED_ENTITY));
-
-                    if (!context.containsVariables("flash_remaining"))
-                        context.addVariable("flash_remaining", duration);
-
-                    context.addVariable("fuse_started", true);
-
-                    int flashRemaining = (int) context.getVariable("flash_remaining");
-
-                    Log.d("FLASH", flashRemaining + "");
-
-                    if (flashRemaining > 0){
-                        flashRemaining--;
-
-                        if (flashRemaining % 2 == 0){
-                            controlled.setColor(Color.RED);
-                        } else {
-                            controlled.setColor(Color.BLACK);
-                        }
-
-                    } else {
-                        setStatus(SUCCESS);
-                        return SUCCESS;
-                    }
-
-                    context.addVariable("flash_remaining", flashRemaining);
-
-                    setStatus(RUNNING);
-                    return RUNNING;
-                }
-
-                setStatus(FAILURE);
-                return FAILURE;
-            }
-        };
-    }
-
-    public static BNode findAIToHeal(){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
-                if (context.containsKeys(OVERLORD, CONTROLLED_ENTITY)){
-                    Overlord overlord = (Overlord) context.getValue(OVERLORD);
-                    AIEntity thisEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-
-                    float minRatio = (float) context.variableOrDefault("healing_min_ratio", 0.04f);
-                    for (AIEntity aiEntity : overlord.getAliveEntities()){
-                        if (aiEntity.equals(thisEntity))
-                            continue;
-
-                        if (aiEntity.getRadioHealthLeft() < minRatio) {
-
-                            Log.d("HEALER", thisEntity.getName() + " plotting to " + aiEntity.getName());
-                            context.addValue(MOVE_TO, aiEntity.getCenter());
-
-                            setStatus(SUCCESS);
-                            return SUCCESS;
-                        }
-                    }
-                } else {
-                    Log.d("HEALER", "plot path to ai doesnt have required fields");
-                }
-
-                Log.d("HEALER", "plot path to ai might not have any entities with low health");
-                setStatus(FAILURE);
-                return FAILURE;
-            }
-        };
-    }
-
-    public static BNode findAI(){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
-                if (context.containsKeys(OVERLORD, CONTROLLED_ENTITY)){
-                    Overlord overlord = (Overlord) context.getValue(OVERLORD);
-                    AIEntity thisEntity = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-
-                    for (AIEntity aiEntity : overlord.getAliveEntities()){
-                        if (aiEntity.equals(thisEntity))
-                            continue;
-
-                        Log.d("FINDAI", "plotting to: " + aiEntity.getName());
-                        context.addValue(MOVE_TO, aiEntity.getCenter());
-
-                        setStatus(SUCCESS);
-                        return SUCCESS;
-                    }
-                } else {
-                    Log.d("HEALER", "plot path to ai doesnt have required fields");
-                }
-
-                Log.d("HEALER", "plot path to ai might not have any entities with low health");
-                setStatus(FAILURE);
-                return FAILURE;
-            }
-        };
-    }
-
-    public static BNode healField(int radius){
-        return new BNode() {
-            @Override
-            public Status process(BContext context) {
-
-                if (context.containsKeys(CONTROLLED_ENTITY, LEVEL_STATE)){
-                    AIEntity controlled = (AIEntity) context.getValue(CONTROLLED_ENTITY);
-                    LevelState levelState = (LevelState) context.getValue(LEVEL_STATE);
-                    CollisionManager collisionManager = levelState.getCollisionManager();
-
-                    Log.d("HEALER", "healfield executing");
-
-                    boolean healedSomething = false;
-                    for (SpatialBin spatialBin : collisionManager.getSpatialBins()){
-                        if (spatialBin.contains(controlled)){
-
-                            for (Collidable collidable : spatialBin.getTemps()){
-
-                                if (collidable instanceof AIEntity){
-                                    float ratioLeft = ((AIEntity) collidable).getRadioHealthLeft();
-
-                                    float minRatio = (float) context.variableOrDefault("healing_min_ratio", 0.04f);
-
-                                    if (Float.compare(ratioLeft, minRatio) < 1){
-
-                                        if (new Vector(collidable.getCenter(), controlled.getCenter()).getLength() < radius) {
-
-                                            ((AIEntity) collidable).restoreHealth(60);
-                                            Log.d("HEALER", "healfield restoring health of " + collidable.getName());
-
-                                            healedSomething = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (healedSomething){
-                        levelState.addExplosion(new Explosion(controlled.getName() +"death", controlled.getName(), controlled.getCenter(), radius, 100, Color.BLUE));
-                        setStatus(SUCCESS);
-                        return SUCCESS;
-                    }
-                } else {
-                    Log.d("HEALER", "healfield failed as required variables are missing");
-                }
-                Log.d("HEALER", "healfield failed");
                 setStatus(FAILURE);
                 return FAILURE;
             }
