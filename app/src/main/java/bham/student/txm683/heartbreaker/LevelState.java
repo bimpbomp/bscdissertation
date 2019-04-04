@@ -5,13 +5,11 @@ import android.util.Log;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.Collidable;
-import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
@@ -23,7 +21,7 @@ import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class LevelState {
+public class LevelState implements ILevelState {
     private static final String TAG = "hb::LevelState";
 
     private Map map;
@@ -38,8 +36,6 @@ public class LevelState {
 
     private Tile screenDimensions;
 
-    private Portal portal;
-
     private CopyOnWriteArrayList<Pickup> pickups;
 
     private CopyOnWriteArrayList<Explosion> lingeringExplosions;
@@ -52,8 +48,6 @@ public class LevelState {
     private DebugInfo debugInfo;
 
     private LevelEnder levelEnder;
-
-    private CollisionManager collisionManager;
 
     private LevelView levelView;
 
@@ -79,8 +73,6 @@ public class LevelState {
 
         this.pickups = new CopyOnWriteArrayList<>(map.getPickups());
 
-        this.portal = map.getPortal();
-
         levelEnder = new LevelEnder();
 
         this.blockedMeshPolygons = new HashSet<>();
@@ -94,18 +86,6 @@ public class LevelState {
         this.levelView = levelView;
     }
 
-    public void setCollisionManager(CollisionManager collisionManager) {
-        this.collisionManager = collisionManager;
-    }
-
-    public CollisionManager getCollisionManager() {
-        return collisionManager;
-    }
-
-    public Portal getPortal() {
-        return portal;
-    }
-
     public Tile getScreenDimensions() {
         return screenDimensions;
     }
@@ -114,6 +94,7 @@ public class LevelState {
         this.screenDimensions = new Tile(width, height);
     }
 
+    @Override
     public int mapToMesh(Point p){
 
         for (MeshPolygon meshPolygon : getRootMeshPolygons().values()){
@@ -136,10 +117,12 @@ public class LevelState {
         return blockedMeshPolygons;
     }
 
+    @Override
     public Graph<Integer> getMeshGraph(){
         return map.getMeshGraph();
     }
 
+    @Override
     public HashMap<Integer, MeshPolygon> getRootMeshPolygons(){
         return map.getRootMeshPolygons();
     }
@@ -163,6 +146,7 @@ public class LevelState {
         aiEntity.onDeath();
     }
 
+    @Override
     public List<Collidable> getAvoidables(){
         List<Collidable> collidables = new ArrayList<>(aliveAIEntities);
         collidables.add(map.getPlayer());
@@ -173,14 +157,8 @@ public class LevelState {
     }
 
     public List<Collidable> getNonStaticCollidables(){
-        List<Collidable> collidables = new ArrayList<>(aliveAIEntities);
-        collidables.add(map.getPlayer());
-        collidables.addAll(explosions);
-        collidables.addAll(bullets);
+        List<Collidable> collidables = getAvoidables();
         collidables.addAll(pickups);
-
-        if (portal != null)
-            collidables.add(portal);
 
         return collidables;
     }
@@ -235,6 +213,7 @@ public class LevelState {
         return bullets;
     }
 
+    @Override
     public void addBullet(Projectile[] bullets){
         this.bullets.addAll(Arrays.asList(bullets));
     }
@@ -243,6 +222,7 @@ public class LevelState {
         bullets.remove(bullet);
     }
 
+    @Override
     public Player getPlayer(){
         return player;
     }

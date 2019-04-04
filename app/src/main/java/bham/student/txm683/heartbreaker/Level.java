@@ -13,8 +13,8 @@ import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.MapLoader;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.Collidable;
-import bham.student.txm683.heartbreaker.physics.CollisionManager;
 import bham.student.txm683.heartbreaker.physics.EntityController;
+import bham.student.txm683.heartbreaker.physics.TankCollisionManager;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 import bham.student.txm683.heartbreaker.rendering.popups.Popup;
 import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
@@ -36,7 +36,7 @@ public class Level implements Runnable {
     private LevelState levelState;
     private InputManager inputManager;
     private EntityController entityController;
-    private CollisionManager collisionManager;
+    private TankCollisionManager collisionManager;
 
     private boolean running;
 
@@ -147,9 +147,8 @@ public class Level implements Runnable {
 
             //initialise systems
             entityController = new EntityController(this);
-            collisionManager = new CollisionManager(levelState);
+            collisionManager = new TankCollisionManager(levelState);
 
-            levelState.setCollisionManager(collisionManager);
             levelState.setLevelView(levelView);
             levelState.setAiManager(new AIManager(levelState, map.getOverlords()));
         }
@@ -202,6 +201,7 @@ public class Level implements Runnable {
 
                     for (AIEntity aiEntity : levelState.getAliveAIEntities()){
                         id = mapCollidableToMesh(aiEntity);
+                        aiEntity.setMesh(id);
 
                         if (id > 0)
                             aiEntity.getContext().addCompulsory(BKeyType.CURRENT_MESH, levelState.getRootMeshPolygons().get(id));
@@ -327,17 +327,7 @@ public class Level implements Runnable {
         this.running = isRunning;
     }
 
-    public void setInputManager(InputManager inputManager) {
-        this.inputManager = inputManager;
-    }
-
     public void setLevelState(LevelState levelState) {
         this.levelState = levelState;
     }
-
-    public CollisionManager getCollisionManager() {
-        return collisionManager;
-    }
-
-
 }

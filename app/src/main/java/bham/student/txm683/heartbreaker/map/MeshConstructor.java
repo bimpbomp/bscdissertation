@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class MeshConstructorV2 {
+class MeshConstructor {
 
     private List<MeshSet> meshIntersectionSets;
 
@@ -37,7 +37,7 @@ class MeshConstructorV2 {
     private int tileSize;
 
     @SuppressLint("UseSparseArrays")
-    MeshConstructorV2(){
+    MeshConstructor(){
 
         this.meshIntersectionSets = new ArrayList<>();
 
@@ -114,23 +114,6 @@ class MeshConstructorV2 {
                 meshGraph.addNode(doorSet.getId());
             }
         }
-
-        /*//put any doors into their own set
-        for (int i = 0; i < tileList.size(); i++){
-            List<Integer> row = tileList.get(i);
-            for (int j = 0; j < row.size(); j++){
-                Tile tile = new Tile(j, i);
-                if (getTileInt(tile) == -2){
-                    for (MeshSet meshSet : meshIntersectionSets){
-                        if (meshSet.hasTile(tile)){
-                            if (meshSet.getContainedTiles().size() > 1){
-
-                            }
-                        }
-                    }
-                }
-            }
-        }*/
 
         constructMeshPolygons();
 

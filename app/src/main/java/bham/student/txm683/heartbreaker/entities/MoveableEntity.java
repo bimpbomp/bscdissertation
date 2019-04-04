@@ -25,16 +25,18 @@ public abstract class MoveableEntity extends Entity implements Renderable {
 
     private Shape shape;
 
-    private int maxDimension;
+    private int width;
 
     private int mass;
+
+    private int mesh;
 
     private List<Vector> extraForces;
 
     protected float maxAngularVelocity;
     protected float maxAcceleration;
 
-    public MoveableEntity(String name, Point spawn, int maxDimension, float maxSpeed, int mass, Shape shape){
+    public MoveableEntity(String name, Point spawn, int width, float maxSpeed, int mass, Shape shape){
         super(name);
 
         this.shape = shape;
@@ -48,12 +50,22 @@ public abstract class MoveableEntity extends Entity implements Renderable {
 
         this.spawn = spawn;
 
-        this.maxDimension = maxDimension;
+        this.width = width;
 
         this.extraForces = new ArrayList<>();
 
         this.maxAngularVelocity = 0.5f;
         this.maxAcceleration = 300f;
+
+        this.mesh = -1;
+    }
+
+    public int getMesh() {
+        return mesh;
+    }
+
+    public void setMesh(int mesh) {
+        this.mesh = mesh;
     }
 
     public void setMaxAngularVelocity(float maxAngularVelocity) {
@@ -87,8 +99,8 @@ public abstract class MoveableEntity extends Entity implements Renderable {
         return shape.getForwardUnitVector();
     }
 
-    public int getMaxDimension() {
-        return maxDimension;
+    public int getWidth() {
+        return width;
     }
 
     public Point getSpawn() {

@@ -5,7 +5,6 @@ import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.Overlord;
 import bham.student.txm683.heartbreaker.entities.Door;
 import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.entities.Wall;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
@@ -13,7 +12,7 @@ import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import java.util.HashMap;
 import java.util.List;
 
-public class Map {
+public class Map implements IMap {
 
     private String name;
     private String stage;
@@ -25,11 +24,9 @@ public class Map {
     private List<AIEntity> enemies;
     private List<Wall> walls;
 
-    private HashMap<String, Door> doors;
+    private java.util.Map<String, Door> doors;
 
     private List<Pickup> pickups;
-
-    private Portal portal;
 
     private Graph<Integer> meshGraph;
     private HashMap<Integer, MeshPolygon> rootMeshPolygons;
@@ -56,33 +53,30 @@ public class Map {
         this.overlords = overlords;
     }
 
+    @Override
     public String getStage() {
         return stage;
     }
 
-    public Portal getPortal() {
-        return portal;
-    }
-
-    public void setPortal(Portal portal) {
-        this.portal = portal;
-    }
-
+    @Override
     public Graph<Integer> getMeshGraph() {
         return meshGraph;
     }
 
+    @Override
     public void setMeshGraph(Graph<Integer> meshGraph) {
         this.meshGraph = meshGraph;
     }
 
+    @Override
     public void setRootMeshPolygons(List<MeshPolygon> meshSets){
         for (MeshPolygon meshSet : meshSets){
             rootMeshPolygons.put(meshSet.getId(), meshSet);
         }
     }
 
-    public HashMap<Integer, MeshPolygon> getRootMeshPolygons() {
+    @Override
+    public java.util.Map<Integer, MeshPolygon> getRootMeshPolygons() {
         return rootMeshPolygons;
     }
 
@@ -94,10 +88,12 @@ public class Map {
         this.pickups = pickups;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public int getTileSize() {
         return tileSize;
     }
@@ -114,6 +110,7 @@ public class Map {
         this.enemies = enemies;
     }
 
+    @Override
     public void setDoors(List<Door> doors) {
         for (Door door : doors){
             this.doors.put(door.getName(), door);
@@ -124,30 +121,36 @@ public class Map {
         return enemies;
     }
 
-    public HashMap<String, Door> getDoors() {
+    public java.util.Map<String, Door> getDoors() {
         return doors;
     }
 
+    @Override
     public float getHeight(){
         return heightInTiles * tileSize;
     }
 
+    @Override
     public float getWidth(){
         return widthInTiles * tileSize;
     }
 
+    @Override
     public void setWidthInTiles(int widthInTiles) {
         this.widthInTiles = widthInTiles;
     }
 
+    @Override
     public void setHeightInTiles(int heightInTiles) {
         this.heightInTiles = heightInTiles;
     }
 
+    @Override
     public List<Wall> getWalls() {
         return walls;
     }
 
+    @Override
     public void setWalls(List<Wall> walls) {
         this.walls = walls;
     }

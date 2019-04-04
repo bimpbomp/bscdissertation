@@ -1,9 +1,9 @@
 package bham.student.txm683.heartbreaker.utils;
 
 import android.util.Log;
-import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ILevelState;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
+import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.utils.graph.Node;
@@ -24,21 +24,21 @@ public class AStar {
 
     private List<Point> waypointPath;
 
-    private AIEntity controlled;
+    private BContext controlledContext;
 
     private Point targetPoint;
 
-    public AStar(AIEntity controlled, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
-        this.controlled = controlled;
+    public AStar(BContext controlledContext, Map<Integer, MeshPolygon> meshPolygonMap, Graph<Integer> meshGraph) {
+        this.controlledContext = controlledContext;
 
-        if (controlled.getContext().containsCompulsory(CURRENT_MESH)){
-            this.startNode = meshGraph.getNode(((MeshPolygon)controlled.getContext().getCompulsory(CURRENT_MESH)).getId());
+        if (controlledContext.containsCompulsory(CURRENT_MESH)){
+            this.startNode = meshGraph.getNode(((MeshPolygon)controlledContext.getCompulsory(CURRENT_MESH)).getId());
         } else {
             this.startNode = null;
         }
 
-        LevelState levelState = (LevelState) controlled.getContext().getCompulsory(LEVEL_STATE);
-        targetPoint = (Point) controlled.getContext().getCompulsory(MOVE_TO);
+        ILevelState levelState = (ILevelState) controlledContext.getCompulsory(LEVEL_STATE);
+        targetPoint = (Point) controlledContext.getCompulsory(MOVE_TO);
 
         int targetMeshId = levelState.mapToMesh(targetPoint);
 
@@ -63,7 +63,7 @@ public class AStar {
         reset();
 
         if (startNode == null || targetNode == null){
-            Log.d("ASTAR", "start/target node is null for " + controlled.getName());
+            Log.d("ASTAR", "start/target node is null");
             return false;
         }
 
@@ -87,7 +87,7 @@ public class AStar {
                 MeshPolygon meshPolygon = meshPolygonMap.get(roughPath[i]);
 
                 if (meshPolygon == null){
-                    Log.d("ASTAR", "null pointer in basePath for " + controlled.getName());
+                    Log.d("ASTAR", "null pointer in basePath for ");
                     break;
                 }
                 p = meshPolygon.getCenter();
@@ -123,7 +123,7 @@ public class AStar {
                 }
             }
 
-            controlled.getContext().addCompulsory(PATH, new PathWrapper(waypointPath, pathMeshIds));
+            controlledContext.addCompulsory(PATH, new PathWrapper(waypointPath, pathMeshIds));
             return true;
         }
 

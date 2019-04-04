@@ -7,7 +7,6 @@ import bham.student.txm683.heartbreaker.ai.Drone;
 import bham.student.txm683.heartbreaker.ai.Overlord;
 import bham.student.txm683.heartbreaker.ai.Turret;
 import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.Portal;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.utils.Tile;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
@@ -55,11 +54,6 @@ public class MapLoader {
             map.setPickups(new ArrayList<>());
 
         Log.d("LOADING", "LOADED PAST pickups");
-
-        if (jsonObject.has("portal"))
-            map.setPortal(Portal.build(jsonObject.getJSONObject("portal"), map.getTileSize()));
-
-        Log.d("LOADING", "LOADED PAST portal");
 
         List<AIEntity> enemies = new ArrayList<>();
         if (jsonObject.has("drones"))

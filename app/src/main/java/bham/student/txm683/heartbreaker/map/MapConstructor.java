@@ -21,22 +21,22 @@ public class MapConstructor {
 
     private Queue<Tile> wallsToCheck;
 
-    private Map map;
+    private IMap map;
 
-    private MeshConstructorV2 meshConstructor;
+    private MeshConstructor meshConstructor;
     private MapReader mapReader;
 
-    public MapConstructor(Context context, Map map){
+    public MapConstructor(Context context, IMap map){
         this.uniqueID = new UniqueID();
         this.wallsToCheck = new LinkedList<>();
-        this.meshConstructor = new MeshConstructorV2();
+        this.meshConstructor = new MeshConstructor();
         this.mapReader = new MapReader(context);
 
         this.map = map;
     }
 
     @SuppressLint("UseSparseArrays")
-    public Map loadMap(List<DoorBuilder> doorBuilders){
+    public void loadMap(List<DoorBuilder> doorBuilders){
         this.tileSize = map.getTileSize();
 
         try {
@@ -49,8 +49,6 @@ public class MapConstructor {
             Log.d("MESHPRINT", "number of nodes: " + meshPolygons.size() + ", number of empty tiles: " + mapReader.getCount());
 
             printTileList(mapReader.getMeshGenList());
-
-
 
             //GenerateBoundaryWalls
             List<Wall> walls = generateWallsV2(mapReader.getMeshGenList());
@@ -67,8 +65,6 @@ public class MapConstructor {
         } catch (MapConversionException e){
             Log.d("MapConstructor", "Map conversion error: " + e.getMessage() + "...\n");
         }
-
-        return map;
     }
 
     private void constructDoors(){

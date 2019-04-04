@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MeshConstructorV2Test {
+public class MeshConstructorTest {
 
     @Test
     public void constructMesh() {
@@ -20,6 +20,6 @@ public class MeshConstructorV2Test {
         testTileList.add(Arrays.asList(-1, 0, 0, 0, 0, 0, -1));
         testTileList.add(Arrays.asList(-1, -1, -1, -1, -1, -1, -1));
 
-        MeshConstructorV2 meshConstructorV2 = new MeshConstructorV2();
+        MeshConstructor meshConstructor = new MeshConstructor();
     }
 }

@@ -1,16 +1,16 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.tasks;
 
 import android.util.Log;
-import bham.student.txm683.heartbreaker.LevelState;
+import bham.student.txm683.heartbreaker.ILevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
-import bham.student.txm683.heartbreaker.entities.Player;
+import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
-import bham.student.txm683.heartbreaker.physics.CollisionManager;
+import bham.student.txm683.heartbreaker.physics.CollisionTools;
 import bham.student.txm683.heartbreaker.utils.AStar;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -244,11 +244,9 @@ public class Tasks {
 
                     Point heading = (Point) context.getVariable("heading");
 
-                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
+                    ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
 
-                    CollisionManager collisionManager = ((LevelState) context.getCompulsory(LEVEL_STATE)).getCollisionManager();
-
-                    Vector steeringAxis = collisionManager.getPathAroundObstacle(controlled, heading);
+                    Vector steeringAxis = CollisionTools.getPathAroundObstacle(controlled, heading, levelState.getAvoidables());
 
                     if (!steeringAxis.equals(Vector.ZERO_VECTOR)){
                         //correction needs to take place
@@ -278,23 +276,6 @@ public class Tasks {
         };
     }
 
-    /*
-This task will return FAILURE unless the context contains the following compulsories:
-<ul>
-    <li>CONTROLLED_ENTITY</li>
-</ul>
-
-This task will return FAILURE unless the context contains the following variables:
-<ul>
-    <li>"heading"</li>
-</ul>
-
-The context can have the following variables to alter the resulting behaviour:
-<ul>
-    <li>"seek_magnitude": the maximum length of the calculated steering vector. (Default: 50)</li>
-</ul>
-     */
-
     /**
      * This task will use the AStar class to plot a path to the provided destination using the navmesh
      *
@@ -321,9 +302,9 @@ The context can have the following variables to alter the resulting behaviour:
                 if (context.containsCompulsory(CONTROLLED_ENTITY, CURRENT_MESH, LEVEL_STATE, MOVE_TO)){
                     Log.d("Tasks::plotPath", "plotting...");
 
-                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
+                    ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
 
-                    AStar a = new AStar((AIEntity) context.getCompulsory(CONTROLLED_ENTITY),
+                    AStar a = new AStar(context,
                             levelState.getRootMeshPolygons(),
                             levelState.getMeshGraph());
 
@@ -363,7 +344,7 @@ The context can have the following variables to alter the resulting behaviour:
 
                 if (context.containsCompulsory(LEVEL_STATE)){
 
-                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
+                    ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
 
                     Graph<Integer> graph = levelState.getMeshGraph();
 
@@ -428,7 +409,7 @@ The context can have the following variables to alter the resulting behaviour:
             @Override
             public Status process(BContext context) {
                 if (context.containsCompulsory(LEVEL_STATE, CONTROLLED_ENTITY)){
-                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
+                    ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
                     AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     if (!context.containsVariables("patrol")){
@@ -489,7 +470,7 @@ The context can have the following variables to alter the resulting behaviour:
             public Status process(BContext context) {
 
                 if (context.containsCompulsory(LEVEL_STATE)){
-                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
+                    ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
 
                     Random r = new Random();
 
@@ -567,7 +548,7 @@ The context can have the following variables to alter the resulting behaviour:
                     } else {
                         Log.d("Follow", "basePath size is: " + path.size());
 
-                        int closesIdx = CollisionManager.getClosestPointOnPathIdx(futurePos, path);
+                        int closesIdx = CollisionTools.getClosestPointOnPathIdx(futurePos, path);
 
                         if (closesIdx >= 0){
 
@@ -650,8 +631,8 @@ The context can have the following variables to alter the resulting behaviour:
                     AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
 
-                    Player player = ((LevelState) context.getCompulsory(LEVEL_STATE)).getPlayer();
-                    float wiggleRoom = CollisionManager.getWiggleRoom(player, controlled);
+                    MoveableEntity player = ((ILevelState) context.getCompulsory(LEVEL_STATE)).getPlayer();
+                    float wiggleRoom = CollisionTools.getWiggleRoom(player, controlled);
 
                     Vector rotVector = new Vector(controlled.getCenter(), player.getCenter());
 
@@ -696,8 +677,8 @@ The context can have the following variables to alter the resulting behaviour:
 
                     Log.d("TASKS", "processing aim!");
                     AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
-                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
-                    Player player = levelState.getPlayer();
+                    ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
+                    MoveableEntity player = levelState.getPlayer();
 
                     float projSpeed = controlled.getWeapon().getSpeed();
 
@@ -776,7 +757,7 @@ The context can have the following variables to alter the resulting behaviour:
             public Status process(BContext context) {
 
                 if (context.containsCompulsory(CONTROLLED_ENTITY, LEVEL_STATE, TARGET)){
-                    LevelState levelState = (LevelState) context.getCompulsory(LEVEL_STATE);
+                    ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
                     AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     Log.d("SHOOT", "SHooting");
@@ -796,7 +777,7 @@ The context can have the following variables to alter the resulting behaviour:
             public Status process(BContext context) {
                 if (context.containsCompulsory(LEVEL_STATE)) {
 
-                    context.addVariable("heading", ((LevelState)context.getCompulsory(LEVEL_STATE)).getPlayer().getCenter());
+                    context.addVariable("heading", ((ILevelState)context.getCompulsory(LEVEL_STATE)).getPlayer().getCenter());
 
                     setStatus(SUCCESS);
                     return SUCCESS;

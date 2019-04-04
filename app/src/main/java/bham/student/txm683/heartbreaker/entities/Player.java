@@ -18,16 +18,12 @@ public class Player extends TankMoveableEntity implements Damageable, Renderable
 
     private Weapon primaryWeapon;
 
-    private int mesh;
-
     private Player(String name, Point center, int size, float maxSpeed, int color, int initialHealth) {
         super(name, center, size, maxSpeed, 1, new TankBody(center, size, color));
 
         this.healthBar = new HealthBar(initialHealth);
 
         this.primaryWeapon = new BasicWeapon(name, 20, 40, 20, getShape().getColor());
-
-        mesh = -1;
     }
 
     private Player(Point center){
@@ -53,14 +49,6 @@ public class Player extends TankMoveableEntity implements Damageable, Renderable
         super.draw(canvas, renderOffset, secondsSinceLastRender, renderEntityName);
 
         healthBar.draw(canvas, getCenter().add(renderOffset).add(0, 75));
-    }
-
-    public int getMesh() {
-        return mesh;
-    }
-
-    public void setMesh(int mesh) {
-        this.mesh = mesh;
     }
 
     public Projectile[] shoot(){

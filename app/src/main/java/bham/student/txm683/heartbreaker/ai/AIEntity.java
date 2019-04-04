@@ -172,10 +172,6 @@ public abstract class AIEntity extends TankMoveableEntity implements Renderable,
         return context;
     }
 
-    public int getWidth(){
-        return getMaxDimension();
-    }
-
     @Override
     public boolean isSolid() {
         return true;

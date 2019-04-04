@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker.map;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.util.Log;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Tile;
@@ -15,8 +16,6 @@ import java.util.List;
 import java.util.Locale;
 
 import static bham.student.txm683.heartbreaker.map.MapReader.Direction.*;
-import static bham.student.txm683.heartbreaker.map.TileType.DOOR;
-import static bham.student.txm683.heartbreaker.map.TileType.WALL;
 
 public class MapReader {
 
@@ -29,6 +28,9 @@ public class MapReader {
         VERTICAL,
         INVALID
     }
+
+    private static final int WALL = Color.BLACK;
+    private static final int DOOR = Color.BLUE;
 
     private Context context;
     private Bitmap mapImage;
@@ -102,7 +104,7 @@ public class MapReader {
 
                 } else {
                     count++;
-                    if (TileType.isDoor(pixel)){
+                    if (pixel == DOOR){
 
                         Tile tile = new Tile(columnIdx, rowIdx);
 
@@ -129,7 +131,7 @@ public class MapReader {
     }
 
     //returns the Color constant value of the tile given with the given offset applied
-    //if the pixel doesn't exist, return TileType.Invalid
+    //if the pixel doesn't exist, return 0
     private int getPixelColorWithOffset(Tile coordinates, int xDiff, int yDiff){
         int tileType = 0;
 
