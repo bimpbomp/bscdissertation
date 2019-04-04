@@ -3,7 +3,7 @@ package bham.student.txm683.heartbreaker.physics;
 import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
-import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.IAIEntity;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Circle;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
@@ -96,7 +96,7 @@ public class CollisionTools {
         }
     }
 
-    public static float getWiggleRoom(MoveableEntity player, AIEntity aiEntity){
+    public static float getWiggleRoom(MoveableEntity player, IAIEntity aiEntity){
         Point[] playerVertices = player.getCollisionVertices();
 
         Vector aToP = new Vector(aiEntity.getCenter(), player.getCenter());
@@ -174,7 +174,7 @@ public class CollisionTools {
      * @param avoidables list of obstacles not in the navmesh
      * @return The calculated steering vector
      */
-    public static Vector getPathAroundObstacle(MoveableEntity entity, Point target, List<Collidable> avoidables){
+    public static Vector getPathAroundObstacle(IAIEntity entity, Point target, List<Collidable> avoidables){
 
         Collidable closestCollidable = null;
         int smallestDistance = Integer.MAX_VALUE;
@@ -216,7 +216,7 @@ public class CollisionTools {
 
         Log.d("AVOID", closestCollidable.getName() + " is in the way");
 
-        if (closestCollidable instanceof AIEntity){
+        if (closestCollidable instanceof IAIEntity){
             return fUnit.rotateClockwise90();
         }
 
