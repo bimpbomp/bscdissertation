@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
+import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.entities.TankMoveableEntity;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
@@ -14,12 +15,13 @@ import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.rendering.HealthBar;
 import bham.student.txm683.heartbreaker.rendering.Renderable;
 import bham.student.txm683.heartbreaker.utils.Point;
+import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.List;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
 
-public abstract class AIEntity extends TankMoveableEntity implements Renderable, Damageable {
+public abstract class AIEntity extends TankMoveableEntity implements Renderable, Damageable, IAIEntity {
 
     protected BContext context;
 
@@ -135,6 +137,11 @@ public abstract class AIEntity extends TankMoveableEntity implements Renderable,
             paint.setColor(Color.BLACK);
             canvas.drawCircle(p.getX(), p.getY(), 20, paint);
         }
+    }
+
+    @Override
+    public Vector getShootingVector() {
+        return ((TankBody)getShape()).getShootingVector();
     }
 
     @Override

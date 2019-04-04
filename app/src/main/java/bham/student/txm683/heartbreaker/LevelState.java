@@ -123,7 +123,7 @@ public class LevelState implements ILevelState {
     }
 
     @Override
-    public HashMap<Integer, MeshPolygon> getRootMeshPolygons(){
+    public java.util.Map<Integer, MeshPolygon> getRootMeshPolygons(){
         return map.getRootMeshPolygons();
     }
 

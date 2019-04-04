@@ -23,7 +23,7 @@ public class Player extends TankMoveableEntity implements Damageable, Renderable
 
         this.healthBar = new HealthBar(initialHealth);
 
-        this.primaryWeapon = new BasicWeapon(name, 20, 40, 20, getShape().getColor());
+        this.primaryWeapon = new BasicWeapon(name, 1000, 40, 20, getShape().getColor());
     }
 
     private Player(Point center){

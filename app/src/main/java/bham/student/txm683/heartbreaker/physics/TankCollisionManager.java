@@ -281,9 +281,10 @@ public class TankCollisionManager {
             } else {
                 Log.d(TAG, collidable.getName() + " hit by projectile. health now at " + ((Damageable) collidable).getHealth());
             }
-
-            levelState.getBullets().remove(projectile);
         }
+
+        if (!projectile.getOwner().equals(collidable.getName()))
+            levelState.removeBullet(projectile);
     }
 
     private void resolveDoorFieldActivation(DoorField doorField){

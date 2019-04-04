@@ -167,8 +167,10 @@ public abstract class MoveableEntity extends Entity implements Renderable {
 
                 if (angle > 0.785f)
                     movementForce = movementForce.sMult(angle/ (float) Math.PI);
-
+            } else {
+                Log.d("TANK", "applying movement forces");
             }
+
 
 
             for (Vector force : extraForces){

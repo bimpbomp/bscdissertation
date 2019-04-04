@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.entities;
 
+import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.utils.Point;
 import bham.student.txm683.heartbreaker.utils.Vector;
@@ -16,6 +17,7 @@ public abstract class TankMoveableEntity extends MoveableEntity {
         //rotate turret
         Vector turretFUnit = ((TankBody) getShape()).getTurretFUnit();
 
+        Log.d("TANK", "rotating turret");
         float angularVelocity;
 
         if (getRotationVector().equals(Vector.ZERO_VECTOR)) {

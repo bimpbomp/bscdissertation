@@ -26,7 +26,7 @@ public class Drone extends AIEntity{
     private Drone(String name, Point center, int size, int colorValue, float maxSpeed, int initialHealth) {
         super(name, center, size, maxSpeed, 1, constructShape(center, size, colorValue), initialHealth);
 
-        this.weapon = new BasicWeapon(getName(), 20, 40, 20, getShape().getColor());
+        this.weapon = new BasicWeapon(getName(), 1000, 40, 20, getShape().getColor());
 
         this.behaviourTreeRoot = TankBehaviour.droneTree();
     }

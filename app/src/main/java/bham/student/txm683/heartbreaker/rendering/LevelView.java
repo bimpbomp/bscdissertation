@@ -223,9 +223,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         this.inputManager.setReturnToMenuButton(new Button("QUIT", new Point(pauseButtonRadius*2 + 40 + returnToMenuButtonRadius, returnToMenuButtonRadius + 20), returnToMenuButtonRadius, buttonColor, menuButtonFunction));
 
-        int attackButtonRadius = 100;
-        this.inputManager.setSecondaryWeaponButton(new Button("BOMB", new Point(viewWidth-(attackButtonRadius + thumbstickMaxRadius*2) - 20, viewHeight-attackButtonRadius -10), attackButtonRadius, Color.RED, null));
-
         textPaint.setTextSize(36f);
         //gives space for 8 debug buttons
         int debugButtonDiameter = viewHeight/6;
@@ -333,13 +330,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             for (Renderable door : levelState.getMap().getDoors().values()){
                 if (isOnScreen(door))
                     door.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
-            }
-
-            //draw portal
-            if (levelState.getPortal() != null){
-                if (isOnScreen(levelState.getPortal())){
-                    levelState.getPortal().draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
-                }
             }
 
             //draw dead ai

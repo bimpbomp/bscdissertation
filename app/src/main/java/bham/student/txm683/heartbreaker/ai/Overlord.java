@@ -166,8 +166,8 @@ public class Overlord {
         for (Point trigger : triggers){
             int id = levelState.mapToMesh(trigger);
 
-            Log.d("OVERLORD", "trigger: " + trigger + ", id: " + id + ", player mesh: " + levelState.getPlayer().getMesh());
             if (levelState.getPlayer().getMesh() == id){
+                Log.d("OVERLORD", "triggered: " + trigger + ", id: " + id + ", player mesh: " + levelState.getPlayer().getMesh());
                 return true;
             }
         }

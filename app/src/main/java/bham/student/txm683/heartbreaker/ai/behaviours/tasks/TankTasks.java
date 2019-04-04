@@ -25,7 +25,9 @@ public class TankTasks {
             @Override
             public Status process(BContext context) {
 
+                Log.d("TESTING", "reached applyMovementForces");
                 if (context.containsCompulsory(CONTROLLED_ENTITY)){
+                    Log.d("TESTING", "reached applyMovementForces");
                     AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     Vector force = Vector.ZERO_VECTOR;

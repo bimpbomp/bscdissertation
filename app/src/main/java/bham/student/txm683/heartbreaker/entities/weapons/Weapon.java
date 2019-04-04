@@ -1,5 +1,6 @@
 package bham.student.txm683.heartbreaker.entities.weapons;
 
+import android.util.Log;
 import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.utils.GameTickTimer;
 import bham.student.txm683.heartbreaker.utils.UniqueID;
@@ -35,6 +36,10 @@ public abstract class Weapon {
         this.color = color;
     }
 
+    public void setAmmo(int ammo) {
+        this.ammo = ammo;
+    }
+
     public int getAmmo(){
         return ammo;
     }
@@ -46,7 +51,9 @@ public abstract class Weapon {
     public Projectile[] shoot(Vector shootVector) {
         tickCooldown();
 
+        Log.d("TICK", "shoot");
         if (!inCooldown()) {
+            Log.d("TICK", "shoot not in cooldown");
             Projectile bullet = new Projectile(getOwner()+getNextID(), getOwner(), shootVector.getHead(), bulletRadius,
                     speed, getDamage(), bulletLife, color);
             bullet.setRequestedMovementVector(shootVector.getUnitVector());
@@ -70,16 +77,20 @@ public abstract class Weapon {
     }
 
     public void tickCooldown(){
+        Log.d("TICK", "tickCooldown");
         if (inCooldown() && timer.tick() > 0) {
+            Log.d("TICK", "tickCooldown has ticked");
             timer.stop();
         }
     }
 
     public void startCooldown(){
+        Log.d("TICK", "startCooldown");
         timer.start();
     }
 
     public boolean inCooldown(){
+        Log.d("TICK", "inCooldown: " + timer.isActive());
         return timer.isActive();
     }
 

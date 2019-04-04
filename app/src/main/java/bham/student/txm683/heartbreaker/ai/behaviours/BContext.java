@@ -1,5 +1,7 @@
 package bham.student.txm683.heartbreaker.ai.behaviours;
 
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +59,7 @@ public class BContext {
                 return false;
 
 
-            //check through all classes in the inheritance chain of this item,
+            //check through all classes and interfaces in the inheritance chain of this item,
             //checking for if one of the classes is of the type stated in the Key's BKeyType enum
             Object item = compulsoryFields.get(key);
 
@@ -66,13 +68,32 @@ public class BContext {
 
             Class aClass = item.getClass();
 
+            StringBuilder stringBuilder = new StringBuilder();
             while (aClass != null && !aClass.equals(Object.class)){
 
+                stringBuilder.append(" class: ");
+
+                stringBuilder.append(aClass.getSimpleName());
+                stringBuilder.append(", ");
                 if (aClass.equals(key.getType()))
                     return true;
 
+                //check interfaces of the class
+                stringBuilder.append("...");
+
+                stringBuilder.append(" Interfaces: ");
+
+                for (Class implem : aClass.getInterfaces()){
+                    stringBuilder.append(implem.getSimpleName());
+                    stringBuilder.append(", ");
+                    if (implem.equals(key.getType()))
+                        return true;
+                }
+                stringBuilder.append("EOI");
+
                 aClass = aClass.getSuperclass();
             }
+            Log.d("TESTING", stringBuilder.toString());
         }
         return false;
     }

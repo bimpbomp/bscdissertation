@@ -116,7 +116,7 @@ public class Level implements Runnable {
 
             this.levelState.setScreenDimensions(levelView.getWidth(), levelView.getHeight());
 
-            this.inputManager = new InputManager(levelState, levelView.getContext(), levelView);
+            this.inputManager = new InputManager(levelState, levelView);
 
             this.levelView.setInputManager(inputManager);
             this.levelView.setLevelState(levelState);

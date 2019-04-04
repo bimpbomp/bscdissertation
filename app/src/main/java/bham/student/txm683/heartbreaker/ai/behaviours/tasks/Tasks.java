@@ -2,13 +2,12 @@ package bham.student.txm683.heartbreaker.ai.behaviours.tasks;
 
 import android.util.Log;
 import bham.student.txm683.heartbreaker.ILevelState;
-import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.heartbreaker.ai.IAIEntity;
 import bham.student.txm683.heartbreaker.ai.PathWrapper;
 import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
 import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.Status;
 import bham.student.txm683.heartbreaker.entities.MoveableEntity;
-import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.map.MeshPolygon;
 import bham.student.txm683.heartbreaker.physics.CollisionTools;
 import bham.student.txm683.heartbreaker.utils.AStar;
@@ -117,7 +116,7 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsCompulsory(CONTROLLED_ENTITY) && context.containsVariables("heading")){
 
-                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    IAIEntity controlled = (IAIEntity) context.getCompulsory(CONTROLLED_ENTITY);
                     Point heading = (Point) context.getVariable("heading");
 
                     Vector desiredVel = new Vector(controlled.getCenter(), heading);
@@ -179,7 +178,7 @@ public class Tasks {
             @Override
             public Status process(BContext context) {
                 if (context.containsCompulsory(CONTROLLED_ENTITY) && context.containsVariables("heading")){
-                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    IAIEntity controlled = (IAIEntity) context.getCompulsory(CONTROLLED_ENTITY);
                     Point heading = (Point) context.getVariable("heading");
 
                     Vector vel = controlled.getVelocity();
@@ -240,7 +239,7 @@ public class Tasks {
 
                 if (context.containsCompulsory(CONTROLLED_ENTITY, LEVEL_STATE) && context.containsVariables("heading")){
 
-                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    IAIEntity controlled = (IAIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     Point heading = (Point) context.getVariable("heading");
 
@@ -311,6 +310,7 @@ public class Tasks {
                     boolean plotted = a.plotPath(returnIncompletePath);
 
                     Log.d("Tasks::plotPath", "plotting path: " + plotted);
+
                     if (plotted) {
                         context.addVariable("plottingFailed", false);
                         setStatus(SUCCESS);
@@ -320,7 +320,7 @@ public class Tasks {
                     }
                 }
 
-                Log.d("Tasks::plotPath", "plotting path has failed");
+                Log.d("PROCESS", "plotting path has failed");
                 setStatus(FAILURE);
                 return FAILURE;
             }
@@ -375,7 +375,7 @@ public class Tasks {
 
                     context.addCompulsory(MOVE_TO, p);
 
-                    Log.d("Tasks::adjacentMeshToPlayer", ((AIEntity)context.getCompulsory(CONTROLLED_ENTITY)).getName() + " is finding an adjacent mesh");
+                    Log.d("Tasks::adjacentMeshToPlayer", ((IAIEntity)context.getCompulsory(CONTROLLED_ENTITY)).getName() + " is finding an adjacent mesh");
 
                     setStatus(SUCCESS);
                     return SUCCESS;
@@ -410,7 +410,7 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsCompulsory(LEVEL_STATE, CONTROLLED_ENTITY)){
                     ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
-                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    IAIEntity controlled = (IAIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     if (!context.containsVariables("patrol")){
                         context.addVariable("patrol", 0);
@@ -508,7 +508,7 @@ public class Tasks {
             public Status process(BContext context) {
                 if (context.containsCompulsory(CONTROLLED_ENTITY, PATH)){
 
-                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    IAIEntity controlled = (IAIEntity) context.getCompulsory(CONTROLLED_ENTITY);
                     List<Point> path = ((PathWrapper) context.getCompulsory(PATH)).getIPath();
 
                     //project ai into the future
@@ -628,7 +628,7 @@ public class Tasks {
                 if (context.containsCompulsory(MOVE_TO, CONTROLLED_ENTITY)){
 
                     Log.d("TASKS", "rotateTo contains keys");
-                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    IAIEntity controlled = (IAIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
 
                     MoveableEntity player = ((ILevelState) context.getCompulsory(LEVEL_STATE)).getPlayer();
@@ -636,7 +636,7 @@ public class Tasks {
 
                     Vector rotVector = new Vector(controlled.getCenter(), player.getCenter());
 
-                    float angle = Vector.calculateAngleBetweenVectors(((TankBody)controlled.getShape()).getTurretFUnit(),
+                    float angle = Vector.calculateAngleBetweenVectors(controlled.getShootingVector().getUnitVector(),
                             rotVector);
 
                     Log.d("TANKK", "wiggleRoom: " + wiggleRoom + ", angle: " + angle);
@@ -676,7 +676,7 @@ public class Tasks {
                     }
 
                     Log.d("TASKS", "processing aim!");
-                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    IAIEntity controlled = (IAIEntity) context.getCompulsory(CONTROLLED_ENTITY);
                     ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
                     MoveableEntity player = levelState.getPlayer();
 
@@ -758,11 +758,11 @@ public class Tasks {
 
                 if (context.containsCompulsory(CONTROLLED_ENTITY, LEVEL_STATE, TARGET)){
                     ILevelState levelState = (ILevelState) context.getCompulsory(LEVEL_STATE);
-                    AIEntity controlled = (AIEntity) context.getCompulsory(CONTROLLED_ENTITY);
+                    IAIEntity controlled = (IAIEntity) context.getCompulsory(CONTROLLED_ENTITY);
 
                     Log.d("SHOOT", "SHooting");
 
-                    levelState.addBullet(controlled.getWeapon().shoot(((TankBody) controlled.getShape()).getShootingVector()));
+                    levelState.addBullet(controlled.getWeapon().shoot(controlled.getShootingVector()));
 
                     return SUCCESS;
                 }

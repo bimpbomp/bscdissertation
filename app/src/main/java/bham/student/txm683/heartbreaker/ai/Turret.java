@@ -35,7 +35,7 @@ public class Turret extends AIEntity {
     public Turret(String name, Point center, int size, int colorValue, int initialHealth) {
         super(name, center, size, 200, 5, new TankBody(center, size, colorValue, modifiers),initialHealth);
 
-        this.weapon = new BasicWeapon(name, 50, 60, 30f, getShape().getColor());
+        this.weapon = new BasicWeapon(name, 2000, 60, 30f, getShape().getColor());
 
         this.behaviourTreeRoot = TankBehaviour.turretTree();
     }
