@@ -3,27 +3,25 @@ package bham.student.txm683.heartbreaker;
 import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
-import bham.student.txm683.heartbreaker.ai.AIEntity;
+import bham.student.txm683.framework.input.RectButtonBuilder;
+import bham.student.txm683.framework.map.MeshPolygon;
+import bham.student.txm683.framework.physics.Collidable;
+import bham.student.txm683.framework.rendering.popups.Popup;
+import bham.student.txm683.framework.rendering.popups.TextBoxBuilder;
+import bham.student.txm683.framework.utils.BenchMarker;
+import bham.student.txm683.framework.utils.BoundingBox;
+import bham.student.txm683.framework.utils.FPSMonitor;
+import bham.student.txm683.framework.utils.graph.Edge;
+import bham.student.txm683.framework.utils.graph.Graph;
+import bham.student.txm683.framework.utils.graph.Node;
 import bham.student.txm683.heartbreaker.ai.AIManager;
-import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.input.InputManager;
-import bham.student.txm683.heartbreaker.input.RectButtonBuilder;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelEndStatus;
 import bham.student.txm683.heartbreaker.map.Map;
 import bham.student.txm683.heartbreaker.map.MapLoader;
-import bham.student.txm683.heartbreaker.map.MeshPolygon;
-import bham.student.txm683.heartbreaker.physics.Collidable;
 import bham.student.txm683.heartbreaker.physics.EntityController;
 import bham.student.txm683.heartbreaker.physics.TankCollisionManager;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
-import bham.student.txm683.heartbreaker.rendering.popups.Popup;
-import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
-import bham.student.txm683.heartbreaker.utils.BenchMarker;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
-import bham.student.txm683.heartbreaker.utils.FPSMonitor;
-import bham.student.txm683.heartbreaker.utils.graph.Edge;
-import bham.student.txm683.heartbreaker.utils.graph.Graph;
-import bham.student.txm683.heartbreaker.utils.graph.Node;
 import org.json.JSONException;
 
 import java.util.HashSet;
@@ -147,9 +145,11 @@ public class Level implements Runnable {
 
             //initialise systems
             entityController = new EntityController(this);
-            collisionManager = new TankCollisionManager(levelState);
+            collisionManager = new TankCollisionManager(levelState, 10, 10);
 
             levelState.setLevelView(levelView);
+
+            levelState.setBenchLog(new BenchLog((MainActivity)levelView.getContext()));
             levelState.setAiManager(new AIManager(levelState, map.getOverlords()));
         }
 
@@ -184,12 +184,17 @@ public class Level implements Runnable {
 
                 currentGameTick = System.currentTimeMillis();
 
+                BenchMarker gameTickTimer = new BenchMarker();
                 while (currentGameTick > nextScheduledGameTick && loops < maxSkipTick) {
+
+                    gameTickTimer.begin();
+
+                    StringBuilder stringBuilder = new StringBuilder();
 
                     levelState.getPlayer().setRequestedMovementVector(inputManager.getThumbstick().getMovementVector());
                     levelState.getPlayer().setRotationVector(inputManager.getRotationThumbstick().getMovementVector());
 
-                    benchMarker.begin();
+                    /*benchMarker.begin();
                     levelState.clearBlockedPolygons();
                     addBlockedBackToGraph();
 
@@ -208,18 +213,37 @@ public class Level implements Runnable {
                     }
 
                     removeBlockedFromGraph();
-                    benchMarker.output("meshCalc");
+                    benchMarker.output("meshCalc");*/
 
                     entityController.update(gameTickTimeStepInMillis / 1000f);
 
                     benchMarker.begin();
                     levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
 
-                    benchMarker.output("AI");
+                    //benchMarker.output("AI");
+                    stringBuilder.append("AI: ");
+                    stringBuilder.append(benchMarker.getTime());
 
                     benchMarker.begin();
                     collisionManager.checkCollisions();
-                    benchMarker.output("collisions");
+                    //benchMarker.output("collisions");
+                    stringBuilder.append(", Collisions Total: ");
+                    stringBuilder.append(benchMarker.getTime());
+
+                    stringBuilder.append(", RG: ");
+                    stringBuilder.append(collisionManager.getRgt());
+
+                    stringBuilder.append(", FG: ");
+                    stringBuilder.append(collisionManager.getFgt());
+
+                    stringBuilder.append(", RG Checks: ");
+                    stringBuilder.append(collisionManager.getNumSPATPATChecks());
+
+                    stringBuilder.append(", RG Insertions: ");
+                    stringBuilder.append(collisionManager.getNumSPATPATInsertions());
+
+                    stringBuilder.append(", FG Checks: ");
+                    stringBuilder.append(collisionManager.getNumSATChecks());
 
                     gameFPSMonitor.updateFPS();
 
@@ -242,6 +266,16 @@ public class Level implements Runnable {
                             inputManager.setActivePopup(completePopup);
                         }
                     }
+
+                    stringBuilder.append(", Game tick took: ");
+                    stringBuilder.append(gameTickTimer.getTime());
+                    stringBuilder.append(" out of required ");
+                    stringBuilder.append(gameTickTimeStepInMillis);
+                    stringBuilder.append("ms");
+
+                    //Log.d("BENCHMARKING", "Game tick: " + stringBuilder.toString());
+
+                    levelState.getBenchLog().addSnapshot(collisionManager.getFgt(), collisionManager.getRgt(), collisionManager.getNumSPATPATChecks(), collisionManager.getNumSPATPATInsertions(), collisionManager.getNumSATChecks());
                 }
             } else {
                 nextScheduledGameTick = System.currentTimeMillis();
@@ -252,7 +286,9 @@ public class Level implements Runnable {
                 benchMarker.begin();
                 float timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick) / 1000f;
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), timeSinceLastGameTick);
-                benchMarker.output("render");
+                //benchMarker.output("render");
+                levelState.getBenchLog().addRender(benchMarker.getTime());
+                //Log.d("BENCHMARKING", "Render tick took: " + benchMarker.getTime());
 
             } else if (levelState.isPaused() && levelState.isReadyToRender()){
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), 0f);

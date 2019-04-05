@@ -2,9 +2,12 @@ package bham.student.txm683.heartbreaker.entities.entityshapes;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.framework.entities.entityshapes.Polygon;
+import bham.student.txm683.framework.entities.entityshapes.Shape;
+import bham.student.txm683.framework.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.framework.utils.BoundingBox;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Vector;
 
 import java.util.ArrayList;
 import java.util.List;

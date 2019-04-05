@@ -1,5 +1,7 @@
 package bham.student.txm683.heartbreaker.utils;
 
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Vector;
 import org.junit.Before;
 import org.junit.Test;
 

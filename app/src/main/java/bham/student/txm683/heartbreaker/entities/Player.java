@@ -1,14 +1,15 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.graphics.Canvas;
+import bham.student.txm683.framework.entities.Projectile;
+import bham.student.txm683.framework.entities.weapons.Weapon;
+import bham.student.txm683.framework.physics.Damageable;
+import bham.student.txm683.framework.rendering.HealthBar;
+import bham.student.txm683.framework.rendering.Renderable;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Vector;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
-import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
-import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.rendering.ColorScheme;
-import bham.student.txm683.heartbreaker.rendering.HealthBar;
-import bham.student.txm683.heartbreaker.rendering.Renderable;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,7 +28,7 @@ public class Player extends TankMoveableEntity implements Damageable, Renderable
     }
 
     private Player(Point center){
-        this("player", center, 100, 600, ColorScheme.PLAYER_COLOR, 400);
+        this("player", center, 100, 600, ColorScheme.PLAYER_COLOR, 4000000);
     }
 
     public static Player build(JSONObject jsonObject, int tileSize) throws JSONException {

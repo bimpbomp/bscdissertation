@@ -5,14 +5,18 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 import android.view.MotionEvent;
+import bham.student.txm683.framework.input.Button;
+import bham.student.txm683.framework.input.RectButton;
+import bham.student.txm683.framework.input.RectButtonBuilder;
+import bham.student.txm683.framework.input.Thumbstick;
+import bham.student.txm683.framework.rendering.popups.PopUpElement;
+import bham.student.txm683.framework.rendering.popups.Popup;
+import bham.student.txm683.framework.rendering.popups.TextBox;
+import bham.student.txm683.framework.rendering.popups.TextBoxBuilder;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Tile;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
-import bham.student.txm683.heartbreaker.rendering.popups.PopUpElement;
-import bham.student.txm683.heartbreaker.rendering.popups.Popup;
-import bham.student.txm683.heartbreaker.rendering.popups.TextBox;
-import bham.student.txm683.heartbreaker.rendering.popups.TextBoxBuilder;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -174,6 +178,8 @@ public class InputManager {
             rotationThumbstick.setActivePosition(coordinatesPressed);
             rotationThumbstick.setPointerID(eventID);
             levelState.addBullet(levelState.getPlayer().shoot());
+
+            levelState.getBenchLog().setActive(true);
         }
     }
 

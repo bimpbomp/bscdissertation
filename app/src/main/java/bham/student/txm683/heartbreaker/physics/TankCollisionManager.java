@@ -1,26 +1,33 @@
 package bham.student.txm683.heartbreaker.physics;
 
 import android.util.Log;
+import bham.student.txm683.framework.entities.Door;
+import bham.student.txm683.framework.entities.MoveableEntity;
+import bham.student.txm683.framework.entities.Projectile;
+import bham.student.txm683.framework.entities.Wall;
+import bham.student.txm683.framework.physics.Collidable;
+import bham.student.txm683.framework.physics.CollisionTools;
+import bham.student.txm683.framework.physics.Damageable;
+import bham.student.txm683.framework.physics.SpatialBin;
+import bham.student.txm683.framework.physics.fields.DoorField;
+import bham.student.txm683.framework.physics.fields.Explosion;
+import bham.student.txm683.framework.utils.BenchMarker;
+import bham.student.txm683.framework.utils.Vector;
 import bham.student.txm683.heartbreaker.LevelState;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
-import bham.student.txm683.heartbreaker.entities.*;
-import bham.student.txm683.heartbreaker.physics.fields.DoorField;
-import bham.student.txm683.heartbreaker.physics.fields.Explosion;
+import bham.student.txm683.heartbreaker.entities.Player;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
-import bham.student.txm683.heartbreaker.utils.BenchMarker;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
-import bham.student.txm683.heartbreaker.utils.UniqueID;
-import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.*;
+import static bham.student.txm683.framework.ai.behaviours.BKeyType.*;
 
 public class TankCollisionManager {
     private static final String TAG = "CollisionTools";
+
     private BenchMarker benchMarker;
 
     private LevelState levelState;
@@ -31,73 +38,119 @@ public class TankCollisionManager {
     private HashSet<String> doorsToOpen;
     private HashSet<Explosion> seenExplosions;
 
-    public TankCollisionManager(LevelState levelState){
+    private int numHCells, numVCells;
+
+    private long numSPATPATInsertions, numSATChecks, numSPATPATChecks;
+    private long fgt, rgt;
+    private static boolean prefillBins = true;
+
+    public TankCollisionManager(LevelState levelState, int numHCells, int numVCells){
         this.levelState = levelState;
 
         this.spatialBins = new ArrayList<>();
         seenExplosions = new HashSet<>();
 
+        benchMarker = new BenchMarker();
+
+        /*this.numHCells = numHCells;
+        this.numVCells = numVCells;*/
+
+        this.numVCells = 11;
+        this.numHCells = 11;
+
         initSpatPatV4();
 
-        benchMarker = new BenchMarker();
+        fgt = 0;
+        rgt = 0;
+
+        numSATChecks = 0;
+        numSPATPATInsertions = 0;
+        numSPATPATChecks = 0;
     }
 
     public void checkCollisions(){
+        numSATChecks = 0;
+        numSPATPATInsertions = 0;
+        numSPATPATChecks = 0;
+
+
         benchMarker.begin();
         applySpatPatV2();
-        benchMarker.output("collision rough-grain");
+        //benchMarker.output("collision rough-grain");
+        rgt = benchMarker.getTime();
 
         benchMarker.begin();
         fineGrainCollisionDetection();
-        benchMarker.output("collision fine-grain");
+        //benchMarker.output("collision fine-grain");
+        fgt = benchMarker.getTime();
 
-        benchMarker.begin();
+        /*benchMarker.begin();
         aiSight();
-        benchMarker.output("ai sight");
+        benchMarker.output("ai sight");*/
 
     }
 
-    private void fillBins(){
+    public long getNumSPATPATInsertions() {
+        return numSPATPATInsertions;
+    }
+
+    public long getNumSPATPATChecks() {
+        return numSPATPATChecks;
+    }
+
+    public long getNumSATChecks() {
+        return numSATChecks;
+    }
+
+    public long getFgt() {
+        return fgt;
+    }
+
+    public long getRgt() {
+        return rgt;
+    }
+
+    /*private void fillBinsWithPermanents(){
         //add each static to the permanent list in the correct spatial bin
         for (Collidable collidable : levelState.getStaticCollidables()){
 
             for (SpatialBin bin : spatialBins){
+
+                if (!prefillBins)
+                    numSPATPATChecks++;
+
                 if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
 
                     if (collidable instanceof Door){
-                        bin.addPermanent(((Door) collidable).getPrimaryField());
+
+                        if (prefillBins)
+                            bin.addPermanent(((Door) collidable).getPrimaryField());
+                        else {
+                            numSPATPATInsertions++;
+                            bin.addTemp(((Door) collidable).getPrimaryField());
+                        }
                     }
 
                     //if the collidable intersects this bin's bounding box, add it to the bin's permanent list
-                    bin.addPermanent(collidable);
+                    if (prefillBins)
+                        bin.addPermanent(collidable);
+                    else {
+                        numSPATPATInsertions++;
+                        bin.addTemp(collidable);
+                    }
                 }
             }
         }
-    }
+    }*/
 
     private void initSpatPatV4(){
-
-        UniqueID uniqueID = new UniqueID();
-
-        int numHCells = 4;
-        int numVCells = 4;
 
         int cellWidth = (int) levelState.getMap().getWidth()/numHCells;
         int cellHeight = (int) levelState.getMap().getHeight()/numVCells;
 
-        for (int i = 1; i <= numHCells; i++){
-            int l = (i-1) * cellWidth;
-            int r = i * cellWidth;
+        spatialBins = CollisionTools.initBins(numHCells, numVCells, cellWidth, cellHeight);
 
-            for (int j = 1; j <= numVCells; j++){
-                int t = (j-1) * cellHeight;
-                int b = j * cellHeight;
-
-                spatialBins.add(new SpatialBin(uniqueID.id(), new BoundingBox(l,t,r,b)));
-            }
-        }
-
-        fillBins();
+        CollisionTools.fillBinsWithPermanents(levelState.getStaticCollidables(), spatialBins);
     }
 
     private void applySpatPatV2(){
@@ -111,32 +164,38 @@ public class TankCollisionManager {
             if (collidable instanceof  Explosion)
                 seenExplosions.add((Explosion) collidable);
 
-            if (!addToBin(collidable)){
+            if (!CollisionTools.addTempToBins(collidable, spatialBins)){
                 Log.d("hb::CollisionTools", collidable.getName() + " is not in a room");
 
                 if (collidable instanceof MoveableEntity){
                     CollisionTools.moveEntityCenter(collidable, ((MoveableEntity) collidable).getSpawn());
-                    addToBin(collidable);
+                    CollisionTools.addTempToBins(collidable, spatialBins);
                 }
             }
         }
+
+        if (!prefillBins)
+            CollisionTools.fillBinsWithPermanents(levelState.getStaticCollidables(), spatialBins);
     }
 
     public List<SpatialBin> getSpatialBins() {
         return spatialBins;
     }
 
-    private boolean addToBin(Collidable collidable){
+    /*private boolean addToBin(Collidable collidable){
         boolean added = false;
         for (SpatialBin bin : spatialBins){
+            numSPATPATChecks++;
             if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
                 //if the collidable intersects this bin's bounding box, add it to the bin's temp list
                 bin.addTemp(collidable);
                 added = true;
+
+                numSPATPATInsertions++;
             }
         }
         return added;
-    }
+    }*/
 
     private void fineGrainCollisionDetection(){
         checkedPairNames = new HashSet<>();
@@ -174,6 +233,8 @@ public class TankCollisionManager {
                         if (checkedPairNames.contains(firstCollidable.getName() + secondCollidable.getName())) {
                             continue;
                         }
+
+                        numSATChecks++;
 
                         //start of collision checking
                         if (!firstCollidable.isSolid() || !secondCollidable.isSolid()) {

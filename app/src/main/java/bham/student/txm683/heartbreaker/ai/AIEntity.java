@@ -3,23 +3,25 @@ package bham.student.txm683.heartbreaker.ai;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import bham.student.txm683.framework.ai.IAIEntity;
+import bham.student.txm683.framework.ai.PathWrapper;
+import bham.student.txm683.framework.ai.behaviours.BContext;
+import bham.student.txm683.framework.ai.behaviours.BKeyType;
+import bham.student.txm683.framework.entities.entityshapes.Shape;
+import bham.student.txm683.framework.entities.weapons.Weapon;
+import bham.student.txm683.framework.physics.Damageable;
+import bham.student.txm683.framework.rendering.HealthBar;
+import bham.student.txm683.framework.rendering.Renderable;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Vector;
 import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
-import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
 import bham.student.txm683.heartbreaker.entities.TankBody;
 import bham.student.txm683.heartbreaker.entities.TankMoveableEntity;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
-import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
-import bham.student.txm683.heartbreaker.physics.Damageable;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
-import bham.student.txm683.heartbreaker.rendering.HealthBar;
-import bham.student.txm683.heartbreaker.rendering.Renderable;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
 
 import java.util.List;
 
-import static bham.student.txm683.heartbreaker.ai.behaviours.BKeyType.PATH;
+import static bham.student.txm683.framework.ai.behaviours.BKeyType.PATH;
 
 public abstract class AIEntity extends TankMoveableEntity implements Renderable, Damageable, IAIEntity {
 

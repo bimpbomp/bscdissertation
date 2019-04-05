@@ -1,5 +1,7 @@
 package bham.student.txm683.heartbreaker.entities.weapons;
 
+import bham.student.txm683.framework.entities.weapons.Weapon;
+
 public class BasicWeapon extends Weapon {
     private static final float SPEED = 1500;
     private static final int BULLET_LIFE = 25;

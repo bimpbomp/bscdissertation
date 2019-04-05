@@ -1,9 +1,9 @@
 package bham.student.txm683.heartbreaker.ai.behaviours.decorators;
 
 import android.util.Log;
-import bham.student.txm683.heartbreaker.ai.behaviours.BContext;
-import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
-import bham.student.txm683.heartbreaker.ai.behaviours.Status;
+import bham.student.txm683.framework.ai.behaviours.BContext;
+import bham.student.txm683.framework.ai.behaviours.BNode;
+import bham.student.txm683.framework.ai.behaviours.Status;
 
 public class RunTillArrived extends BNode {
 

@@ -1,11 +1,11 @@
 package bham.student.txm683.heartbreaker.ai;
 
 import android.util.Log;
+import bham.student.txm683.framework.utils.BoundingBox;
+import bham.student.txm683.framework.utils.GameTickTimer;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.UniqueID;
 import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
-import bham.student.txm683.heartbreaker.utils.GameTickTimer;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.UniqueID;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -83,7 +83,7 @@ public class Overlord {
 
         uniqueID = new UniqueID();
 
-        spawnerTimer = new GameTickTimer(1000 * 5);
+        spawnerTimer = new GameTickTimer(100);
         spawnerTimer.start();
 
         totalSpawns = 0;
@@ -95,6 +95,9 @@ public class Overlord {
 
     private void spawnEntity(){
         BoundingBox visibleBounds = levelState.getLevelView().getVisibleBounds();
+
+        if (visibleBounds == null)
+            return;
 
         Point spawn = null;
         for (Point potentialSpawn : spawnPoints){
@@ -163,6 +166,9 @@ public class Overlord {
 
     private boolean isTriggered(){
 
+        if (triggers.size() == 0)
+            return true;
+
         for (Point trigger : triggers){
             int id = levelState.mapToMesh(trigger);
 
@@ -194,8 +200,12 @@ public class Overlord {
 
     public void addAI(AIEntity ai){
         if (!aliveEntities.contains(ai)) {
+
             this.aliveEntities.add(ai);
             levelState.getAliveAIEntities().add(ai);
+
+            Log.d("BENCHMARKING", "number of ai alive: " + levelState.getAliveAIEntities().size());
+
             ai.setLevelState(levelState);
             ai.setOverlord(this);
         }

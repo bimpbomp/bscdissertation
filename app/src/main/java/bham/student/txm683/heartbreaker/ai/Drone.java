@@ -1,18 +1,18 @@
 package bham.student.txm683.heartbreaker.ai;
 
+import bham.student.txm683.framework.ai.behaviours.BKeyType;
+import bham.student.txm683.framework.ai.behaviours.BNode;
+import bham.student.txm683.framework.entities.entityshapes.Shape;
+import bham.student.txm683.framework.entities.weapons.Weapon;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Vector;
 import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.ai.behaviours.BKeyType;
-import bham.student.txm683.heartbreaker.ai.behaviours.BNode;
 import bham.student.txm683.heartbreaker.ai.behaviours.TankBehaviour;
 import bham.student.txm683.heartbreaker.entities.TankBody;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
 import bham.student.txm683.heartbreaker.entities.weapons.BasicWeapon;
-import bham.student.txm683.heartbreaker.entities.weapons.Weapon;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.pickups.PickupType;
 import bham.student.txm683.heartbreaker.rendering.ColorScheme;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -95,8 +95,8 @@ public class Drone extends AIEntity{
     public void tick(float secondsSinceLastGameTick) {
 
 
-        behaviourTreeRoot.process(context);
+        /*behaviourTreeRoot.process(context);
 
-        super.tick(secondsSinceLastGameTick);
+        super.tick(secondsSinceLastGameTick);*/
     }
 }

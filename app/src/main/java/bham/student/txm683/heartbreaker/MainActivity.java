@@ -1,19 +1,16 @@
 package bham.student.txm683.heartbreaker;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelLauncher;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class MainActivity extends Activity {
 
@@ -115,18 +112,43 @@ public class MainActivity extends Activity {
         super.onRestoreInstanceState(savedInstanceState);
     }
 
-    private void saveToFile(String fileName, String contents){
+    public void appendToFile(String contents){
         FileOutputStream outputStream = null;
+        OutputStreamWriter outStreamWriter = null;
 
         try {
-            outputStream = openFileOutput(fileName, Context.MODE_PRIVATE);
-            outputStream.write(contents.getBytes());
+
+            String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString();
+            File myDir = new File(root + "/benchlogs");
+            if (!myDir.exists()) {
+                myDir.mkdirs();
+            }
+
+            Log.d("root", root);
+
+            File file = new File(myDir, "log-"+System.currentTimeMillis());
+
+            Log.d("root", "file exists: "+  file.exists());
+
+            if (!file.exists()){
+                file.createNewFile();
+            }
+
+            outputStream = new FileOutputStream(file, true);
+            outStreamWriter = new OutputStreamWriter(outputStream);
+
+            outStreamWriter.append(contents);
+            outputStream.flush();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
                 if (outputStream != null)
                     outputStream.close();
+
+                if (outStreamWriter != null)
+                    outStreamWriter.close();
+
             } catch (Exception e){
                 //already closed
             }

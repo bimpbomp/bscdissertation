@@ -2,13 +2,13 @@ package bham.student.txm683.heartbreaker.pickups;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Rectangle;
-import bham.student.txm683.heartbreaker.entities.entityshapes.ShapeIdentifier;
-import bham.student.txm683.heartbreaker.physics.fields.InteractionField;
-import bham.student.txm683.heartbreaker.rendering.Renderable;
-import bham.student.txm683.heartbreaker.utils.BoundingBox;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.framework.entities.entityshapes.Rectangle;
+import bham.student.txm683.framework.entities.entityshapes.ShapeIdentifier;
+import bham.student.txm683.framework.physics.fields.InteractionField;
+import bham.student.txm683.framework.rendering.Renderable;
+import bham.student.txm683.framework.utils.BoundingBox;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Vector;
 import org.json.JSONException;
 import org.json.JSONObject;
 

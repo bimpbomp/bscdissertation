@@ -1,10 +1,10 @@
 package bham.student.txm683.heartbreaker.physics;
 
+import bham.student.txm683.framework.entities.Door;
+import bham.student.txm683.framework.entities.Projectile;
+import bham.student.txm683.framework.utils.Tile;
 import bham.student.txm683.heartbreaker.Level;
 import bham.student.txm683.heartbreaker.LevelState;
-import bham.student.txm683.heartbreaker.entities.Door;
-import bham.student.txm683.heartbreaker.entities.Projectile;
-import bham.student.txm683.heartbreaker.utils.Tile;
 
 
 public class EntityController {

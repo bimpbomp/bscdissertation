@@ -1,11 +1,12 @@
 package bham.student.txm683.heartbreaker.ai.behaviours;
 
-import bham.student.txm683.heartbreaker.ai.behaviours.composites.Selector;
-import bham.student.txm683.heartbreaker.ai.behaviours.composites.Sequence;
-import bham.student.txm683.heartbreaker.ai.behaviours.conditionals.Conditionals;
-import bham.student.txm683.heartbreaker.ai.behaviours.decorators.Succeeder;
+import bham.student.txm683.framework.ai.behaviours.BNode;
+import bham.student.txm683.framework.ai.behaviours.composites.Selector;
+import bham.student.txm683.framework.ai.behaviours.composites.Sequence;
+import bham.student.txm683.framework.ai.behaviours.conditionals.Conditionals;
+import bham.student.txm683.framework.ai.behaviours.decorators.Succeeder;
+import bham.student.txm683.framework.ai.behaviours.tasks.Tasks;
 import bham.student.txm683.heartbreaker.ai.behaviours.tasks.TankTasks;
-import bham.student.txm683.heartbreaker.ai.behaviours.tasks.Tasks;
 
 import static bham.student.txm683.heartbreaker.ai.behaviours.Behaviour.*;
 

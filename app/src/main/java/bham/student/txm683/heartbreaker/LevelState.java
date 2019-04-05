@@ -2,21 +2,22 @@ package bham.student.txm683.heartbreaker;
 
 import android.graphics.Color;
 import android.util.Log;
+import bham.student.txm683.framework.ILevelState;
+import bham.student.txm683.framework.entities.Projectile;
+import bham.student.txm683.framework.map.MeshPolygon;
+import bham.student.txm683.framework.physics.Collidable;
+import bham.student.txm683.framework.physics.fields.Explosion;
+import bham.student.txm683.framework.utils.DebugInfo;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Tile;
+import bham.student.txm683.framework.utils.graph.Graph;
 import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.entities.Player;
-import bham.student.txm683.heartbreaker.entities.Projectile;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelEnder;
 import bham.student.txm683.heartbreaker.map.Map;
-import bham.student.txm683.heartbreaker.map.MeshPolygon;
-import bham.student.txm683.heartbreaker.physics.Collidable;
-import bham.student.txm683.heartbreaker.physics.fields.Explosion;
 import bham.student.txm683.heartbreaker.pickups.Pickup;
 import bham.student.txm683.heartbreaker.rendering.LevelView;
-import bham.student.txm683.heartbreaker.utils.DebugInfo;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Tile;
-import bham.student.txm683.heartbreaker.utils.graph.Graph;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -53,6 +54,8 @@ public class LevelState implements ILevelState {
 
     private Set<Integer> blockedMeshPolygons;
 
+    private BenchLog benchLog;
+
     public LevelState(Map map){
         this.map = map;
 
@@ -76,6 +79,17 @@ public class LevelState implements ILevelState {
         levelEnder = new LevelEnder();
 
         this.blockedMeshPolygons = new HashSet<>();
+
+        //benchmarking printouts
+        Log.d("BENCHMARKING", "number of walls: " + map.getWalls().size());
+    }
+
+    public void setBenchLog(BenchLog benchLog) {
+        this.benchLog = benchLog;
+    }
+
+    public BenchLog getBenchLog() {
+        return benchLog;
     }
 
     public LevelView getLevelView() {

@@ -1,9 +1,10 @@
 package bham.student.txm683.heartbreaker.entities;
 
 import android.util.Log;
-import bham.student.txm683.heartbreaker.entities.entityshapes.Shape;
-import bham.student.txm683.heartbreaker.utils.Point;
-import bham.student.txm683.heartbreaker.utils.Vector;
+import bham.student.txm683.framework.entities.MoveableEntity;
+import bham.student.txm683.framework.entities.entityshapes.Shape;
+import bham.student.txm683.framework.utils.Point;
+import bham.student.txm683.framework.utils.Vector;
 
 public abstract class TankMoveableEntity extends MoveableEntity {
 
