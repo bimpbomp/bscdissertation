@@ -108,9 +108,9 @@ public class Projectile extends MoveableEntity implements Renderable, ICircle {
 
     @Override
     public Point[] getCollisionVertices() {
-        float width = getCircle().getRadius();
+        float width = getRadius() * 2;
         Vector v = new Vector (currentCenter, nextTickCenter);
-        float length = v.getLength();
+        float length = v.getLength() + getRadius() * 2;
 
         Point center = v.sMult(0.5f).getHead();
 

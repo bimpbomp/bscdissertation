@@ -51,6 +51,7 @@ public class CollisionTools {
 
     public static boolean addTempToBins(Collidable collidable, List<SpatialBin> spatialBins){
         boolean added = false;
+
         for (SpatialBin bin : spatialBins){
             if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
                 //if the collidable intersects this bin's bounding box, add it to the bin's temp list
@@ -59,6 +60,15 @@ public class CollisionTools {
             }
         }
         return added;
+    }
+
+    public static List<Boolean> addTempsToBins(List<Collidable> collidables, List<SpatialBin> spatialBins){
+        List<Boolean> successes = new ArrayList<>();
+
+        for (Collidable collidable : collidables){
+            successes.add(addTempToBins(collidable, spatialBins));
+        }
+        return successes;
     }
 
     public static void fillBinsWithPermanents(List<Collidable> collidables, List<SpatialBin> bins){
@@ -413,7 +423,6 @@ public class CollisionTools {
     }
 
     //checks if the max and min points on the given direction axis overlap, returns the overlap
-    //this function is the variation for checking TWO polygons
     public static Vector isSeparatingAxis(Vector axis, Point[] firstEntityVertices, Point[] secondEntityVertices){
         Pair<Float, Float> minMaxResult = projectOntoAxis(axis, firstEntityVertices);
 
@@ -425,9 +434,11 @@ public class CollisionTools {
         float secondEntityMaxLength = minMaxResult.second;
 
         if (firstEntityMaxLength >= secondEntityMinLength && secondEntityMaxLength >= firstEntityMinLength) {
-            float pushVectorLength = Math.min((secondEntityMaxLength - firstEntityMinLength), (firstEntityMaxLength - secondEntityMinLength));
+            float pushVectorLength = Math.min((secondEntityMaxLength - firstEntityMinLength),
+                    (firstEntityMaxLength - secondEntityMinLength));
 
-            //push a bit more than needed so they dont overlap in future tests to compensate for float precision error
+            //push a bit more than needed so they dont overlap in future tests
+            //to compensate for float precision error
             pushVectorLength += PUSH_VECTOR_ERROR;
 
             return axis.getUnitVector().sMult(pushVectorLength);
