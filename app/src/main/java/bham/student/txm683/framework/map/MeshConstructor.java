@@ -84,56 +84,58 @@ public class MeshConstructor {
         currentScan = Scan.VERTICAL;
         vScan();
 
-        meshSetListPrint("MESHPRINT HSCAN",hScan);
-
-        meshSetListPrint("MESHPRINT VSCAN", vScan);
-
         intersectScans(hScan, vScan);
 
-        meshSetListPrint("MESHPRINT INTERSECTION", meshIntersectionSets);
-
-
-        //make sure doors are in their own set
+        //make sure doors are in their own set by iterating through the door spawn cells
         for (DoorBuilder doorBuilder : doorBuilders){
             Tile doorTile = doorBuilder.getLiesOn();
 
             MeshSet doorSet = null;
 
+            //find the meshset that the door is in
             for (MeshSet meshSet : meshIntersectionSets){
                 List<Tile> containedTiles = meshSet.getContainedTiles();
 
+                //if the meshset has tiles other than the door tile
                 if (containedTiles.contains(doorTile) && containedTiles.size() > 1){
+                    //remove the door from the set
                     meshSet.removeTile(doorTile);
 
+                    //create a new set for the door
                     doorSet = new MeshSet(intersectionId.id(), doorTile, 0);
                 }
             }
 
             if (doorSet != null){
+                //if the door was added to a new set, add this new set to the graph as a node,
+                //and to the intersection sets
                 meshIntersectionSets.add(doorSet);
                 meshGraph.addNode(doorSet.getId());
             }
         }
 
         constructMeshPolygons();
-
         constructGraph();
-
-        Log.d("hb::MESHGRAPH", meshGraph.toString());
     }
 
     private void constructGraph(){
 
-        //change tileList to store id of the set they belong to
+        //change cell to store id of the set they belong to
+
+        //iterate through the rows
         for (int rowIdx = 0; rowIdx < tileList.size(); rowIdx++){
             List<Integer> row = tileList.get(rowIdx);
 
+            //iterate through each cell in a row
             for (int columnIdx = 0; columnIdx < row.size(); columnIdx++){
-                //makeConnectionsToVisitedNeighbours(new Tile(columnIdx, rowIdx));
+
+                //find the meshset with the current tile's coordinates
                 for (MeshSet meshSet : meshIntersectionSets){
                     Tile tile = new Tile(columnIdx, rowIdx);
-                    if (meshSet.hasTile(tile))
+                    if (meshSet.hasTile(tile)) {
                         setTileInt(tile, meshSet.getId());
+                        break;
+                    }
                 }
             }
         }
@@ -228,22 +230,22 @@ public class MeshConstructor {
                 //the distance to the next wall block after the startingTile in this row
                 int distanceToWall = getVDistanceToWall(startingTile.getY(), columnIdx);
 
-                //the meshset currently being added to
+                //getActiveMeshSet checks if there are any meshsets in the previousMeshSets list that comply
+                //with the rules outlined in the design section
                 MeshSet activeMeshSet = getActiveMeshSet(startingTile, distanceToWall, previousMeshSets);
                 currentMeshSets.add(activeMeshSet);
 
-                //at this point, we have the meshset to add cells to, so walk along the row from the starting cell (inclusive)
-                //until a wall is hit.
+                //at this point, we have the meshset to add cells to, so walk along the row
+                //from the starting cell (inclusive) until a wall is hit.
 
-                //the column index that the scan loop exited at
+                //the row index that the scan loop exited at,
+                //so we can resume the loop right after the current section
 
-                //int loopExitRowValue = tileList.size()-1;
-                ExitValue loopExitValue = new ExitValue(tileList.size()-1);
                 int currentCell;
+                ExitValue loopExitValue = new ExitValue(tileList.size()-1);
 
                 if (tileList.get(startingTile.getY()).get(columnIdx) == -2) {
-                    Log.d("MESHV", "door found at: " + new Tile(columnIdx, startingTile.getY()));
-                    //starting tile is a door
+                    //starting tile is a door, add it to the active meshset
                     addToMeshSet(activeMeshSet, startingTile);
                     loopExitValue.setExitVal(startingTile.getY() + 1);
                 } else {
@@ -251,17 +253,15 @@ public class MeshConstructor {
                     for (int rowIdx = startingTile.getY(); rowIdx < tileList.size(); rowIdx++) {
                         currentCell = tileList.get(rowIdx).get(columnIdx);
 
-                        Log.d("MESHVS", "looking at: " + new Tile(columnIdx, rowIdx));
-                        //loopExitRowValue = rowIdx;
                         loopExitValue.setExitVal(rowIdx);
 
-                        if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet, loopExitValue))
+                        if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet))
                             break;
                     }
                 }
 
-                //if the exit value of the scan loop didnt reach the end of the row, then find the next starting tile
-                //if it did, then the row is finished, setting startingTile to null will end the loop for this row.
+                //if the exit value of the scan loop didnt reach the end of the column, then find the next starting tile
+                //if it did, then the row is finished, setting startingTile to null will end the loop for this column.
                 if (loopExitValue.getExitVal() < tileList.size()-1)
                     startingTile = findOpenCellOnColumn(columnIdx, loopExitValue.getExitVal());
                 else
@@ -297,37 +297,29 @@ public class MeshConstructor {
             while (startingTile != null) {
                 //the row must have a non blocked cell
 
-                //the distance to the next wall block after the startingTile in this row
+                //the distance to the next blocked cell after the startingTile in this row
                 int distanceToWall = getHDistanceToWall(startingTile.getX(), row);
 
                 //the meshset currently being added to
                 MeshSet activeMeshSet = getActiveMeshSet(startingTile, distanceToWall, previousMeshSets);
                 currentMeshSets.add(activeMeshSet);
 
-                //at this point, we have the meshset to add cells to, so walk along the row from the starting cell (inclusive)
-                //until a wall is hit.
+                //at this point, we have the meshset to add cells to, so walk along the row
+                //from the starting cell (inclusive) until a wall is hit.
 
-                int currentCell;
-                //the column index that the scan loop exited at
-
-                //int loopExitColumnValue = row.size()-1;
+                //the column index that the scan loop exited at,
+                //so we can resume the loop right after the current section
                 ExitValue loopExitValue = new ExitValue(row.size()-1);
 
-                if (/*row.get(startingTile.getX()) == -2*/false){
-                    //starting tile is a door
-                    addToMeshSet(activeMeshSet, startingTile);
-                    loopExitValue.setExitVal(startingTile.getX()+1);
-                } else {
-                    //scan loop
-                    for (int columnIdx = startingTile.getX(); columnIdx < row.size(); columnIdx++) {
-                        currentCell = row.get(columnIdx);
-                        //loopExitColumnValue = columnIdx;
-                        loopExitValue.setExitVal(columnIdx);
+                int currentCell;
+                for (int columnIdx = startingTile.getX(); columnIdx < row.size(); columnIdx++) {
+                    currentCell = row.get(columnIdx);
+                    //loopExitColumnValue = columnIdx;
+                    loopExitValue.setExitVal(columnIdx);
 
-                        if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet, loopExitValue))
-                            break;
+                    if (analyseCell(currentCell, new Tile(columnIdx, rowIdx), activeMeshSet))
+                        break;
 
-                    }
                 }
 
                 //if the exit value of the scan loop didnt reach the end of the row, then find the next starting tile
@@ -339,25 +331,18 @@ public class MeshConstructor {
 
             }
 
-
             //iteration is finished, moving onto next row. save state of this row
             previousMeshSets = currentMeshSets;
         }
     }
 
-    private boolean analyseCell(int cell, Tile tile, MeshSet activeMeshSet, ExitValue exitValue){
+
+    private boolean analyseCell(int cell, Tile tile, MeshSet activeMeshSet){
         if (cell == 0 || cell == -2) {
-            //is empty, add to activeMeshSet
+            //is empty or a door, add to activeMeshSet
             addToMeshSet(activeMeshSet, tile);
-
             return false;
-        } /*else if (cell == -2){
-            //the cell is a door, add to it's own set, applyMovementForces on
-            //addToMeshSet(activeMeshSet, tile);
-            getActiveMeshSet(tile, 0, new ArrayList<>());
-            exitValue.increment();
-        }*/
-
+        }
         return true;
     }
 

@@ -3,7 +3,6 @@ package bham.student.txm683.framework.map;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import bham.student.txm683.framework.entities.entityshapes.Rectangle;
 import bham.student.txm683.framework.rendering.RenderingTools;
 import bham.student.txm683.framework.utils.BoundingBox;
@@ -17,7 +16,7 @@ import java.util.Random;
 public class MeshPolygon {
 
     private int id;
-    private Rectangle area;
+    private Rectangle boundingVolume;
     private Random random;
 
     public MeshPolygon(MeshSet meshSet, int tileSize){
@@ -25,63 +24,32 @@ public class MeshPolygon {
 
         this.random = new Random();
 
-        generateArea(meshSet.getContainedTiles(), tileSize);
+        generateBoundingVolume(meshSet.getContainedTiles(), tileSize);
     }
 
-    public MeshPolygon(int id, Rectangle area){
+    public MeshPolygon(int id, Rectangle boundingVolume){
         this.id = id;
-        this.area = area;
-    }
-
-    public Point getNearestPoint(Point p, int widthOfEntity){
-        BoundingBox b = area.getBoundingBox();
-
-        float x = mapToRange(p.getX(), widthOfEntity, b.getLeft(), b.getRight());
-        float y = mapToRange(p.getY(), widthOfEntity, b.getTop(), b.getBottom());
-
-        return new Point(x,y);
-    }
-
-    public float compareDimensions(BoundingBox b){
-        BoundingBox areaB = getBoundingBox();
-
-        float widthRatio = Math.max(b.width() / (float) areaB.width(), b.width() / (float) areaB.height());
-        float heightRatio = Math.max(b.height() / (float) areaB.width(), b.height() / (float) areaB.height());
-
-        Log.d("RATIO", "width: " + widthRatio + ", height: " + heightRatio);
-
-        return Math.max(widthRatio, heightRatio);
-    }
-
-    private float mapToRange(float x, int width, float min, float max){
-        width = width / 2;
-
-        if (x-width <= min)
-            return min+width;
-        else if (x+width >= max)
-            return max-width;
-        else
-            return x;
+        this.boundingVolume = boundingVolume;
     }
 
     public BoundingBox getBoundingBox(){
-        return area.getBoundingBox();
+        return boundingVolume.getBoundingBox();
     }
 
     public Point getCenter(){
-        return area.getCenter();
+        return boundingVolume.getCenter();
     }
 
     public void draw(Canvas canvas, Point renderOffset){
-        area.draw(canvas, renderOffset, 0, false);
+        boundingVolume.draw(canvas, renderOffset, 0, false);
     }
 
     public void drawLabel(Canvas canvas, Point renderOffset, Paint textPaint){
         RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, ""+id, getCenter().add(renderOffset), Color.WHITE, 5);
     }
 
-    private void generateArea(List<Tile> meshSetTiles, int tileSize){
-        //sort tiles
+    private void generateBoundingVolume(List<Tile> meshSetTiles, int tileSize){
+        //sort tiles primarily by y coordinate, if equal the x coordinate is then compared
         meshSetTiles.sort((a,b) -> {
             if (a.getY() < b.getY())
                 return -1;
@@ -92,20 +60,22 @@ public class MeshPolygon {
             }
         });
 
+        //the stored tiles for top left and bottom right respectively
         Tile tl = meshSetTiles.get(0);
         Tile br = meshSetTiles.get(meshSetTiles.size()-1).add(1,1);
 
+        //the tiles above converted to global coordinates
         Point topLeft = new Point(tl).sMult(tileSize);
         Point bottomRight = new Point(br).sMult(tileSize);
 
         Point center = topLeft.add((bottomRight.getX() - topLeft.getX())/2f,
                 (bottomRight.getY() - topLeft.getY())/2f);
 
-        this.area = new Rectangle(center, topLeft, bottomRight, ColorScheme.randomGreen());
+        this.boundingVolume = new Rectangle(center, topLeft, bottomRight, ColorScheme.randomGreen());
     }
 
     public Point getRandomPointInMesh(){
-        BoundingBox boundingBox = area.getBoundingBox();
+        BoundingBox boundingBox = boundingVolume.getBoundingBox();
 
         float x = boundingBox.getLeft() + random.nextFloat() * (boundingBox.getRight() - boundingBox.getLeft());
         float y = boundingBox.getTop() + random.nextFloat() * (boundingBox.getBottom() - boundingBox.getTop());
@@ -118,6 +88,5 @@ public class MeshPolygon {
 
     public float getArea(){
         return getBoundingBox().area();
-
     }
 }
