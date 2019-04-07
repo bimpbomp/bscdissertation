@@ -1,22 +1,15 @@
 package bham.student.txm683.framework.entities;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import bham.student.txm683.framework.physics.Collidable;
-import bham.student.txm683.framework.rendering.RenderingTools;
 import bham.student.txm683.framework.utils.Point;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public abstract class Entity  implements Collidable {
     private String name;
 
-    private Paint paint;
-
     Entity(String name){
         this.name = name;
-
-        this.paint = RenderingTools.initPaintForText(Color.GRAY, 30f, Paint.Align.CENTER);
     }
 
     public String getName() {
@@ -24,7 +17,6 @@ public abstract class Entity  implements Collidable {
     }
 
     public void drawName(Canvas canvas, Point center){
-        RenderingTools.renderCenteredText(canvas, paint, getName(), center);
     }
 
     @Override

@@ -45,7 +45,7 @@ public class Behaviour {
                 new RunTillArrived(
                         new ForgetfulSequence(
                                 Tasks.followPath(),
-                                Tasks.courseCorrect(),
+                                //Tasks.courseCorrect(),
                                 new Succeeder(
                                         Conditionals.arriving(
                                                 Tasks.arrival()
@@ -83,27 +83,6 @@ public class Behaviour {
                 new Sequence(
                         driveAtPlayer(),
                         shootBehaviour()
-                )
-        );
-    }
-
-    public static BNode selfDestructTree(int fuse){
-        BNode explode = explodeTree(fuse);
-        return new Selector(
-                Conditionals.canSeePlayer(
-                        new Sequence(
-                                driveAtPlayer(),
-                                explode
-                        )
-                ),
-                new ForgetfulSequence(
-                        new Succeeder(
-                                Conditionals.fuseStarted(
-                                        explode
-                                )
-                        ),
-                        Tasks.findMeshAdjacentToPlayer(),
-                        travelTo(false)
                 )
         );
     }

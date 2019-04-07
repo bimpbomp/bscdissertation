@@ -1,7 +1,6 @@
 package bham.student.txm683.framework.physics;
 
 import android.graphics.Color;
-import android.util.Log;
 import android.util.Pair;
 import bham.student.txm683.framework.ai.IAIEntity;
 import bham.student.txm683.framework.entities.Door;
@@ -34,6 +33,7 @@ public class CollisionTools {
 
         List<SpatialBin> spatialBins = new ArrayList<>();
 
+        //create the spatial bins
         for (int i = 1; i <= numHCells; i++){
             int l = (i-1) * cellWidth;
             int r = i * cellWidth;
@@ -63,6 +63,7 @@ public class CollisionTools {
     }
 
     public static List<Boolean> addTempsToBins(List<Collidable> collidables, List<SpatialBin> spatialBins){
+
         List<Boolean> successes = new ArrayList<>();
 
         for (Collidable collidable : collidables){
@@ -94,79 +95,82 @@ public class CollisionTools {
     public static void resolveSolidsCollision(Collidable firstCollidable, Collidable secondCollidable, Vector pushVector, List<Collidable> bin){
         Point newCenter;
 
-        //both entities are solid and the collision needs to be resolved.
         if (firstCollidable.canMove() && secondCollidable.canMove()) {
+            //both entities can move
 
             //amount added to the entity's center to allow reverting to previous state
             Point firstAmountMoved;
             Point secondAmountMoved;
 
-            if (firstCollidable instanceof MoveableEntity && secondCollidable instanceof MoveableEntity){
+            int firstMass = ((MoveableEntity) firstCollidable).getMass();
+            int secondMass = ((MoveableEntity) secondCollidable).getMass();
 
-                int firstMass = ((MoveableEntity) firstCollidable).getMass();
-                int secondMass = ((MoveableEntity) secondCollidable).getMass();
-
-                if (firstMass == secondMass){
-                    firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
-                    secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
-                } else if (firstMass > secondMass){
-                    firstAmountMoved = new Point();
-                    secondAmountMoved = pushVector.sMult(-1).getRelativeToTailPoint();
-                } else {
-                    firstAmountMoved = pushVector.getRelativeToTailPoint();
-                    secondAmountMoved = new Point();
-                }
-
-            } else {
-
+            if (firstMass == secondMass){
+                //if they have the same mass, move both equally
                 firstAmountMoved = pushVector.sMult(0.5f).getRelativeToTailPoint();
                 secondAmountMoved = pushVector.sMult(-0.5f).getRelativeToTailPoint();
+            } else if (firstMass > secondMass){
+                //if first has greater mass, only move second
+                firstAmountMoved = new Point();
+                //since the push vector always aims to push the first entity, it needs to be flipped
+                secondAmountMoved = pushVector.sMult(-1).getRelativeToTailPoint();
+            } else {
+                //second has greater mass, only move first
+                firstAmountMoved = pushVector.getRelativeToTailPoint();
+                secondAmountMoved = new Point();
             }
 
-            //update position of first entity with half of the push vector
+
+            //update object positions with calculated movement amounts
             newCenter = firstCollidable.getCenter().add(firstAmountMoved);
             firstCollidable.setCenter(newCenter);
 
-            //update position of second entity with half of the inverted pushVector
-            //i.e pushes second entity away from first
             newCenter = secondCollidable.getCenter().add(secondAmountMoved);
             secondCollidable.setCenter(newCenter);
 
         } else {
-
+            //only one entity can move
 
             MoveableEntity moveableCollidable;
 
+            //find out which entity is able to move
             if (firstCollidable.canMove()) {
                 moveableCollidable = (MoveableEntity) firstCollidable;
 
             } else {
                 moveableCollidable = (MoveableEntity) secondCollidable;
 
+                //since the push vector always aims to push the first entity, it needs to be flipped
                 pushVector = pushVector.sMult(-1f);
             }
 
+            //move the entity
             Point amountToMove = pushVector.getRelativeToTailPoint();
-            newCenter = moveableCollidable.getCenter().add(amountToMove);
-            moveableCollidable.setCenter(newCenter);
+            moveEntityCenter(moveableCollidable, amountToMove);
 
-            //bigger the angle, smaller the force
+            //the bigger the angle at which the moveable entity collides with the immovable,
+            //the less force that will be exerted (glancing blow)
             float angle = Vector.calculateAngleBetweenVectors(moveableCollidable.getVelocity().sMult(-1), pushVector);
             float prop = 1 - (angle / (float)Math.PI);
 
-            Log.d("TANK", "prop: " + prop + "push vector: " + pushVector.relativeToString());
-
+            //add a force to the entity to force them away from the wall
             moveableCollidable.addForce(pushVector.setLength(100).sMult(prop));
-
         }
     }
 
     public static float getWiggleRoom(MoveableEntity player, IAIEntity aiEntity){
+        //this algorithm is used in the event that the ai is aiming at the player.
+        //it calculates the maximum angle away from the player's center that the ai can aim but still
+        //potentially land a hit
+
+
         Point[] playerVertices = player.getCollisionVertices();
 
+        //calculate the normal to the vector between the ai and the player
         Vector aToP = new Vector(aiEntity.getCenter(), player.getCenter());
         Vector normal = aToP.rotateAntiClockwise90().getUnitVector();
 
+        //find the max and min vertices of the player on this normal axis
         float min = Float.MAX_VALUE;
         float max = Float.MIN_VALUE;
         Point minPoint = playerVertices[0];
@@ -184,6 +188,17 @@ public class CollisionTools {
                 max = currentLength;
             }
         }
+
+        //   ____
+        //  |____|  player
+        //  ^    ^
+        // min   max
+        //
+        //  ----->  normal vector
+        //
+        //   _
+        //  |_|     ai
+
 
         Vector aToMin = new Vector (aiEntity.getCenter(), minPoint);
         Vector aToMax = new Vector (aiEntity.getCenter(), maxPoint);
@@ -216,6 +231,9 @@ public class CollisionTools {
         Vector pushVector;
         ArrayList<Vector> pushVectors = new ArrayList<>();
         for (Vector axis : orthogonalAxes){
+
+            //evaluate if the axis is a separating vector, projecting the circle onto it to gain
+            //it's max and min points
             pushVector = isSeparatingAxis(axis, polygon.getCollisionVertices(),
                     getCircleVerticesForAxis(axis, circle.getCenter(), circle.getRadius()));
 
@@ -248,6 +266,7 @@ public class CollisionTools {
 
         float height = 200f;
 
+        //form a rectangle extending out in front of the ai to use in collision testing
         Vector v = new Vector(entity.getCenter(), target);
         Point center = v.setLength(height/2).getHead();
         Vector steeringAxis = v.rotateAntiClockwise90();
@@ -258,18 +277,23 @@ public class CollisionTools {
         Vector pV;
 
         for (Collidable collidable : avoidables){
+            //iterate through possible obstacles
 
             if (collidable.getName().equals(entity.getName()))
                 continue;
 
             if (collidable instanceof MoveableEntity){
+                //if the entity is not in the navmesh
+
 
                 int distance = euclideanHeuristic(entity.getCenter(), collidable.getCenter());
 
+                //check if it is in the way of the ai's "sight" rectangle
                 pV = collisionCheckTwoPolygons(collidable.getCollisionVertices(), collidable.getCenter(), collidable.getShapeIdentifier(),
                         rectVertices, rect.getCenter(), rect.getShapeIdentifier());
 
                 if (!pV.equals(Vector.ZERO_VECTOR) && distance < smallestDistance){
+                    //if the collidable is closer than the stored collidable, override it
                     smallestDistance = distance;
                     closestCollidable = collidable;
                 }
@@ -279,16 +303,19 @@ public class CollisionTools {
         if (closestCollidable == null)
             return Vector.ZERO_VECTOR;
 
-        Log.d("AVOID", closestCollidable.getName() + " is in the way");
-
+        //ai are told to always turn left when potentially colliding with other ai
+        //this is to avoid them turning into each other
         if (closestCollidable instanceof IAIEntity){
             return fUnit.rotateClockwise90();
         }
 
+        //determine the direction to turn by using the vector from the ai to the collidable and the forward vector
         Vector ray = new Vector(entity.getCenter(), closestCollidable.getCenter()).getUnitVector();
 
         float det = fUnit.det(ray);
 
+        //if the ai is aiming towards the left of the collidable, go that way
+        //as there is less distance to turn
         if (det < 0) {
             steeringAxis = steeringAxis.sMult(-1f);
         }
@@ -297,6 +324,7 @@ public class CollisionTools {
     }
 
     public static int getClosestPointOnPathIdx(Point position, List<Point> path){
+        //iterates through a given path and returns the index of the point closest to the given position
 
         if (path.size() > 1) {
 
@@ -329,6 +357,7 @@ public class CollisionTools {
     public static boolean collisionCheckRay(Collidable collidable, Vector ray){
         Point[] rayVertices = new Point[]{ray.getTail(), ray.getHead()};
 
+        //use the axes of the collidable for SAT tests.
         Vector[] axes = getEdgeNormals(getEdges(collidable.getShapeIdentifier(), collidable.getCollisionVertices()));
         List<Vector> pVs = applySAT(axes, collidable.getCollisionVertices(), rayVertices);
 
@@ -386,9 +415,14 @@ public class CollisionTools {
     }
 
     public static Point[] getCircleVerticesForAxis(Vector axis, Point center, float radius){
+        //projects the circle with given center and radius onto the given axis to obtain
+        //the maximum and minimum points
 
+        //create a vector with length equal to the radius
         Vector radiusVector = axis.sMult(radius);
 
+        //calculate max point on this axis by adding a radius onto the center in the direction of the axis
+        //calculate min by subtracting a radius from the center in the direction of the axis
         return new Point[]{center.add(radiusVector.getRelativeToTailPoint()),
                 center.add(radiusVector.sMult(-1f).getRelativeToTailPoint())};
     }
@@ -399,7 +433,11 @@ public class CollisionTools {
     }
 
     public static Vector getMinimumPushVector(List<Vector> pushVectors, Point center1, Point center2){
+
+
         Vector minPushVector = Vector.ZERO_VECTOR;
+
+        //iterate through the pushvectors, keeping the smallest one as you progress
         if (pushVectors.size() > 0) {
             minPushVector = pushVectors.get(0);
 
@@ -408,12 +446,15 @@ public class CollisionTools {
             }
         }
 
+        //if the push vector is pointing towards the second entity, invert it
+        //this is so the direction of the push vector is consistently pointing towards the first entity
         if (minPushVector.dot(new Vector(center1, center2)) > 0) {
             minPushVector = minPushVector.sMult(-1f);
         }
         return minPushVector;
     }
 
+    //converts the given vertices into vectors from the origin to the vertex
     public static Vector[] convertToVectorsFromOrigin(Point[] vertices){
         Vector[] verticesVectors = new Vector[vertices.length];
         for (int i = 0; i < vertices.length; i++){
@@ -453,6 +494,9 @@ public class CollisionTools {
         float projection;
 
         for (Vector vertexVector : convertToVectorsFromOrigin(vertices)){
+            //iterate through the vertices, projecting them onto the axis,
+            //keeping the maximum and minimum projections as you go
+
             projection = vertexVector.dot(axis);
 
             minLength = Math.min(minLength, projection);

@@ -1,6 +1,7 @@
 package bham.student.txm683.framework.entities.entityshapes;
 
 import android.graphics.Path;
+import bham.student.txm683.framework.utils.BoundingBox;
 import bham.student.txm683.framework.utils.Point;
 import bham.student.txm683.framework.utils.Vector;
 
@@ -54,8 +55,7 @@ public abstract class Polygon implements Shape{
         setForwardUnitVector();
     }
 
-
-
+    @Override
     public void rotate(float angle){
         float cos = (float) Math.cos(angle);
         float sin = (float) Math.sin(angle);
@@ -71,6 +71,7 @@ public abstract class Polygon implements Shape{
      * Translates the vertices of this shape by the given movement vector.
      * @param movementVector Direction and magnitude to translate each vertex by
      */
+    @Override
     public void translate(Vector movementVector){
         Point amountToTranslate = movementVector.getRelativeToTailPoint();
 
@@ -145,7 +146,7 @@ public abstract class Polygon implements Shape{
      * @param offset The amount to offset the vertices
      * @return The offset vertices
      */
-    static Point[] offsetVertices(Point[] vertices, Point offset){
+    protected static Point[] offsetVertices(Point[] vertices, Point offset){
         Point[] v = new Point[vertices.length];
         for (int i = 0; i < vertices.length; i++){
             v[i] = vertices[i].add(offset);
@@ -167,7 +168,12 @@ public abstract class Polygon implements Shape{
         return vertices;
     }
 
-    static Vector[] generateVertexVectors(Point center, int armLength, float angleBetweenArms, int numberOfVertices){
+    @Override
+    public BoundingBox getBoundingBox() {
+        return new BoundingBox(getVertices());
+    }
+
+    protected static Vector[] generateVertexVectors(Point center, int armLength, float angleBetweenArms, int numberOfVertices){
         Vector[] vertexVectors = new Vector[numberOfVertices];
 
         vertexVectors[0] = new Vector(center, center.add(0, -1 * armLength));
@@ -181,4 +187,6 @@ public abstract class Polygon implements Shape{
 
         return vertexVectors;
     }
+
+
 }

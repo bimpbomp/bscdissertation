@@ -3,7 +3,6 @@ package bham.student.txm683.framework.entities.entityshapes;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import bham.student.txm683.framework.rendering.Renderable;
-import bham.student.txm683.framework.utils.BoundingBox;
 import bham.student.txm683.framework.utils.Point;
 import bham.student.txm683.framework.utils.Vector;
 
@@ -45,17 +44,13 @@ public class Rectangle extends Polygon implements Renderable {
     }
 
     @Override
-    void setForwardUnitVector() {
+    protected void setForwardUnitVector() {
         this.forwardUnitVector = vertexVectors[0].rotate((float) Math.cos(primaryAngle),
                 (float) Math.sin(primaryAngle));
     }
 
     @Override
     public void draw(Canvas canvas, Point renderOffset, float secondsSinceLastRender, boolean renderEntityName) {
-        /*
-         * Ignoring interpolationVector since it's not implemented yet,
-         * also ignoring the renderEntityName boolean as it doesn't have a name
-         * */
 
         paint.setColor(currentColor);
         canvas.drawPath(getPathWithPoints(getVertices(renderOffset)), paint);
@@ -69,10 +64,5 @@ public class Rectangle extends Polygon implements Renderable {
     @Override
     public void setColor(int color) {
         this.currentColor = color;
-    }
-
-    @Override
-    public BoundingBox getBoundingBox() {
-        return new BoundingBox(getVertices());
     }
 }

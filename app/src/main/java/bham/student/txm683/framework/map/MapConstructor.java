@@ -70,14 +70,10 @@ public class MapConstructor {
     private void constructDoors(){
         List<Door> doors = new ArrayList<>();
 
-        Log.d("TEST", "number of doors: " + mapReader.getDoorSpawns().size());
-
         if (mapReader.getDoorSpawns().size() == 0){
             return;
         }
         for (DoorBuilder doorBuilder : mapReader.getDoorSpawns()){
-
-            Log.d("TEST", doorBuilder.getName());
 
             Tile sideSets = null;
             int doorSet = 0;
@@ -85,13 +81,15 @@ public class MapConstructor {
             for (MeshPolygon meshSet : map.getRootMeshPolygons().values()){
 
                 if (meshSet.getBoundingBox().intersecting(doorBuilder.getCenter())){
-                    //if door center is in the polygon
+                    //if the door is in this polygon
 
-                    Log.d("hb::HASDOORTILE", meshSet.getId()+"");
+
                     doorSet = meshSet.getId();
-
                     List<Edge<Integer>> neighbours = meshConstructor.getMeshGraph().getNode(doorSet).getConnections();
 
+                    //if the door polygon has more than two neighbours, it is not a valid door configuration
+                    //as a door has to have exactly two sides open in order to pass through
+                    //more than two sides open means the door is pointless as it can be circumvented
                     if (neighbours.size() == 2) {
                         sideSets = new Tile(neighbours.get(0).traverse().getNodeID(),
                                 neighbours.get(1).traverse().getNodeID());
@@ -99,6 +97,8 @@ public class MapConstructor {
                 }
             }
 
+            //if the polygons on either side of the door could be determined,
+            //create the door object
             if (sideSets != null && doorSet != 0) {
                 Door door = new Door(doorBuilder.getName(), doorBuilder.getCenter(), tileSize, tileSize,
                         doorBuilder.isLocked(), doorBuilder.isVertical(), ColorScheme.DOOR_COLOR, doorSet, sideSets);
@@ -155,19 +155,29 @@ public class MapConstructor {
             List<Tile> neighbours = getNeighbours(currentTile, tileList);
 
             if (neighbours.get(0) != null || neighbours.get(2) != null){
+                //the wall has at least one vertical neighbour,
+                //walk in both vertical directions adding all wall cells found to the currentWall
                 currentWall.addAll(walkInDirection(currentTile, new Tile(0, 1), tileList));
                 currentWall.addAll(walkInDirection(currentTile, new Tile(0, -1), tileList));
+
+                //sort by y coordinate so the top and bottom coordinates can be determined
                 currentWall.sort(Comparator.comparingInt(Tile::getY));
 
             } else if (neighbours.get(1) != null || neighbours.get(3) != null){
+                //the wall has at least one horizontal neighbour,
+                //walk in both horizontal directions adding all wall cells found to the currentWall
                 currentWall.addAll(walkInDirection(currentTile, new Tile(1, 0), tileList));
                 currentWall.addAll(walkInDirection(currentTile, new Tile(-1, 0), tileList));
 
+                //sort by x coordinate so the top and bottom coordinates can be determined
                 currentWall.sort(Comparator.comparingInt(Tile::getX));
             }
 
-            Log.d("hb::GenWall", listToString(currentWall));
-
+            //create the wall using the cells contained in currentWall
+            //passing the first and last cells as parameters to define the top left and bottom right
+            //of the wall.
+            //as the coordinates reference the top left corner of a cell, the last cell needs to be incremented
+            //in order to meet the bottom right point of the cell
             walls.add(createWall(new Point(currentWall.get(0)), new Point(currentWall.get(currentWall.size()-1).add(1,1))));
 
             //remove any checked wall tiles from the wallsToCheck queue

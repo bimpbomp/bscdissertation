@@ -3,6 +3,7 @@ package bham.student.txm683.heartbreaker;
 import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
+import bham.student.txm683.framework.ai.behaviours.BKeyType;
 import bham.student.txm683.framework.input.RectButtonBuilder;
 import bham.student.txm683.framework.map.MeshPolygon;
 import bham.student.txm683.framework.physics.Collidable;
@@ -14,6 +15,7 @@ import bham.student.txm683.framework.utils.FPSMonitor;
 import bham.student.txm683.framework.utils.graph.Edge;
 import bham.student.txm683.framework.utils.graph.Graph;
 import bham.student.txm683.framework.utils.graph.Node;
+import bham.student.txm683.heartbreaker.ai.AIEntity;
 import bham.student.txm683.heartbreaker.ai.AIManager;
 import bham.student.txm683.heartbreaker.input.InputManager;
 import bham.student.txm683.heartbreaker.intentbundleholders.LevelEndStatus;
@@ -194,10 +196,9 @@ public class Level implements Runnable {
                     levelState.getPlayer().setRequestedMovementVector(inputManager.getThumbstick().getMovementVector());
                     levelState.getPlayer().setRotationVector(inputManager.getRotationThumbstick().getMovementVector());
 
-                    /*benchMarker.begin();
+                    benchMarker.begin();
                     levelState.clearBlockedPolygons();
                     addBlockedBackToGraph();
-
 
                     int id = mapCollidableToMesh(levelState.getPlayer());
 
@@ -213,7 +214,7 @@ public class Level implements Runnable {
                     }
 
                     removeBlockedFromGraph();
-                    benchMarker.output("meshCalc");*/
+                    benchMarker.output("meshCalc");
 
                     entityController.update(gameTickTimeStepInMillis / 1000f);
 
@@ -275,7 +276,7 @@ public class Level implements Runnable {
 
                     //Log.d("BENCHMARKING", "Game tick: " + stringBuilder.toString());
 
-                    levelState.getBenchLog().addSnapshot(collisionManager.getFgt(), collisionManager.getRgt(), collisionManager.getNumSPATPATChecks(), collisionManager.getNumSPATPATInsertions(), collisionManager.getNumSATChecks());
+                    //levelState.getBenchLog().addSnapshot(collisionManager.getFgt(), collisionManager.getRgt(), collisionManager.getNumSPATPATChecks(), collisionManager.getNumSPATPATInsertions(), collisionManager.getNumSATChecks());
                 }
             } else {
                 nextScheduledGameTick = System.currentTimeMillis();
@@ -293,6 +294,8 @@ public class Level implements Runnable {
             } else if (levelState.isPaused() && levelState.isReadyToRender()){
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), 0f);
             }
+
+            levelState.getBenchLog().tick();
         }
 
         Log.d("LOADING", "GAME LOOP ENDING");

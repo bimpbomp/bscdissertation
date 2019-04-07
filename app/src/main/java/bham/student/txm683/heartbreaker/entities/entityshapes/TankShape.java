@@ -61,7 +61,7 @@ public class TankShape extends Polygon implements Shape {
     }
 
     @Override
-    void setForwardUnitVector() {
+    protected void setForwardUnitVector() {
         forwardUnitVector = vertexVectors[1].getUnitVector();
     }
 

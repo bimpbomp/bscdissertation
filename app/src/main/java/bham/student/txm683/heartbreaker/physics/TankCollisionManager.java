@@ -52,11 +52,8 @@ public class TankCollisionManager {
 
         benchMarker = new BenchMarker();
 
-        /*this.numHCells = numHCells;
-        this.numVCells = numVCells;*/
-
-        this.numVCells = 11;
-        this.numHCells = 11;
+        this.numHCells = numHCells;
+        this.numVCells = numVCells;
 
         initSpatPatV4();
 
@@ -87,7 +84,6 @@ public class TankCollisionManager {
         /*benchMarker.begin();
         aiSight();
         benchMarker.output("ai sight");*/
-
     }
 
     public long getNumSPATPATInsertions() {
@@ -221,11 +217,11 @@ public class TankCollisionManager {
                         firstCollidable = bin.get(i);
                         secondCollidable = bin.get(j);
 
-                        //if both entities are static or not solid, skip
                         if (firstCollidable instanceof Damageable || secondCollidable instanceof Damageable){
                             //do nothing
                         } else if ((!firstCollidable.canMove() && !secondCollidable.canMove()) ||
                                 (!firstCollidable.isSolid() && !secondCollidable.isSolid())) {
+                            //if both entities are static or not solid, skip
                             continue;
                         }
 

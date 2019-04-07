@@ -252,8 +252,6 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         this.viewWidth = width;
         this.viewHeight = height;
 
-        //initInGameUI();
-
         Log.d(TAG, "surfaceChanged");
     }
 
@@ -315,6 +313,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
         Canvas canvas = getHolder().lockCanvas();
 
+        int numOnScreen = 0;
+
         if (canvas != null){
             super.draw(canvas);
 
@@ -325,32 +325,42 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw meshGrid
             for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
-                meshPolygon.draw(canvas, renderOffset);
+                if (isOnScreen(meshPolygon.getBoundingBox())) {
+                    numOnScreen++;
+                    meshPolygon.draw(canvas, renderOffset);
+                }
             }
 
             //draw doors
             for (Renderable door : levelState.getMap().getDoors().values()){
-                if (isOnScreen(door))
+                if (isOnScreen(door)) {
+                    numOnScreen++;
                     door.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+                }
             }
 
             //draw dead ai
             for (AIEntity deadAI : levelState.getDeadAI()){
                 if (isOnScreen(deadAI)){
+                    numOnScreen++;
                     deadAI.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                 }
             }
 
             //draw pickups
             for (Renderable pickup : levelState.getPickups()){
-                if (isOnScreen(pickup))
+                if (isOnScreen(pickup)) {
+                    numOnScreen++;
                     pickup.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+                }
             }
 
             //draw bullets
             for (Renderable bullet : levelState.getBullets()){
-                if (isOnScreen(bullet))
+                if (isOnScreen(bullet)) {
+                    numOnScreen++;
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+                }
             }
 
             //draw player
@@ -359,6 +369,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
             //draw alive ai
             for (AIEntity entity : levelState.getAliveAIEntities()){
                 if (isOnScreen(entity)) {
+                    numOnScreen++;
                     entity.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                     entity.setOnScreen(true);
                 } else
@@ -367,22 +378,19 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw explosions
             for (Renderable explosion : levelState.getLingeringExplosions()){
-                explosion.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+                if (isOnScreen(explosion.getBoundingBox())) {
+                    numOnScreen++;
+                    explosion.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
+                }
             }
             levelState.removeLingeringExplosions();
 
 
             //draw walls
             for (Renderable wall : levelState.getMap().getWalls()){
-                if (isOnScreen(wall))
+                if (isOnScreen(wall)) {
+                    numOnScreen++;
                     wall.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
-            }
-
-            //draw meshGrid
-            if (debugInfo.renderVisSet()){
-
-                for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
-                    meshPolygon.drawLabel(canvas, renderOffset, textPaint);
                 }
             }
 
@@ -392,9 +400,9 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw ui
             if (!levelState.isPaused()) {
-                RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "RenderFPS: " + renderFPS
+                /*RenderingTools.renderCenteredTextWithBoundingBox(canvas, textPaint, "RenderFPS: " + renderFPS
                         + " GameTickFPS: " + gameTickFPS,
-                        new Point(viewWidth/2f, 50), Color.WHITE, 10);
+                        new Point(viewWidth/2f, 50), Color.WHITE, 10);*/
             }
             if (levelState.isPaused()) {
                 canvas.drawARGB(200, 0,0,0);
@@ -408,6 +416,8 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
         } catch (IllegalArgumentException e){
             //canvas is destroyed already
         }
+
+        levelState.getBenchLog().addItemsOnScreenCount(numOnScreen);
     }
 
     private void drawGrid(Canvas canvas, Point minimum, Point maximum, int cellSize, Point renderOffset, Paint gridPaint){

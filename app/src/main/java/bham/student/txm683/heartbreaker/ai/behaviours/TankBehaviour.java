@@ -1,6 +1,7 @@
 package bham.student.txm683.heartbreaker.ai.behaviours;
 
 import bham.student.txm683.framework.ai.behaviours.BNode;
+import bham.student.txm683.framework.ai.behaviours.composites.ForgetfulSequence;
 import bham.student.txm683.framework.ai.behaviours.composites.Selector;
 import bham.student.txm683.framework.ai.behaviours.composites.Sequence;
 import bham.student.txm683.framework.ai.behaviours.conditionals.Conditionals;
@@ -14,6 +15,27 @@ public class TankBehaviour {
 
     private TankBehaviour(){
 
+    }
+
+    public static BNode selfDestructTree(int fuse){
+        BNode explode = explodeTree(fuse);
+        return new Selector(
+                Conditionals.canSeePlayer(
+                        new Sequence(
+                                driveAtPlayer(),
+                                explode
+                        )
+                ),
+                new ForgetfulSequence(
+                        new Succeeder(
+                                Conditionals.fuseStarted(
+                                        explode
+                                )
+                        ),
+                        Tasks.findMeshAdjacentToPlayer(),
+                        travelTo(false)
+                )
+        );
     }
 
     private static BNode brokenDownTree(){

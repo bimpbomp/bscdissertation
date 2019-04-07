@@ -1,14 +1,13 @@
 package bham.student.txm683.framework.entities;
 
 import android.graphics.Canvas;
-import android.util.Log;
+import bham.student.txm683.framework.ai.IAIEntity;
 import bham.student.txm683.framework.entities.entityshapes.Shape;
 import bham.student.txm683.framework.entities.entityshapes.ShapeIdentifier;
 import bham.student.txm683.framework.rendering.Renderable;
 import bham.student.txm683.framework.utils.BoundingBox;
 import bham.student.txm683.framework.utils.Point;
 import bham.student.txm683.framework.utils.Vector;
-import bham.student.txm683.heartbreaker.ai.AIEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,70 +150,69 @@ public abstract class MoveableEntity extends Entity implements Renderable {
     }
 
     public void applyMovementForces(float secondsSinceLastGameTick){
+        //if the speed drops below a value of 3, then set it to zero.
+        //A speed of 3 in this context means 3 pixels per second which is basically not moving.
         if (velocity.getLength() < 3f)
             velocity = Vector.ZERO_VECTOR;
 
-        if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR) || this instanceof AIEntity) {
+        //the requested moement vector is only used for the player, but this segment should also execute
+        //if the entitiy is an AI
+        if (!getRequestedMovementVector().equals(Vector.ZERO_VECTOR) || this instanceof IAIEntity) {
             Vector movementForce = Vector.ZERO_VECTOR;
 
-            if (!(this instanceof AIEntity)) {
+            //if this is not an ai entity, then apply the requested movement vector force scaled up an amount
+            if (!(this instanceof IAIEntity)) {
                 movementForce = getRequestedMovementVector().sMult(100);
 
-
-                float dot = velocity.getUnitVector().dot(movementForce.getUnitVector());
-
-                float angle = (float) Math.acos(Math.min(dot, 1f));
-
-                if (angle > 0.785f)
-                    movementForce = movementForce.sMult(angle/ (float) Math.PI);
-            } else {
-                Log.d("TANK", "applying movement forces");
             }
-
-
-
+            //add any external forces applied on this entity to the movement force
             for (Vector force : extraForces){
-                Log.d("MOVEMENT", getName() + " extra force: " + force.relativeToString());
                 movementForce = movementForce.vAdd(force);
             }
 
             if (movementForce.equals(Vector.ZERO_VECTOR)) {
-                velocity = velocity.sMult(0.75f);
+                //if no force is being applied, decay the existing velocity
+                velocity = velocity.sMult(0.25f);
             } else {
 
-                Log.d("MOVEMENT:", getName() + ": vel: " + velocity.relativeToString() + " applyMovementForces: " + movementForce.relativeToString());
-
+                //newtons second law F = ma or in this case rearranged to a= F/m
                 Vector acc = movementForce.sMult(1f/mass);
 
+                //truncate the acceleration
                 if (acc.getLength() > maxAcceleration) {
                     acc = acc.setLength(maxAcceleration);
                 }
 
+                //add acceleration to velocity
                 velocity = velocity.vAdd(acc);
 
                 float max = getMaxSpeed();
 
+                //truncate velocity
                 if (velocity.getLength() > max)
                     velocity = velocity.setLength(max);
-
-                Log.d("VELOCITY", "vel: " + velocity.relativeToString() + " sped: " + velocity.getLength() + " acc: " +
-                        acc.relativeToString() + " f: " + movementForce.relativeToString());
             }
 
         } else {
+            //no inputted movement vector so decay speed
             velocity = velocity.sMult(0.25f);
         }
 
+        //scale the velocity based on the time passed since the last tick
         Vector v = velocity.sMult(secondsSinceLastGameTick);
 
+        //translate the shape
         shape.translate(v);
 
-        //rotate body
+        //rotate body in line with movement
+
         float angularVelocity = getAngularVelocity(v.getUnitVector(), secondsSinceLastGameTick, getShape().getForwardUnitVector());
 
+        //truncate angular velocity
         if (angularVelocity > maxAngularVelocity)
             angularVelocity = maxAngularVelocity;
 
+        //rotate the shape
         getShape().rotate(angularVelocity);
     }
 

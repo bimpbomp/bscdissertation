@@ -40,6 +40,5 @@ public class RepeatN extends BNode {
 
         setStatus(Status.SUCCESS);
         return Status.SUCCESS;
-
     }
 }

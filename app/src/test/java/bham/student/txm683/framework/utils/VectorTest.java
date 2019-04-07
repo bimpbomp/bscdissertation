@@ -1,7 +1,5 @@
-package bham.student.txm683.heartbreaker.utils;
+package bham.student.txm683.framework.utils;
 
-import bham.student.txm683.framework.utils.Point;
-import bham.student.txm683.framework.utils.Vector;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -118,12 +116,5 @@ public class VectorTest {
         assertTrue(new Vector(4,4).equals(d.sMult(scalarD)));
 
         assertTrue(new Vector(FX*scalarB, FY*scalarB).equals(f.sMult(scalarB)));
-    }
-
-    @Test
-    public void directionTo() {
-        assertTrue(b.directionTo(d).equals(new Vector(2f,0)));
-        assertTrue(f.directionTo(g).equals(new Vector(g.getXRelativeToTail()-f.getXRelativeToTail(), g.getYRelativeToTail()-f.getYRelativeToTail())));
-        assertTrue(f.directionTo(g).equals(g.directionTo(f).sMult(-1)));
     }
 }

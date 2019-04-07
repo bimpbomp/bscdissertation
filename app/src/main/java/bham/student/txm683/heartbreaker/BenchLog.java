@@ -8,7 +8,7 @@ import java.util.List;
 
 public class BenchLog {
 
-    private List<Long> fgTime, fgchecks, rgTime, rgChecks, rgInsertions, renderTimes;
+    private List<Long> fgTime, fgchecks, rgTime, rgChecks, rgInsertions, itemsOnScreen, renderTimes;
     private MainActivity context;
 
     private boolean active;
@@ -21,6 +21,8 @@ public class BenchLog {
         rgInsertions = new ArrayList<>();
         renderTimes = new ArrayList<>();
         fgchecks = new ArrayList<>();
+
+        itemsOnScreen = new ArrayList<>();
 
         this.context = context;
 
@@ -46,6 +48,7 @@ public class BenchLog {
             rgChecks.clear();
             rgInsertions.clear();
             renderTimes.clear();
+            itemsOnScreen.clear();
         }
     }
 
@@ -58,14 +61,18 @@ public class BenchLog {
             fgchecks.add(fgcheck);
 
             Log.d("BENCHMARK", "snapshot added");
+            tick();
+        }
+    }
 
-            if (timer.tick() > 0){
-                Log.d("BENCHMARKING", "benchmark ending...");
-                active = false;
-                timer.stop();
+    public void tick(){
+        if (timer.tick() > 0){
+            Log.d("BENCHMARKING", "benchmark ending...");
+            active = false;
+            timer.stop();
 
-                printAverages();
-            }
+            //printAverages();
+            Log.d("BENCHMARKING", "average items on screen: " + calcAverage(itemsOnScreen) + ", average render tick: " + calcAverage(renderTimes));
         }
     }
 
@@ -73,10 +80,14 @@ public class BenchLog {
         renderTimes.add(render);
     }
 
+    public void addItemsOnScreenCount(int num){
+        itemsOnScreen.add((long) num);
+    }
+
     public void printAverages(){
 
         Log.d("BENCHMARKING", "Averages: " + "FGTime: " + calcAverage(fgTime) + ", RGTime: " + calcAverage(rgTime) +
-                ", FGChecks: " + calcAverage(fgchecks) + ", RGChecks: " + calcAverage(rgChecks) + ", rendertime: " + calcAverage(renderTimes));
+                ", FGChecks: " + calcAverage(fgchecks) + ", RGChecks: " + calcAverage(rgChecks));
     }
 
     private static long calcAverage(List<Long> list){

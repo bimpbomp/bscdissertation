@@ -25,9 +25,8 @@ public class Edge <T>{
     }
 
     /**
-     * Returns the node connected to the provided node.
-     * @param startNode Node at one end of edge.
-     * @return Node at other end of edge, or null if startNode isn't one of the connectedNodes
+     * Traverses the edge and returns the to-node.
+     * @return The to node
      */
     public Node<T> traverse(){
         return toNode;

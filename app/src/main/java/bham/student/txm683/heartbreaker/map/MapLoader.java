@@ -48,25 +48,22 @@ public class MapLoader {
 
         JSONObject jsonObject = new JSONObject(mapString);
 
-        map.setPlayer(Player.build(jsonObject.getJSONObject("player"), map.getTileSize()));
+        if (jsonObject.has("player"))
+            map.setPlayer(Player.build(jsonObject.getJSONObject("player"), map.getTileSize()));
+        else
+            throw new JSONException("no player found in json file");
 
         if (jsonObject.has("pickups"))
             map.setPickups(parsePickups(jsonObject.getJSONArray("pickups")));
         else
             map.setPickups(new ArrayList<>());
 
-        Log.d("LOADING", "LOADED PAST pickups");
-
         List<AIEntity> enemies = new ArrayList<>();
         if (jsonObject.has("drones"))
             enemies.addAll(parseEnemies(jsonObject.getJSONArray("drones"), "drones"));
 
-        Log.d("LOADING", "LOADED PAST drones");
-
         if (jsonObject.has("turrets"))
             enemies.addAll(parseEnemies(jsonObject.getJSONArray("turrets"), "turrets"));
-
-        Log.d("LOADING", "LOADED PAST turrets");
 
         map.setEnemies(enemies);
 
@@ -75,12 +72,8 @@ public class MapLoader {
         if (jsonObject.has("doors"))
             doorBuilders = parseDoors(jsonObject.getJSONArray("doors"));
 
-        Log.d("LOADING", "LOADED PAST doors");
-
         MapConstructor mapConstructor = new MapConstructor(mainActivity, map);
         mapConstructor.loadMap(doorBuilders);
-
-        Log.d("LOADING", "LOADED PAST map constructor");
 
         List<Overlord> overlords = new ArrayList<>();
 

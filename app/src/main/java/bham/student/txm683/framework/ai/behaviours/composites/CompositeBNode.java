@@ -53,21 +53,24 @@ public abstract class CompositeBNode extends BNode {
             reset(context);
 
         while(!executionSequence.isEmpty()){
+            //fetch child, but dont remove from queue
             BNode child = executionSequence.peek();
 
             Status childStatus = child.process(context);
-            Log.d("COMPNODE", "child status: " + childStatus);
 
             if (childStatus == continueExecutionStatus){
+                //if the child returned the continueExecution status,
+                //remove it from the queue.
                 executionSequence.poll();
-                Log.d("COMPNODE", "polling child, queue size after: " + executionSequence.size());
 
             } else {
+                //if the child returns an unfavourable result
+                //return it's status and halt execution
                 setStatus(childStatus);
-                Log.d("COMPNode", "child returned " + childStatus + " which is invalid. Stopping");
                 return getStatus();
             }
         }
+        //all children were executed successfully
         setStatus(continueExecutionStatus);
         return getStatus();
     }

@@ -1,6 +1,5 @@
 package bham.student.txm683.framework.ai.behaviours.conditionals;
 
-import android.util.Log;
 import bham.student.txm683.framework.ai.behaviours.BContext;
 import bham.student.txm683.framework.ai.behaviours.BNode;
 import bham.student.txm683.framework.ai.behaviours.Status;
@@ -27,7 +26,6 @@ public class ConditionalBNode extends BNode {
         //if the eval for executing the child is true, execute the child
         if (condition.eval(context)){
 
-            Log.d("hb::" + this.getClass().getSimpleName(), "eval true");
             if (child.getStatus() != RUNNING){
                 //if child isn't running, reset it
                 child.reset(context);
@@ -37,7 +35,6 @@ public class ConditionalBNode extends BNode {
             setStatus(status);
             return status;
         }
-        Log.d("hb::" + this.getClass().getSimpleName(), "eval false");
         setStatus(FAILURE);
         return FAILURE;
     }

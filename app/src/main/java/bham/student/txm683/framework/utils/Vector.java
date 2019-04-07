@@ -65,10 +65,6 @@ public class Vector {
         yRelativeToTail = head.getY() - tail.getY();
     }
 
-    public Vector(Tile tail, Tile head){
-        this(new Point(tail), new Point(head));
-    }
-
     public Vector(JSONObject jsonObject) throws JSONException{
         this(new Point((JSONObject)jsonObject.get("tail")), new Point((JSONObject)jsonObject.get("head")));
     }
@@ -163,15 +159,6 @@ public class Vector {
     }
 
     /**
-     * Returns the direction vector from this vector to the parameter vector relative to the origin
-     * @param vector Vector you wish to have the direction to
-     * @return Direction vector relative to origin
-     */
-    public Vector directionTo(Vector vector){
-        return this.sMult(-1).vAdd(vector);
-    }
-
-    /**
      * Returns the dot product of the two vectors
      * @param vector Vector to dot with
      * @return Dot product
@@ -202,8 +189,8 @@ public class Vector {
 
     /**
      * Rotates this vector by an angle. Rotation is relative this vector's tail position.
-     * @param cosAngle Cos of angle to applyRotationalForces by
-     * @param sinAngle Sin of angle to applyRotationalForces by
+     * @param cosAngle Cos of angle to rotate by
+     * @param sinAngle Sin of angle to rotate by
      * @return The rotated vector.
      */
     public Vector rotate(float cosAngle, float sinAngle){

@@ -21,12 +21,6 @@ public class Tile {
         this.y = (int) point.getY();
     }
 
-    public Tile(String tileString){
-        String[] split = tileString.split(",");
-        this.x = Integer.parseInt(split[0]);
-        this.y = Integer.parseInt(split[1]);
-    }
-
     public Tile(JSONObject jsonObject) throws JSONException {
         this.x = jsonObject.getInt("x");
         this.y = jsonObject.getInt("y");

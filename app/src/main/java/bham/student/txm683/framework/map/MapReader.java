@@ -70,7 +70,7 @@ public class MapReader {
 
         this.doorSpawns = doorBuilders;
 
-        convertMapBitmapToGraph(mapName, stage);
+        convertMapBitmapToGrid(mapName, stage);
     }
 
     private Bitmap openImage(String mapName, String stage) throws MapConversionException {
@@ -83,7 +83,7 @@ public class MapReader {
         }
     }
 
-    private void convertMapBitmapToGraph(String mapName, String stage) throws MapConversionException {
+    private void convertMapBitmapToGrid(String mapName, String stage) throws MapConversionException {
 
         mapImage = openImage(mapName, stage);
 
