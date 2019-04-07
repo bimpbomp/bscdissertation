@@ -41,8 +41,6 @@ public class TankCollisionManager {
     private int numHCells, numVCells;
 
     private long numSPATPATInsertions, numSATChecks, numSPATPATChecks;
-    private long fgt, rgt;
-    private static boolean prefillBins = true;
 
     public TankCollisionManager(LevelState levelState, int numHCells, int numVCells){
         this.levelState = levelState;
@@ -57,9 +55,6 @@ public class TankCollisionManager {
 
         initSpatPatV4();
 
-        fgt = 0;
-        rgt = 0;
-
         numSATChecks = 0;
         numSPATPATInsertions = 0;
         numSPATPATChecks = 0;
@@ -73,17 +68,15 @@ public class TankCollisionManager {
 
         benchMarker.begin();
         applySpatPatV2();
-        //benchMarker.output("collision rough-grain");
-        rgt = benchMarker.getTime();
+        benchMarker.output("collision rough-grain");
 
         benchMarker.begin();
         fineGrainCollisionDetection();
-        //benchMarker.output("collision fine-grain");
-        fgt = benchMarker.getTime();
+        benchMarker.output("collision fine-grain");
 
-        /*benchMarker.begin();
+        benchMarker.begin();
         aiSight();
-        benchMarker.output("ai sight");*/
+        benchMarker.output("ai sight");
     }
 
     public long getNumSPATPATInsertions() {
@@ -97,47 +90,6 @@ public class TankCollisionManager {
     public long getNumSATChecks() {
         return numSATChecks;
     }
-
-    public long getFgt() {
-        return fgt;
-    }
-
-    public long getRgt() {
-        return rgt;
-    }
-
-    /*private void fillBinsWithPermanents(){
-        //add each static to the permanent list in the correct spatial bin
-        for (Collidable collidable : levelState.getStaticCollidables()){
-
-            for (SpatialBin bin : spatialBins){
-
-                if (!prefillBins)
-                    numSPATPATChecks++;
-
-                if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
-
-                    if (collidable instanceof Door){
-
-                        if (prefillBins)
-                            bin.addPermanent(((Door) collidable).getPrimaryField());
-                        else {
-                            numSPATPATInsertions++;
-                            bin.addTemp(((Door) collidable).getPrimaryField());
-                        }
-                    }
-
-                    //if the collidable intersects this bin's bounding box, add it to the bin's permanent list
-                    if (prefillBins)
-                        bin.addPermanent(collidable);
-                    else {
-                        numSPATPATInsertions++;
-                        bin.addTemp(collidable);
-                    }
-                }
-            }
-        }
-    }*/
 
     private void initSpatPatV4(){
 
@@ -169,29 +121,11 @@ public class TankCollisionManager {
                 }
             }
         }
-
-        if (!prefillBins)
-            CollisionTools.fillBinsWithPermanents(levelState.getStaticCollidables(), spatialBins);
     }
 
     public List<SpatialBin> getSpatialBins() {
         return spatialBins;
     }
-
-    /*private boolean addToBin(Collidable collidable){
-        boolean added = false;
-        for (SpatialBin bin : spatialBins){
-            numSPATPATChecks++;
-            if (bin.getBoundingBox().intersecting(collidable.getBoundingBox())){
-                //if the collidable intersects this bin's bounding box, add it to the bin's temp list
-                bin.addTemp(collidable);
-                added = true;
-
-                numSPATPATInsertions++;
-            }
-        }
-        return added;
-    }*/
 
     private void fineGrainCollisionDetection(){
         checkedPairNames = new HashSet<>();
@@ -406,7 +340,6 @@ public class TankCollisionManager {
                 friendlyBlocking = false;
             }
 
-            Log.d("SIGHT", "vector: " + ray + ", blocked: " + blocked);
             aiEntity.getContext().addCompulsory(SIGHT_VECTOR, ray);
             aiEntity.getContext().addCompulsory(SIGHT_BLOCKED, blocked);
             aiEntity.getContext().addCompulsory(FRIENDLY_BLOCKING_SIGHT, friendlyBlocking);

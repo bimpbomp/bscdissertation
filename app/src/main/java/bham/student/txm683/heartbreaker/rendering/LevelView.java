@@ -325,7 +325,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw meshGrid
             for (MeshPolygon meshPolygon : levelState.getRootMeshPolygons().values()){
-                if (isOnScreen(meshPolygon.getBoundingBox())) {
+                if (true) {
                     numOnScreen++;
                     meshPolygon.draw(canvas, renderOffset);
                 }
@@ -333,7 +333,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw doors
             for (Renderable door : levelState.getMap().getDoors().values()){
-                if (isOnScreen(door)) {
+                if (true) {
                     numOnScreen++;
                     door.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                 }
@@ -341,7 +341,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw dead ai
             for (AIEntity deadAI : levelState.getDeadAI()){
-                if (isOnScreen(deadAI)){
+                if (true){
                     numOnScreen++;
                     deadAI.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                 }
@@ -349,7 +349,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw pickups
             for (Renderable pickup : levelState.getPickups()){
-                if (isOnScreen(pickup)) {
+                if (true) {
                     numOnScreen++;
                     pickup.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                 }
@@ -357,7 +357,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw bullets
             for (Renderable bullet : levelState.getBullets()){
-                if (isOnScreen(bullet)) {
+                if (true) {
                     numOnScreen++;
                     bullet.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                 }
@@ -368,7 +368,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw alive ai
             for (AIEntity entity : levelState.getAliveAIEntities()){
-                if (isOnScreen(entity)) {
+                if (true) {
                     numOnScreen++;
                     entity.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                     entity.setOnScreen(true);
@@ -378,7 +378,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw explosions
             for (Renderable explosion : levelState.getLingeringExplosions()){
-                if (isOnScreen(explosion.getBoundingBox())) {
+                if (true) {
                     numOnScreen++;
                     explosion.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                 }
@@ -388,7 +388,7 @@ public class LevelView extends SurfaceView implements SurfaceHolder.Callback {
 
             //draw walls
             for (Renderable wall : levelState.getMap().getWalls()){
-                if (isOnScreen(wall)) {
+                if (true) {
                     numOnScreen++;
                     wall.draw(canvas, renderOffset, secondsSinceLastGameTick, debugInfo.renderEntityNames());
                 }

@@ -191,8 +191,6 @@ public class Level implements Runnable {
 
                     gameTickTimer.begin();
 
-                    StringBuilder stringBuilder = new StringBuilder();
-
                     levelState.getPlayer().setRequestedMovementVector(inputManager.getThumbstick().getMovementVector());
                     levelState.getPlayer().setRotationVector(inputManager.getRotationThumbstick().getMovementVector());
 
@@ -221,31 +219,11 @@ public class Level implements Runnable {
                     benchMarker.begin();
                     levelState.getAiManager().update(gameTickTimeStepInMillis / 1000f);
 
-                    //benchMarker.output("AI");
-                    stringBuilder.append("AI: ");
-                    stringBuilder.append(benchMarker.getTime());
+                    benchMarker.output("AI");
 
                     benchMarker.begin();
                     collisionManager.checkCollisions();
-                    //benchMarker.output("collisions");
-                    stringBuilder.append(", Collisions Total: ");
-                    stringBuilder.append(benchMarker.getTime());
-
-                    stringBuilder.append(", RG: ");
-                    stringBuilder.append(collisionManager.getRgt());
-
-                    stringBuilder.append(", FG: ");
-                    stringBuilder.append(collisionManager.getFgt());
-
-                    stringBuilder.append(", RG Checks: ");
-                    stringBuilder.append(collisionManager.getNumSPATPATChecks());
-
-                    stringBuilder.append(", RG Insertions: ");
-                    stringBuilder.append(collisionManager.getNumSPATPATInsertions());
-
-                    stringBuilder.append(", FG Checks: ");
-                    stringBuilder.append(collisionManager.getNumSATChecks());
-
+                    benchMarker.output("Collisions: ");
                     gameFPSMonitor.updateFPS();
 
                     nextScheduledGameTick += gameTickTimeStepInMillis;
@@ -267,16 +245,6 @@ public class Level implements Runnable {
                             inputManager.setActivePopup(completePopup);
                         }
                     }
-
-                    stringBuilder.append(", Game tick took: ");
-                    stringBuilder.append(gameTickTimer.getTime());
-                    stringBuilder.append(" out of required ");
-                    stringBuilder.append(gameTickTimeStepInMillis);
-                    stringBuilder.append("ms");
-
-                    //Log.d("BENCHMARKING", "Game tick: " + stringBuilder.toString());
-
-                    //levelState.getBenchLog().addSnapshot(collisionManager.getFgt(), collisionManager.getRgt(), collisionManager.getNumSPATPATChecks(), collisionManager.getNumSPATPATInsertions(), collisionManager.getNumSATChecks());
                 }
             } else {
                 nextScheduledGameTick = System.currentTimeMillis();
@@ -287,9 +255,7 @@ public class Level implements Runnable {
                 benchMarker.begin();
                 float timeSinceLastGameTick = (System.currentTimeMillis() + gameTickTimeStepInMillis - nextScheduledGameTick) / 1000f;
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), timeSinceLastGameTick);
-                //benchMarker.output("render");
-                levelState.getBenchLog().addRender(benchMarker.getTime());
-                //Log.d("BENCHMARKING", "Render tick took: " + benchMarker.getTime());
+                benchMarker.output("render");
 
             } else if (levelState.isPaused() && levelState.isReadyToRender()){
                 levelView.draw(renderFPSMonitor.getFPSToDisplayAndUpdate(), gameFPSMonitor.getFpsToDisplay(), 0f);
