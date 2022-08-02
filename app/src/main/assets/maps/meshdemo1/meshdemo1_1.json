@@ -1,0 +1,35 @@
+{
+    "player": {
+        "osr": {"x": 0, "y": 1},
+        "sp": {"x": 10.5, "y": 4.5}
+    },
+
+    "doors": [
+        {
+            "name": "DOOR1",
+            "tile": {"x": 10, "y": 5},
+            "locked": false
+          }
+    ],
+
+    "overlords": [
+        {
+        "lock_on_entry": [
+            "DOOR1"
+        ],
+
+        "triggers": [
+            {"x": 10.5, "y": 6.5}
+        ],
+
+        "spawn_points": [
+            {"x": 5.5, "y": 8.5},
+            {"x": 15.5, "y": 8.5},
+            {"x": 7.5, "y": 13.5},
+            {"x": 13.5, "y": 13.5}
+        ],
+        "max_in_level": 4,
+        "spawns_in_wave": 6
+        }
+    ]
+}
